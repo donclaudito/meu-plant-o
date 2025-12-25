@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
 
@@ -19,6 +19,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     endDate: '',
     paid: 'TODOS'
   });
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: shifts = [] } = useQuery({
     queryKey: ['shifts'],
@@ -140,6 +142,36 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     link.href = URL.createObjectURL(blob);
     link.download = `relatorio_plantoes_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
+  };
+
+  const recalculateValues = async () => {
+    setIsRecalculating(true);
+    try {
+      const user = await base44.auth.me();
+      const hourlyRate = user.hourlyRate || 150;
+      const shift12hValue = user.shift12hValue || 1800;
+      const shift24hValue = user.shift24hValue || 3000;
+
+      const updates = filteredShifts.map(shift => {
+        let newValue;
+        if (shift.hours === 24) {
+          newValue = shift24hValue;
+        } else if (shift.hours === 12) {
+          newValue = shift12hValue;
+        } else {
+          newValue = Math.round(hourlyRate * shift.hours);
+        }
+        
+        return base44.entities.Shift.update(shift.id, { value: newValue });
+      });
+
+      await Promise.all(updates);
+      queryClient.invalidateQueries(['shifts']);
+    } catch (error) {
+      console.error('Erro ao recalcular valores:', error);
+    } finally {
+      setIsRecalculating(false);
+    }
   };
 
   const exportToPDF = async () => {
@@ -267,7 +299,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={recalculateValues}
+              disabled={isRecalculating}
+              className="p-2 hover:bg-blue-50 rounded-xl transition-colors disabled:opacity-50"
+              title="Recalcular valores conforme definições"
+            >
+              <RefreshCw size={16} className={`text-blue-600 ${isRecalculating ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
           <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Faturamento Total</p>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-slate-400 font-bold text-xl">R$</span>
