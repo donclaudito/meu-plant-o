@@ -85,7 +85,7 @@ export default function Layout({ children, currentPageName }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 pt-8">
+      <main className="max-w-full mx-auto px-4 pt-8">
         {childWithProps}
       </main>
 

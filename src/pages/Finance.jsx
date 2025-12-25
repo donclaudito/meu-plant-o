@@ -110,9 +110,15 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const netTotal = totalByConfig - totalDiscounts;
     const valuePerHour = hours > 0 ? netTotal / hours : 0;
     
-    // Breakdown por tipo
+    // Breakdown por tipo - consolidando 12h Dia e 12h Noite
     const byType = filteredShifts.reduce((acc, shift) => {
-      const type = shift.type || 'Outro';
+      let type = shift.type || 'Outro';
+      
+      // Consolidar 12h Dia e 12h Noite em "12h"
+      if (type === '12h Dia' || type === '12h Noite') {
+        type = '12h';
+      }
+      
       if (!acc[type]) {
         acc[type] = { count: 0, hours: 0, value: 0 };
       }
@@ -361,7 +367,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
           <Wallet className="text-blue-600" size={28} /> Resumo Financeiro
