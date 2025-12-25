@@ -80,8 +80,11 @@ export default function Doctors() {
           >
             <Save size={18} /> Salvar
           </button>
-        </form>
-      </div>
+          </form>
+          </div>
+
+          <ImportDoctors showToast={showToast} />
+          </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {doctors.map(d => (

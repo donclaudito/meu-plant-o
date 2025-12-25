@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw } from 'lucide-react';
+import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
 import DiscountsModule from '@/components/finance/DiscountsModule';
@@ -67,6 +67,25 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     });
   }, [shifts, currentMonth, currentYear, filters]);
 
+  const { data: discounts = [] } = useQuery({
+    queryKey: ['discounts'],
+    queryFn: () => base44.entities.Discount.list('-date'),
+  });
+
+  const totalDiscounts = useMemo(() => {
+    return discounts
+      .filter(d => {
+        const date = new Date(d.date);
+        if (filters.startDate && d.date < filters.startDate) return false;
+        if (filters.endDate && d.date > filters.endDate) return false;
+        if (!filters.startDate && !filters.endDate) {
+          if (date.getMonth() !== currentMonth || date.getFullYear() !== currentYear) return false;
+        }
+        return true;
+      })
+      .reduce((acc, d) => acc + (Number(d.value) || 0), 0);
+  }, [discounts, currentMonth, currentYear, filters]);
+
   const stats = useMemo(() => {
     // Valores de referência das definições
     const shift12hValue = user?.shift12hValue || 1800;
@@ -88,7 +107,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return acc + (calculatedHourlyRate * (shift.hours || 0));
     }, 0);
     
-    const valuePerHour = hours > 0 ? totalByConfig / hours : 0;
+    const netTotal = totalByConfig - totalDiscounts;
+    const valuePerHour = hours > 0 ? netTotal / hours : 0;
     
     // Breakdown por tipo
     const byType = filteredShifts.reduce((acc, shift) => {
@@ -143,7 +163,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     });
     
     return { 
-      total: totalByConfig, 
+      total: totalByConfig,
+      netTotal,
+      totalDiscounts,
       paid, 
       pending: totalByConfig - paid, 
       hours, 
@@ -152,7 +174,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       byType, 
       byDuration 
     };
-  }, [filteredShifts, user]);
+  }, [filteredShifts, user, totalDiscounts]);
 
   const monthlyData = useMemo(() => {
     const monthsData = {};
@@ -351,7 +373,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
           <div className="absolute top-4 right-4">
             <button
@@ -363,13 +385,35 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
               <RefreshCw size={16} className={`text-blue-600 ${isRecalculating ? 'animate-spin' : ''}`} />
             </button>
           </div>
-          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Faturamento Total</p>
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Faturamento Bruto</p>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-slate-400 font-bold text-xl">R$</span>
-            <p className="text-5xl font-black text-slate-900 tracking-tight">{stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <p className="text-4xl font-black text-slate-900 tracking-tight">{stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-blue-600 text-[10px] font-black uppercase">
-            <TrendingUp size={14}/> Baseado em {stats.count} plantões
+            <TrendingUp size={14}/> {stats.count} plantões
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[2.5rem] border border-red-100 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Descontos</p>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-red-200 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-red-600 tracking-tight">{stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="mt-6 flex items-center gap-2 text-red-600 text-[10px] font-black uppercase">
+            <MinusCircle size={14}/> Deduzido
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-[2.5rem] border-2 border-green-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-green-700 uppercase tracking-[0.2em]">Líquido Total</p>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-green-400 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-green-700 tracking-tight">{stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="mt-6 flex items-center gap-2 text-green-700 text-[10px] font-black uppercase">
+            <CheckCircle size={14}/> Após descontos
           </div>
         </div>
 
