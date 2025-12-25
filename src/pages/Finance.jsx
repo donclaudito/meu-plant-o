@@ -14,6 +14,24 @@ const monthNames = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
+const isDateInActiveMonth = (dateString, month, year) => {
+  if (!dateString) return false;
+  
+  // Normalizar a data independentemente do formato (AAAA-MM-DD ou DD-MM-AAAA)
+  let parts = dateString.split('-');
+  let dateYear, dateMonth, dateDay;
+  
+  if (parts[0].length === 4) {
+    // Formato ISO: AAAA-MM-DD
+    [dateYear, dateMonth, dateDay] = parts.map(Number);
+  } else {
+    // Formato comum: DD-MM-AAAA
+    [dateDay, dateMonth, dateYear] = parts.map(Number);
+  }
+  
+  return dateMonth === month + 1 && dateYear === year;
+};
+
 export default function Finance({ currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear() }) {
   const [filters, setFilters] = useState({
     doctor: 'TODOS',
@@ -49,15 +67,13 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(s => {
-      const d = new Date(s.date);
-      
       // Date range filter
       if (filters.startDate && s.date < filters.startDate) return false;
       if (filters.endDate && s.date > filters.endDate) return false;
       
-      // If no date range, filter by current month
+      // If no date range, filter by current month using robust validation
       if (!filters.startDate && !filters.endDate) {
-        if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return false;
+        if (!isDateInActiveMonth(s.date, currentMonth, currentYear)) return false;
       }
       
       // Other filters
@@ -101,11 +117,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalDiscounts = useMemo(() => {
     return discounts
       .filter(d => {
-        const [year, month] = d.date.split('-').map(Number);
         if (filters.startDate && d.date < filters.startDate) return false;
         if (filters.endDate && d.date > filters.endDate) return false;
         if (!filters.startDate && !filters.endDate) {
-          if (month !== currentMonth + 1 || year !== currentYear) return false;
+          if (!isDateInActiveMonth(d.date, currentMonth, currentYear)) return false;
         }
         return true;
       })
@@ -115,11 +130,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalExtraIncome = useMemo(() => {
     return extraIncomes
       .filter(income => {
-        const [year, month] = income.date.split('-').map(Number);
         if (filters.startDate && income.date < filters.startDate) return false;
         if (filters.endDate && income.date > filters.endDate) return false;
         if (!filters.startDate && !filters.endDate) {
-          if (month !== currentMonth + 1 || year !== currentYear) return false;
+          if (!isDateInActiveMonth(income.date, currentMonth, currentYear)) return false;
         }
         return true;
       })
@@ -129,11 +143,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalDepositsAmount = useMemo(() => {
     return deposits
       .filter(deposit => {
-        const [year, month] = deposit.date.split('-').map(Number);
         if (filters.startDate && deposit.date < filters.startDate) return false;
         if (filters.endDate && deposit.date > filters.endDate) return false;
         if (!filters.startDate && !filters.endDate) {
-          if (month !== currentMonth + 1 || year !== currentYear) return false;
+          if (!isDateInActiveMonth(deposit.date, currentMonth, currentYear)) return false;
         }
         return true;
       })
@@ -143,11 +156,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalManualPayments = useMemo(() => {
     return manualPayments
       .filter(payment => {
-        const [year, month] = payment.date.split('-').map(Number);
         if (filters.startDate && payment.date < filters.startDate) return false;
         if (filters.endDate && payment.date > filters.endDate) return false;
         if (!filters.startDate && !filters.endDate) {
-          if (month !== currentMonth + 1 || year !== currentYear) return false;
+          if (!isDateInActiveMonth(payment.date, currentMonth, currentYear)) return false;
         }
         return true;
       })
