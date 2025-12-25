@@ -67,41 +67,51 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [shifts, currentMonth, currentYear, filters]);
 
   const stats = useMemo(() => {
-    const total = filteredShifts.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
-    const paid = filteredShifts.filter(s => s.paid).reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
-    const hours = filteredShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
-    const valuePerHour = hours > 0 ? total / hours : 0;
-    
     // Valores de referência das definições
-    const hourlyRate = user?.hourlyRate || 150;
     const shift12hValue = user?.shift12hValue || 1800;
     const shift24hValue = user?.shift24hValue || 3000;
+    const calculatedHourlyRate = shift12hValue / 12;
+    
+    // Calcular horas e valores baseados nas configurações
+    const hours = filteredShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
+    
+    const totalByConfig = filteredShifts.reduce((acc, shift) => {
+      if (shift.hours === 24) return acc + shift24hValue;
+      if (shift.hours === 12) return acc + shift12hValue;
+      return acc + (calculatedHourlyRate * (shift.hours || 0));
+    }, 0);
+    
+    const paid = filteredShifts.filter(s => s.paid).reduce((acc, shift) => {
+      if (shift.hours === 24) return acc + shift24hValue;
+      if (shift.hours === 12) return acc + shift12hValue;
+      return acc + (calculatedHourlyRate * (shift.hours || 0));
+    }, 0);
+    
+    const valuePerHour = hours > 0 ? totalByConfig / hours : 0;
     
     // Breakdown por tipo
     const byType = filteredShifts.reduce((acc, shift) => {
       const type = shift.type || 'Outro';
       if (!acc[type]) {
-        acc[type] = { count: 0, hours: 0, value: 0, expectedValue: 0 };
+        acc[type] = { count: 0, hours: 0, value: 0 };
       }
       acc[type].count++;
       acc[type].hours += shift.hours || 0;
-      acc[type].value += shift.value || 0;
       
-      // Calcular valor esperado baseado nas definições
+      // Calcular valor baseado nas definições
       if (shift.hours === 24) {
-        acc[type].expectedValue += shift24hValue;
+        acc[type].value += shift24hValue;
       } else if (shift.hours === 12) {
-        acc[type].expectedValue += shift12hValue;
+        acc[type].value += shift12hValue;
       } else {
-        acc[type].expectedValue += hourlyRate * (shift.hours || 0);
+        acc[type].value += calculatedHourlyRate * (shift.hours || 0);
       }
       return acc;
     }, {});
     
-    // Calcular valor/hora esperado para cada tipo
+    // Calcular valor/hora para cada tipo
     Object.keys(byType).forEach(key => {
-      byType[key].expectedValuePerHour = byType[key].hours > 0 ? byType[key].expectedValue / byType[key].hours : 0;
-      byType[key].actualValuePerHour = byType[key].hours > 0 ? byType[key].value / byType[key].hours : 0;
+      byType[key].valuePerHour = byType[key].hours > 0 ? byType[key].value / byType[key].hours : 0;
     });
     
     // Breakdown por duração (6h, 12h, 24h)
@@ -109,19 +119,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       const hours = shift.hours || 0;
       const key = `${hours}h`;
       if (!acc[key]) {
-        acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0, expectedValue: 0 };
+        acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0 };
       }
       acc[key].count++;
       acc[key].hours += hours;
-      acc[key].value += shift.value || 0;
       
-      // Valor esperado por plantão baseado nas definições
+      // Valor baseado nas definições
       if (hours === 24) {
-        acc[key].expectedValue += shift24hValue;
+        acc[key].value += shift24hValue;
       } else if (hours === 12) {
-        acc[key].expectedValue += shift12hValue;
+        acc[key].value += shift12hValue;
       } else {
-        acc[key].expectedValue += hourlyRate * hours;
+        acc[key].value += calculatedHourlyRate * hours;
       }
       return acc;
     }, {});
@@ -130,26 +139,15 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     Object.keys(byDuration).forEach(key => {
       byDuration[key].avgValue = byDuration[key].value / byDuration[key].count;
       byDuration[key].valuePerHour = byDuration[key].hours > 0 ? byDuration[key].value / byDuration[key].hours : 0;
-      byDuration[key].expectedAvgValue = byDuration[key].expectedValue / byDuration[key].count;
-      byDuration[key].expectedValuePerHour = byDuration[key].hours > 0 ? byDuration[key].expectedValue / byDuration[key].hours : 0;
     });
     
-    // Valor médio geral esperado por hora (baseado nas definições)
-    const totalExpectedValue = filteredShifts.reduce((acc, shift) => {
-      if (shift.hours === 24) return acc + shift24hValue;
-      if (shift.hours === 12) return acc + shift12hValue;
-      return acc + (hourlyRate * (shift.hours || 0));
-    }, 0);
-    const expectedValuePerHour = hours > 0 ? totalExpectedValue / hours : 0;
-    
     return { 
-      total, 
+      total: totalByConfig, 
       paid, 
-      pending: total - paid, 
+      pending: totalByConfig - paid, 
       hours, 
       count: filteredShifts.length, 
-      valuePerHour, 
-      expectedValuePerHour,
+      valuePerHour,
       byType, 
       byDuration 
     };
@@ -421,33 +419,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                   <p className="text-[10px] text-slate-500 font-bold">Quantidade</p>
                   <p className="text-2xl font-black text-slate-900">{data.count} plantões</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-[10px] text-slate-500 font-bold">Valor Real</p>
-                    <p className="text-lg font-black text-green-600">
-                      R$ {data.avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-slate-500 font-bold">Valor Config</p>
-                    <p className="text-lg font-black text-blue-600">
-                      R$ {data.expectedAvgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold">Valor Médio</p>
+                  <p className="text-lg font-black text-green-600">
+                    R$ {data.avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <p className="text-[10px] text-slate-500 font-bold">R$/h Real</p>
-                    <p className="text-sm font-black text-green-600">
-                      {data.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-slate-500 font-bold">R$/h Config</p>
-                    <p className="text-sm font-black text-blue-600">
-                      {data.expectedValuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold">Valor/Hora</p>
+                  <p className="text-lg font-black text-blue-600">
+                    R$ {data.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
+                  </p>
                 </div>
                 <div className="pt-3 border-t border-purple-200">
                   <p className="text-[10px] text-slate-500 font-bold">Total Faturado</p>
@@ -459,33 +441,21 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             </div>
           ))}
         </div>
-        <div className="bg-purple-600 p-6 rounded-2xl text-white">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider opacity-80 mb-2">Valor Real por Hora</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold">R$</span>
-                <p className="text-4xl font-black tracking-tight">
-                  {stats.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-                <span className="text-xl font-black">/h</span>
-              </div>
-              <p className="text-xs opacity-80 mt-2">Calculado dos plantões realizados</p>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider opacity-80 mb-2">Valor Config por Hora</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold">R$</span>
-                <p className="text-4xl font-black tracking-tight">
-                  {stats.expectedValuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-                <span className="text-xl font-black">/h</span>
-              </div>
-              <p className="text-xs opacity-80 mt-2">Baseado nas definições</p>
+        <div className="bg-purple-600 p-6 rounded-2xl text-white flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider opacity-80 mb-2">Valor Médio Geral por Hora</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold">R$</span>
+              <p className="text-5xl font-black tracking-tight">
+                {stats.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <span className="text-2xl font-black">/h</span>
             </div>
           </div>
-          <div className="text-center mt-4 pt-4 border-t border-white/20">
-            <p className="text-xs font-bold opacity-80">Total: {stats.hours}h em {stats.count} plantões</p>
+          <div className="text-right">
+            <p className="text-xs font-bold opacity-80">Baseado em</p>
+            <p className="text-2xl font-black">{stats.hours}h</p>
+            <p className="text-xs font-bold opacity-80 mt-1">{stats.count} plantões</p>
           </div>
         </div>
       </div>
@@ -496,40 +466,20 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <h3 className="text-xl font-black mb-6">Breakdown por Tipo de Plantão</h3>
         <div className="space-y-4">
           {Object.entries(stats.byType).map(([type, data]) => (
-            <div key={type} className="p-5 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="font-black text-slate-900 text-lg">{type}</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {data.count} plantão{data.count !== 1 ? 'es' : ''} • {data.hours}h totais
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-black text-2xl text-slate-900">
-                    R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
+            <div key={type} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+              <div>
+                <p className="font-black text-slate-900">{type}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {data.count} plantão{data.count !== 1 ? 'es' : ''} • {data.hours}h totais
+                </p>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200">
-                <div>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">Valor/h Real</p>
-                  <p className="text-sm font-black text-green-600">
-                    R$ {data.actualValuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">Valor/h Config</p>
-                  <p className="text-sm font-black text-blue-600">
-                    R$ {data.expectedValuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">Diferença</p>
-                  <p className={`text-sm font-black ${data.actualValuePerHour >= data.expectedValuePerHour ? 'text-green-600' : 'text-red-600'}`}>
-                    {data.actualValuePerHour >= data.expectedValuePerHour ? '+' : ''}
-                    {((data.actualValuePerHour - data.expectedValuePerHour) / data.expectedValuePerHour * 100).toFixed(1)}%
-                  </p>
-                </div>
+              <div className="text-right">
+                <p className="font-black text-lg text-slate-900">
+                  R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-slate-500">
+                  R$ {data.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
+                </p>
               </div>
             </div>
           ))}

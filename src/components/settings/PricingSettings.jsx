@@ -43,10 +43,13 @@ export default function PricingSettings({ user, showToast }) {
   };
 
   const calculateShiftValue = (hours) => {
+    const calculatedHourlyRate = shift12hValue / 12;
     if (hours === 24) return shift24hValue;
     if (hours === 12) return shift12hValue;
-    return Math.round(hourlyRate * hours);
+    return Math.round(calculatedHourlyRate * hours);
   };
+  
+  const calculatedHourlyRate = shift12hValue / 12;
 
   if (loading) {
     return (
