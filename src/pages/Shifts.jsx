@@ -84,9 +84,10 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Segunda = 0, Domingo = 6
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const days = [];
-    for (let i = 0; i < firstDay; i++) days.push({ day: null });
+    for (let i = 0; i < adjustedFirstDay; i++) days.push({ day: null });
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       days.push({ day: i, date: dateStr, shifts: filteredShifts.filter(s => s.date === dateStr) });
