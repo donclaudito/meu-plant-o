@@ -107,6 +107,10 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     updateShiftMutation.mutate({ id, data: { paid } });
   };
 
+  const handleUpdateShiftDate = (id, newDate) => {
+    updateShiftMutation.mutate({ id, data: { date: newDate } });
+  };
+
   return (
     <div className="animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
@@ -153,6 +157,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
           currentYear={currentYear}
           onDayClick={handleDayClick}
           onDeleteShift={handleDeleteShift}
+          onUpdateShiftDate={handleUpdateShiftDate}
         />
       ) : (
         <ListView 

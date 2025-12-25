@@ -1,8 +1,33 @@
-import React from 'react';
-import { Clock, Euro, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Clock, Euro, Trash2, GripVertical } from 'lucide-react';
 
-export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift }) {
+export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift, onUpdateShiftDate }) {
   const today = new Date();
+  const [draggedShift, setDraggedShift] = useState(null);
+
+  const handleDragStart = (e, shift) => {
+    setDraggedShift(shift);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    setDraggedShift(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, targetDate) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (draggedShift && targetDate && draggedShift.date !== targetDate) {
+      onUpdateShiftDate(draggedShift.id, targetDate);
+    }
+    setDraggedShift(null);
+  };
 
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm mb-8 overflow-hidden">
@@ -18,9 +43,11 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
           <div 
             key={idx} 
             onClick={() => item.day && onDayClick(item.date)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => item.day && handleDrop(e, item.date)}
             className={`min-h-[140px] p-2 border-r border-b border-slate-100 transition-colors ${
               item.day ? 'hover:bg-blue-50/30 cursor-pointer' : 'bg-slate-50/30'
-            }`}
+            } ${draggedShift && item.day ? 'bg-blue-50/20' : ''}`}
           >
             {item.day && (
               <>
@@ -37,33 +64,46 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                 </div>
                 <div className="space-y-1">
                   {item.shifts.map(s => (
-                    <div key={s.id} className="group relative">
-                      <div className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 ${
+                    <div 
+                      key={s.id} 
+                      className="group relative"
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, s)}
+                      onDragEnd={handleDragEnd}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 ${
                         s.paid 
                           ? 'bg-green-50 border-green-100 text-green-700' 
                           : 'bg-amber-50 border-amber-100 text-amber-700'
-                      }`}>
-                        <div className="truncate uppercase">{s.unit}</div>
-                        <div className="flex justify-between mt-1 opacity-70">
-                          <span>{s.hours}h</span>
-                          <span>€{s.value}</span>
+                      } ${draggedShift?.id === s.id ? 'opacity-40' : ''}`}>
+                        <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="truncate uppercase">{s.unit}</div>
+                          <div className="flex justify-between mt-1 opacity-70">
+                            <span>{s.hours}h</span>
+                            <span>€{s.value}</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-52 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100]">
-                        <div className="flex justify-between mb-2">
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] pointer-events-none group-hover:pointer-events-auto">
+                        <div className="flex justify-between items-center mb-3">
                           <span className="text-[10px] font-black text-blue-400 uppercase">Detalhes</span>
                           <button 
                             onClick={(e) => { e.stopPropagation(); onDeleteShift(s.id, s.unit); }} 
-                            className="text-red-400 hover:text-red-300"
+                            className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-400/10"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={14} />
                           </button>
                         </div>
-                        <p className="text-xs font-bold leading-tight mb-1">{s.doctorName}</p>
-                        <p className="text-[10px] opacity-70 mb-2">{s.unit} • {s.type}</p>
-                        <div className="grid grid-cols-2 gap-2 text-[10px] font-black">
-                          <div className="flex items-center gap-1"><Clock size={10}/> {s.hours}h</div>
-                          <div className="flex items-center gap-1 text-green-400"><Euro size={10}/> {s.value}</div>
+                        <p className="text-xs font-bold leading-tight mb-1 text-white">{s.doctorName}</p>
+                        <p className="text-[10px] opacity-60 mb-3">{s.unit} • {s.type}</p>
+                        <div className="grid grid-cols-2 gap-3 text-[10px] font-black">
+                          <div className="flex items-center gap-1.5 text-blue-300"><Clock size={12}/> {s.hours}h</div>
+                          <div className="flex items-center gap-1.5 text-green-400"><Euro size={12}/> {s.value}</div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-white/10 text-[9px] text-white/50 font-medium flex items-center gap-1">
+                          <GripVertical size={10} /> Arraste para mover
                         </div>
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
                       </div>
