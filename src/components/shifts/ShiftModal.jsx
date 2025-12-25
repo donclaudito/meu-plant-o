@@ -46,16 +46,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
   const handleSubmit = async (e) => {
     e.preventDefault();
     await onSave(newShift);
-    setNewShift({
-      date: new Date().toISOString().split('T')[0],
-      unit: '',
-      doctorName: '',
-      specialty: 'CIRURGIA GERAL',
-      type: '12h Dia',
-      value: 2000,
-      paid: false,
-      hours: 12
-    });
+    onClose();
   };
 
   const handleTypeChange = (val) => {

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
+import DiscountsModule from '@/components/finance/DiscountsModule';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -485,6 +486,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           ))}
         </div>
       </div>
+
+      <DiscountsModule 
+        currentMonth={currentMonth} 
+        currentYear={currentYear}
+        discountTypes={user?.discountTypes || []}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
