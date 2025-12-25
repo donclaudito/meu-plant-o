@@ -65,6 +65,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const hours = filteredShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
     const valuePerHour = hours > 0 ? total / hours : 0;
     
+    // Breakdown por tipo
     const byType = filteredShifts.reduce((acc, shift) => {
       const type = shift.type || 'Outro';
       if (!acc[type]) {
@@ -76,7 +77,26 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return acc;
     }, {});
     
-    return { total, paid, pending: total - paid, hours, count: filteredShifts.length, valuePerHour, byType };
+    // Breakdown por duração (6h, 12h, 24h)
+    const byDuration = filteredShifts.reduce((acc, shift) => {
+      const hours = shift.hours || 0;
+      const key = `${hours}h`;
+      if (!acc[key]) {
+        acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0 };
+      }
+      acc[key].count++;
+      acc[key].hours += hours;
+      acc[key].value += shift.value || 0;
+      return acc;
+    }, {});
+    
+    // Calcular média para cada duração
+    Object.keys(byDuration).forEach(key => {
+      byDuration[key].avgValue = byDuration[key].value / byDuration[key].count;
+      byDuration[key].valuePerHour = byDuration[key].hours > 0 ? byDuration[key].value / byDuration[key].hours : 0;
+    });
+    
+    return { total, paid, pending: total - paid, hours, count: filteredShifts.length, valuePerHour, byType, byDuration };
   }, [filteredShifts]);
 
   const monthlyData = useMemo(() => {
@@ -294,18 +314,56 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
         <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-          <Calculator className="text-purple-600" /> Valor Médio por Hora
+          <Calculator className="text-purple-600" /> Análise por Duração de Plantão
         </h3>
-        <div className="flex items-baseline gap-3">
-          <span className="text-purple-200 font-bold text-2xl">R$</span>
-          <p className="text-6xl font-black text-purple-600 tracking-tight">
-            {stats.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <span className="text-purple-400 font-black text-xl">/h</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {Object.entries(stats.byDuration).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).map(([duration, data]) => (
+            <div key={duration} className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl border border-purple-100">
+              <p className="text-xs font-black text-purple-600 uppercase tracking-wider mb-3">Plantões de {duration}</p>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold">Quantidade</p>
+                  <p className="text-2xl font-black text-slate-900">{data.count} plantões</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold">Valor Médio</p>
+                  <p className="text-lg font-black text-green-600">
+                    R$ {data.avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-500 font-bold">Valor/Hora Efetivo</p>
+                  <p className="text-lg font-black text-blue-600">
+                    R$ {data.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-purple-200">
+                  <p className="text-[10px] text-slate-500 font-bold">Total Faturado</p>
+                  <p className="text-xl font-black text-purple-600">
+                    R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-        <p className="text-sm text-slate-500 mt-4">
-          Baseado em {stats.hours} horas trabalhadas • {stats.count} plantões
-        </p>
+        <div className="bg-purple-600 p-6 rounded-2xl text-white flex items-center justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wider opacity-80 mb-2">Valor Médio Geral por Hora</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold">R$</span>
+              <p className="text-5xl font-black tracking-tight">
+                {stats.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <span className="text-2xl font-black">/h</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-bold opacity-80">Baseado em</p>
+            <p className="text-2xl font-black">{stats.hours}h</p>
+            <p className="text-xs font-bold opacity-80 mt-1">{stats.count} plantões</p>
+          </div>
+        </div>
       </div>
 
       <FinanceCharts stats={stats} monthlyData={monthlyData} />

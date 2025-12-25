@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function PricingSettings({ user, showToast }) {
   const [hourlyRate, setHourlyRate] = useState(150);
+  const [shift12hValue, setShift12hValue] = useState(1800);
   const [shift24hValue, setShift24hValue] = useState(3000);
   const [loading, setLoading] = useState(true);
 
@@ -15,6 +16,7 @@ export default function PricingSettings({ user, showToast }) {
       try {
         const userData = await base44.auth.me();
         setHourlyRate(userData.hourlyRate || 150);
+        setShift12hValue(userData.shift12hValue || 1800);
         setShift24hValue(userData.shift24hValue || 3000);
       } catch (e) {
         console.error('Error loading settings:', e);
@@ -37,11 +39,12 @@ export default function PricingSettings({ user, showToast }) {
 
   const handleSave = (e) => {
     e.preventDefault();
-    updateSettingsMutation.mutate({ hourlyRate, shift24hValue });
+    updateSettingsMutation.mutate({ hourlyRate, shift12hValue, shift24hValue });
   };
 
   const calculateShiftValue = (hours) => {
     if (hours === 24) return shift24hValue;
+    if (hours === 12) return shift12hValue;
     return Math.round(hourlyRate * hours);
   };
 
@@ -60,7 +63,7 @@ export default function PricingSettings({ user, showToast }) {
       </h3>
       
       <form onSubmit={handleSave} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
               Valor por Hora (R$)
@@ -73,6 +76,22 @@ export default function PricingSettings({ user, showToast }) {
               min="0"
               step="10"
             />
+            <p className="text-[9px] text-slate-500 ml-1">Base para cálculo de 6h, 18h, etc.</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
+              Valor Plantão 12h (R$)
+            </label>
+            <input
+              type="number"
+              value={shift12hValue}
+              onChange={(e) => setShift12hValue(Number(e.target.value))}
+              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600"
+              min="0"
+              step="100"
+            />
+            <p className="text-[9px] text-slate-500 ml-1">Referência para 12h Dia/Noite</p>
           </div>
 
           <div className="space-y-2">
@@ -87,6 +106,7 @@ export default function PricingSettings({ user, showToast }) {
               min="0"
               step="100"
             />
+            <p className="text-[9px] text-slate-500 ml-1">Valor fixo para 24h</p>
           </div>
         </div>
 

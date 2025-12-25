@@ -17,7 +17,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     paid: false,
     hours: 12
   });
-  const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift24hValue: 3000 });
+  const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift12hValue: 1800, shift24hValue: 3000 });
 
   useEffect(() => {
     const loadUserSettings = async () => {
@@ -25,6 +25,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
         const user = await base44.auth.me();
         setUserSettings({
           hourlyRate: user.hourlyRate || 150,
+          shift12hValue: user.shift12hValue || 1800,
           shift24hValue: user.shift24hValue || 3000
         });
       } catch (e) {
@@ -59,7 +60,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
 
   const handleTypeChange = (val) => {
     let h = 12;
-    let calculatedValue = userSettings.hourlyRate * 12;
+    let calculatedValue = userSettings.shift12hValue;
     
     if (val === "24h") {
       h = 24;
@@ -69,7 +70,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
       calculatedValue = userSettings.hourlyRate * 6;
     } else if (val.includes("12h")) {
       h = 12;
-      calculatedValue = userSettings.hourlyRate * 12;
+      calculatedValue = userSettings.shift12hValue;
     }
     
     setNewShift({ ...newShift, type: val, hours: h, value: Math.round(calculatedValue) });
@@ -77,6 +78,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
 
   const calculateSuggestedValue = () => {
     if (newShift.hours === 24) return userSettings.shift24hValue;
+    if (newShift.hours === 12) return userSettings.shift12hValue;
     return Math.round(userSettings.hourlyRate * newShift.hours);
   };
 
