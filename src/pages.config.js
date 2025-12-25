@@ -1,17 +1,17 @@
-import Shifts from './pages/Shifts';
-import Finance from './pages/Finance';
 import Doctors from './pages/Doctors';
+import Finance from './pages/Finance';
 import Hospitals from './pages/Hospitals';
 import Settings from './pages/Settings';
+import Shifts from './pages/Shifts';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Shifts": Shifts,
-    "Finance": Finance,
     "Doctors": Doctors,
+    "Finance": Finance,
     "Hospitals": Hospitals,
     "Settings": Settings,
+    "Shifts": Shifts,
 }
 
 export const pagesConfig = {
