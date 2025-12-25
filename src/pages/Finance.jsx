@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle } from 'lucide-react';
+import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
 import DiscountsModule from '@/components/finance/DiscountsModule';
 import ExtraIncomeModule from '@/components/finance/ExtraIncomeModule';
 import DepositsModule from '@/components/finance/DepositsModule';
+import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -23,6 +24,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     paid: 'TODOS'
   });
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: shifts = [] } = useQuery({
@@ -84,6 +86,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     queryFn: () => base44.entities.Deposit.list('-date'),
   });
 
+  const { data: manualPayments = [] } = useQuery({
+    queryKey: ['manualPayments'],
+    queryFn: () => base44.entities.ManualPayment.list('-date'),
+  });
+
+  const createManualPaymentMutation = useMutation({
+    mutationFn: (data) => base44.entities.ManualPayment.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['manualPayments'] });
+    },
+  });
+
   const totalDiscounts = useMemo(() => {
     return discounts
       .filter(d => {
@@ -126,6 +140,20 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       .reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
   }, [deposits, currentMonth, currentYear, filters]);
 
+  const totalManualPayments = useMemo(() => {
+    return manualPayments
+      .filter(payment => {
+        const [year, month] = payment.date.split('-').map(Number);
+        if (filters.startDate && payment.date < filters.startDate) return false;
+        if (filters.endDate && payment.date > filters.endDate) return false;
+        if (!filters.startDate && !filters.endDate) {
+          if (month !== currentMonth + 1 || year !== currentYear) return false;
+        }
+        return true;
+      })
+      .reduce((acc, payment) => acc + (Number(payment.value) || 0), 0);
+  }, [manualPayments, currentMonth, currentYear, filters]);
+
   const stats = useMemo(() => {
     // Valores de referência das definições
     const shift12hValue = user?.shift12hValue || 1800;
@@ -149,6 +177,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     
     const grossTotal = totalByConfig + totalExtraIncome;
     const netTotal = grossTotal - totalDiscounts;
+    const pending = totalByConfig - paid - totalManualPayments;
     const valuePerHour = hours > 0 ? netTotal / hours : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
@@ -216,15 +245,16 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       netTotal,
       totalDiscounts,
       totalDepositsAmount,
+      totalManualPayments,
       paid, 
-      pending: totalByConfig - paid, 
+      pending, 
       hours, 
       count: filteredShifts.length, 
       valuePerHour,
       byType, 
       byDuration 
     };
-  }, [filteredShifts, user, totalDiscounts, totalExtraIncome, totalDepositsAmount]);
+  }, [filteredShifts, user, totalDiscounts, totalExtraIncome, totalDepositsAmount, totalManualPayments]);
 
   const monthlyData = useMemo(() => {
     const monthsData = {};
@@ -500,7 +530,16 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="p-2 hover:bg-green-50 rounded-xl transition-colors"
+              title="Registar pagamento recebido"
+            >
+              <HandCoins size={16} className="text-green-600" />
+            </button>
+          </div>
           <p className="text-[11px] font-black text-amber-500 uppercase tracking-[0.2em]">Valor Pendente</p>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-amber-200 font-bold text-xl">R$</span>
@@ -509,6 +548,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           <div className="mt-6 flex items-center gap-2 text-amber-600 text-[10px] font-black uppercase">
             <Clock size={14}/> Aguardando pagamento
           </div>
+          {stats.totalManualPayments > 0 && (
+            <div className="mt-2 text-[9px] text-green-600 font-bold">
+              Abatido: R$ {stats.totalManualPayments.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          )}
         </div>
 
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
@@ -620,6 +664,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         currentMonth={currentMonth}
         currentYear={currentYear}
         showToast={(msg) => {}}
+      />
+
+      <ManualPaymentModal 
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSave={(data) => createManualPaymentMutation.mutate(data)}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
