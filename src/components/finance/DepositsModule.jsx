@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Wallet, Trash2, Calendar } from 'lucide-react';
+import { Plus, Wallet, Trash2, Calendar, Upload, Sparkles } from 'lucide-react';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 
 export default function DepositsModule({ currentMonth, currentYear, showToast }) {
@@ -12,6 +12,7 @@ export default function DepositsModule({ currentMonth, currentYear, showToast })
     value: 0
   });
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
+  const [isExtracting, setIsExtracting] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -55,6 +56,45 @@ export default function DepositsModule({ currentMonth, currentYear, showToast })
     createDepositMutation.mutate(newDeposit);
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsExtracting(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: "object",
+          properties: {
+            date: { type: "string", description: "Data do depósito no formato YYYY-MM-DD" },
+            value: { type: "number", description: "Valor do depósito em número" },
+            description: { type: "string", description: "Descrição ou observações sobre o depósito" }
+          },
+          required: ["date", "value"]
+        }
+      });
+
+      if (result.status === 'success' && result.output) {
+        setNewDeposit({
+          date: result.output.date || new Date().toISOString().split('T')[0],
+          value: result.output.value || 0,
+          description: result.output.description || ''
+        });
+        showToast('Dados extraídos com sucesso!');
+      } else {
+        showToast('Erro ao extrair dados do comprovante');
+      }
+    } catch (error) {
+      showToast('Erro ao processar arquivo');
+    } finally {
+      setIsExtracting(false);
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -72,6 +112,30 @@ export default function DepositsModule({ currentMonth, currentYear, showToast })
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-blue-50 p-6 rounded-2xl mb-6 border border-blue-100">
+          <div className="mb-4">
+            <label className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black text-xs uppercase cursor-pointer hover:from-blue-700 hover:to-indigo-700 transition-all">
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isExtracting}
+              />
+              {isExtracting ? (
+                <>
+                  <Sparkles size={16} className="animate-spin" />
+                  A extrair dados...
+                </>
+              ) : (
+                <>
+                  <Upload size={16} />
+                  Carregar Comprovante (IA)
+                </>
+              )}
+            </label>
+            <p className="text-[9px] text-slate-500 text-center mt-2">JPG, PNG ou PDF • A IA extrairá data e valor automaticamente</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Data</label>
