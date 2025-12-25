@@ -75,11 +75,12 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(s => {
-      const d = new Date(s.date);
-      const matchMonth = d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      // Extrai ano e mês diretamente da string YYYY-MM-DD para evitar problemas de timezone
+      const [year, month] = s.date.split('-').map(Number);
+      const matchMonth = month === currentMonth + 1 && year === currentYear;
       const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
       return matchMonth && matchSpecialty;
-    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    }).sort((a, b) => b.date.localeCompare(a.date));
   }, [shifts, currentMonth, currentYear, filterSpecialty]);
 
   const calendarDays = useMemo(() => {
