@@ -27,7 +27,7 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift }) {
                 </div>
               </td>
               <td className="px-6 py-5 font-black text-right">
-                €{Number(s.value).toLocaleString('pt-PT')}
+                R$ {Number(s.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </td>
               <td className="px-6 py-5 text-center">
                 <button 

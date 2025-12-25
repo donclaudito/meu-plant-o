@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save } from 'lucide-react';
+import { X, Save, Calculator } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const specialties = [
   "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "OUTRA"
@@ -16,6 +17,22 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     paid: false,
     hours: 12
   });
+  const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift24hValue: 3000 });
+
+  useEffect(() => {
+    const loadUserSettings = async () => {
+      try {
+        const user = await base44.auth.me();
+        setUserSettings({
+          hourlyRate: user.hourlyRate || 150,
+          shift24hValue: user.shift24hValue || 3000
+        });
+      } catch (e) {
+        console.error('Error loading user settings:', e);
+      }
+    };
+    loadUserSettings();
+  }, []);
 
   useEffect(() => {
     if (initialDate) {
@@ -42,9 +59,25 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
 
   const handleTypeChange = (val) => {
     let h = 12;
-    if (val === "24h") h = 24;
-    else if (val.includes("6h")) h = 6;
-    setNewShift({ ...newShift, type: val, hours: h });
+    let calculatedValue = userSettings.hourlyRate * 12;
+    
+    if (val === "24h") {
+      h = 24;
+      calculatedValue = userSettings.shift24hValue;
+    } else if (val.includes("6h")) {
+      h = 6;
+      calculatedValue = userSettings.hourlyRate * 6;
+    } else if (val.includes("12h")) {
+      h = 12;
+      calculatedValue = userSettings.hourlyRate * 12;
+    }
+    
+    setNewShift({ ...newShift, type: val, hours: h, value: Math.round(calculatedValue) });
+  };
+
+  const calculateSuggestedValue = () => {
+    if (newShift.hours === 24) return userSettings.shift24hValue;
+    return Math.round(userSettings.hourlyRate * newShift.hours);
   };
 
   if (!isOpen) return null;
@@ -71,7 +104,16 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Valor (€)</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center justify-between">
+                <span>Valor (R$)</span>
+                <button
+                  type="button"
+                  onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
+                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-[9px]"
+                >
+                  <Calculator size={10} /> Auto
+                </button>
+              </label>
               <input 
                 type="number" 
                 required 
@@ -79,6 +121,11 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
                 className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600" 
               />
+              {calculateSuggestedValue() !== newShift.value && (
+                <p className="text-[9px] text-slate-500 ml-1">
+                  Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
+                </p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

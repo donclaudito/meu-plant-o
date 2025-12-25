@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download } from 'lucide-react';
+import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator } from 'lucide-react';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -25,7 +25,21 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const total = filteredShifts.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
     const paid = filteredShifts.filter(s => s.paid).reduce((acc, curr) => acc + (Number(curr.value) || 0), 0);
     const hours = filteredShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
-    return { total, paid, pending: total - paid, hours, count: filteredShifts.length };
+    const valuePerHour = hours > 0 ? total / hours : 0;
+    
+    // Breakdown by shift type
+    const byType = filteredShifts.reduce((acc, shift) => {
+      const type = shift.type || 'Outro';
+      if (!acc[type]) {
+        acc[type] = { count: 0, hours: 0, value: 0 };
+      }
+      acc[type].count++;
+      acc[type].hours += shift.hours || 0;
+      acc[type].value += shift.value || 0;
+      return acc;
+    }, {});
+    
+    return { total, paid, pending: total - paid, hours, count: filteredShifts.length, valuePerHour, byType };
   }, [filteredShifts]);
 
   const exportToCSV = () => {
@@ -64,8 +78,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
           <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Faturamento Total</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-slate-400 font-bold text-xl">€</span>
-            <p className="text-5xl font-black text-slate-900 tracking-tight">{stats.total.toLocaleString('pt-PT')}</p>
+            <span className="text-slate-400 font-bold text-xl">R$</span>
+            <p className="text-5xl font-black text-slate-900 tracking-tight">{stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-blue-600 text-[10px] font-black uppercase">
             <TrendingUp size={14}/> Baseado em {stats.count} plantões
@@ -75,8 +89,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
           <p className="text-[11px] font-black text-green-500 uppercase tracking-[0.2em]">Valor Liquidado</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-200 font-bold text-xl">€</span>
-            <p className="text-5xl font-black text-green-600 tracking-tight">{stats.paid.toLocaleString('pt-PT')}</p>
+            <span className="text-green-200 font-bold text-xl">R$</span>
+            <p className="text-5xl font-black text-green-600 tracking-tight">{stats.paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-green-600 text-[10px] font-black uppercase">
             <CheckCircle size={14}/> Valores confirmados
@@ -86,8 +100,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
           <p className="text-[11px] font-black text-amber-500 uppercase tracking-[0.2em]">Valor Pendente</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-amber-200 font-bold text-xl">€</span>
-            <p className="text-5xl font-black text-amber-600 tracking-tight">{stats.pending.toLocaleString('pt-PT')}</p>
+            <span className="text-amber-200 font-bold text-xl">R$</span>
+            <p className="text-5xl font-black text-amber-600 tracking-tight">{stats.pending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-amber-600 text-[10px] font-black uppercase">
             <Clock size={14}/> Aguardando pagamento
@@ -103,6 +117,46 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           <div className="mt-6 flex items-center gap-2 text-purple-600 text-[10px] font-black uppercase">
             <PieChart size={14}/> Total de horas trabalhadas
           </div>
+        </div>
+      </div>
+
+      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+        <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+          <Calculator className="text-purple-600" /> Valor Médio por Hora
+        </h3>
+        <div className="flex items-baseline gap-3">
+          <span className="text-purple-200 font-bold text-2xl">R$</span>
+          <p className="text-6xl font-black text-purple-600 tracking-tight">
+            {stats.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <span className="text-purple-400 font-black text-xl">/h</span>
+        </div>
+        <p className="text-sm text-slate-500 mt-4">
+          Baseado em {stats.hours} horas trabalhadas este mês
+        </p>
+      </div>
+
+      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+        <h3 className="text-xl font-black mb-6">Breakdown por Tipo de Plantão</h3>
+        <div className="space-y-4">
+          {Object.entries(stats.byType).map(([type, data]) => (
+            <div key={type} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+              <div>
+                <p className="font-black text-slate-900">{type}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {data.count} plantão{data.count !== 1 ? 'es' : ''} • {data.hours}h
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-black text-lg text-slate-900">
+                  R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-slate-500">
+                  R$ {(data.value / data.hours).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

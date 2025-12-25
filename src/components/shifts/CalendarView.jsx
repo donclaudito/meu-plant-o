@@ -82,7 +82,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           <div className="truncate uppercase">{s.unit}</div>
                           <div className="flex justify-between mt-1 opacity-70">
                             <span>{s.hours}h</span>
-                            <span>€{s.value}</span>
+                            <span>R${s.value}</span>
                           </div>
                         </div>
                       </div>
@@ -100,7 +100,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                         <p className="text-[10px] opacity-60 mb-3">{s.unit} • {s.type}</p>
                         <div className="grid grid-cols-2 gap-3 text-[10px] font-black">
                           <div className="flex items-center gap-1.5 text-blue-300"><Clock size={12}/> {s.hours}h</div>
-                          <div className="flex items-center gap-1.5 text-green-400"><Euro size={12}/> {s.value}</div>
+                          <div className="flex items-center gap-1.5 text-green-400">R$ {s.value}</div>
                         </div>
                         <div className="mt-3 pt-3 border-t border-white/10 text-[9px] text-white/50 font-medium flex items-center gap-1">
                           <GripVertical size={10} /> Arraste para mover

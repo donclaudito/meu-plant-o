@@ -34,6 +34,7 @@ export default function Layout({ children, currentPageName }) {
     { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
     { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
     { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
+    { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
   ];
 
   const childWithProps = React.Children.map(children, child => {
