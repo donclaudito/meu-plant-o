@@ -122,9 +122,42 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     updateShiftMutation.mutate({ id, data: { date: newDate } });
   };
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayShifts = shifts.filter(s => s.date === todayStr);
+  const upcomingShifts = shifts.filter(s => s.date > todayStr).sort((a, b) => a.date.localeCompare(b.date));
+  const nextShift = upcomingShifts[0];
+
   return (
     <div className="animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
+
+      {todayShifts.length > 0 ? (
+        <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white p-4 rounded-2xl mb-6 shadow-lg animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
+            <div>
+              <p className="font-black text-sm uppercase tracking-wide">Hoje você está de plantão!</p>
+              <p className="text-xs opacity-90 mt-1">
+                {todayShifts.map((s, i) => (
+                  <span key={s.id}>
+                    {s.unit} ({s.type})
+                    {i < todayShifts.length - 1 ? ' • ' : ''}
+                  </span>
+                ))}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-2xl mb-6 shadow-lg">
+          <p className="font-black text-sm uppercase tracking-wide">Hoje é dia de descanso. Aproveite a sua folga!</p>
+          {nextShift && (
+            <p className="text-xs opacity-90 mt-2">
+              Próximo plantão: {new Date(nextShift.date + 'T00:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' })} • {nextShift.unit} ({nextShift.type})
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex gap-2 items-center">
