@@ -8,7 +8,7 @@ const specialties = [
 
 export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals, initialDate }) {
   const [newShift, setNewShift] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     unit: '',
     doctorName: '',
     specialty: 'CIRURGIA GERAL',
@@ -36,10 +36,14 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
   }, []);
 
   useEffect(() => {
-    if (initialDate) {
-      setNewShift(prev => ({ ...prev, date: initialDate }));
+    if (isOpen) {
+      if (initialDate) {
+        setNewShift(prev => ({ ...prev, date: initialDate }));
+      } else {
+        setNewShift(prev => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
+      }
     }
-  }, [initialDate]);
+  }, [isOpen, initialDate]);
 
   const doctorsBySpecialty = doctors.filter(d => d.specialty === newShift.specialty);
 
