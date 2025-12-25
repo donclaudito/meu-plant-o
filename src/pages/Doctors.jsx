@@ -14,6 +14,7 @@ export default function Doctors() {
   const [newDoctor, setNewDoctor] = useState({ name: '', specialty: 'CIRURGIA GERAL', phone: '' });
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
+  const [selectedDoctors, setSelectedDoctors] = useState([]);
 
   const queryClient = useQueryClient();
 
@@ -40,6 +41,17 @@ export default function Doctors() {
     },
   });
 
+  const deleteDoctorsMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.entities.Doctor.delete(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      setSelectedDoctors([]);
+      showToast('Médicos eliminados!');
+    },
+  });
+
   const showToast = (text, type = 'success') => {
     setMessage({ text, type });
     setTimeout(() => setMessage(null), 3000);
@@ -48,6 +60,27 @@ export default function Doctors() {
   const handleSubmit = (e) => {
     e.preventDefault();
     createDoctorMutation.mutate(newDoctor);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedDoctors.length === doctors.length) {
+      setSelectedDoctors([]);
+    } else {
+      setSelectedDoctors(doctors.map(d => d.id));
+    }
+  };
+
+  const toggleSelectDoctor = (id) => {
+    setSelectedDoctors(prev => 
+      prev.includes(id) ? prev.filter(docId => docId !== id) : [...prev, id]
+    );
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedDoctors.length === 0) return;
+    if (confirm(`Eliminar ${selectedDoctors.length} médico(s) selecionado(s)?`)) {
+      deleteDoctorsMutation.mutate(selectedDoctors);
+    }
   };
 
   return (
@@ -88,26 +121,58 @@ export default function Doctors() {
         <ImportDoctors showToast={showToast} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {doctors.map(d => (
-          <div key={d.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 flex justify-between items-center group shadow-sm hover:shadow-md transition-all">
-            <div>
-              <p className="font-black text-slate-900">{d.name}</p>
-              <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{d.specialty}</p>
+      <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-black">Lista de Médicos</h3>
+          {doctors.length > 0 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleSelectAll}
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 px-3 py-2 rounded-xl hover:bg-blue-50 transition-colors"
+              >
+                {selectedDoctors.length === doctors.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
+              </button>
+              {selectedDoctors.length > 0 && (
+                <button
+                  onClick={handleDeleteSelected}
+                  disabled={deleteDoctorsMutation.isPending}
+                  className="flex items-center gap-2 text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+                >
+                  <Trash2 size={14} />
+                  Eliminar ({selectedDoctors.length})
+                </button>
+              )}
             </div>
-            <button 
-              onClick={() => setDeleteConfirmation({ isOpen: true, id: d.id, name: d.name })} 
-              className="p-2 text-slate-200 hover:text-red-500 transition-all"
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        ))}
-        {doctors.length === 0 && (
-          <div className="col-span-full text-center py-12 text-slate-400 font-medium">
-            Nenhum médico cadastrado
-          </div>
-        )}
+          )}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {doctors.map(d => (
+            <div key={d.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center gap-3 group hover:bg-blue-50 transition-all">
+              <input
+                type="checkbox"
+                checked={selectedDoctors.includes(d.id)}
+                onChange={() => toggleSelectDoctor(d.id)}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-slate-900 truncate">{d.name}</p>
+                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{d.specialty}</p>
+              </div>
+              <button 
+                onClick={() => setDeleteConfirmation({ isOpen: true, id: d.id, name: d.name })} 
+                className="p-2 text-slate-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+          {doctors.length === 0 && (
+            <div className="col-span-full text-center py-12 text-slate-400 font-medium">
+              Nenhum médico cadastrado
+            </div>
+          )}
+        </div>
       </div>
 
       <DeleteConfirmation 
