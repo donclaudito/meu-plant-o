@@ -5,6 +5,16 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
   const today = new Date();
   const [draggedShift, setDraggedShift] = useState(null);
 
+  const getShiftColor = (shift) => {
+    const type = shift.type;
+    if (type === '6h Dia') return 'bg-sky-100 border-sky-200 text-sky-700';
+    if (type === '6h Noite') return 'bg-indigo-100 border-indigo-200 text-indigo-700';
+    if (type === '12h Dia') return 'bg-amber-100 border-amber-200 text-amber-700';
+    if (type === '12h Noite') return 'bg-purple-100 border-purple-200 text-purple-700';
+    if (type === '24h') return 'bg-rose-100 border-rose-200 text-rose-700';
+    return 'bg-slate-100 border-slate-200 text-slate-700';
+  };
+
   const handleDragStart = (e, shift) => {
     setDraggedShift(shift);
     e.dataTransfer.effectAllowed = 'move';
@@ -32,7 +42,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
   return (
     <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm mb-8 overflow-hidden">
       <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50 rounded-t-[2.5rem]">
-        {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
+        {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => (
           <div key={d} className="py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
             {d}
           </div>
@@ -73,10 +83,8 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 ${
-                        s.paid 
-                          ? 'bg-green-50 border-green-100 text-green-700' 
-                          : 'bg-amber-50 border-amber-100 text-amber-700'
-                      } ${draggedShift?.id === s.id ? 'opacity-40' : ''}`}>
+                        getShiftColor(s)
+                      } ${s.paid ? 'ring-2 ring-green-500/40' : ''} ${draggedShift?.id === s.id ? 'opacity-40' : ''}`}>
                         <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <div className="truncate uppercase">{s.unit}</div>
