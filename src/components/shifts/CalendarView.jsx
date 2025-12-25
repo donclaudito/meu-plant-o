@@ -4,6 +4,7 @@ import { Clock, Euro, Trash2, GripVertical } from 'lucide-react';
 export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift, onUpdateShiftDate }) {
   const today = new Date();
   const [draggedShift, setDraggedShift] = useState(null);
+  const [activeTooltip, setActiveTooltip] = useState(null);
 
   const getShiftColor = (shift) => {
     const type = shift.type;
@@ -58,6 +59,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
             className={`min-h-[140px] p-2 border-r border-b border-slate-100 transition-colors ${
               item.day ? 'hover:bg-blue-50/30 cursor-pointer' : 'bg-slate-50/30'
             } ${draggedShift && item.day ? 'bg-blue-50/20' : ''}`}
+            style={{ position: 'relative', zIndex: activeTooltip?.cellIdx === idx ? 100 : 1 }}
           >
             {item.day && (
               <>
@@ -76,11 +78,13 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                   {item.shifts.map(s => (
                     <div 
                       key={s.id} 
-                      className="group relative"
+                      className="relative"
                       draggable
                       onDragStart={(e) => handleDragStart(e, s)}
                       onDragEnd={handleDragEnd}
                       onClick={(e) => e.stopPropagation()}
+                      onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
+                      onMouseLeave={() => setActiveTooltip(null)}
                     >
                       <div className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 ${
                         getShiftColor(s)
@@ -94,27 +98,33 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           </div>
                         </div>
                       </div>
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] pointer-events-none group-hover:pointer-events-auto">
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-[10px] font-black text-blue-400 uppercase">Detalhes</span>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); onDeleteShift(s.id, s.unit); }} 
-                            className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-400/10"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                      {activeTooltip?.shiftId === s.id && (
+                        <div 
+                          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200"
+                          onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
+                          onMouseLeave={() => setActiveTooltip(null)}
+                        >
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-[10px] font-black text-blue-400 uppercase">Detalhes</span>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); onDeleteShift(s.id, s.unit); setActiveTooltip(null); }} 
+                              className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-400/10"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <p className="text-xs font-bold leading-tight mb-1 text-white">{s.doctorName}</p>
+                          <p className="text-[10px] opacity-60 mb-3">{s.unit} • {s.type}</p>
+                          <div className="grid grid-cols-2 gap-3 text-[10px] font-black">
+                            <div className="flex items-center gap-1.5 text-blue-300"><Clock size={12}/> {s.hours}h</div>
+                            <div className="flex items-center gap-1.5 text-green-400">R$ {s.value}</div>
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-white/10 text-[9px] text-white/50 font-medium flex items-center gap-1">
+                            <GripVertical size={10} /> Arraste para mover
+                          </div>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
                         </div>
-                        <p className="text-xs font-bold leading-tight mb-1 text-white">{s.doctorName}</p>
-                        <p className="text-[10px] opacity-60 mb-3">{s.unit} • {s.type}</p>
-                        <div className="grid grid-cols-2 gap-3 text-[10px] font-black">
-                          <div className="flex items-center gap-1.5 text-blue-300"><Clock size={12}/> {s.hours}h</div>
-                          <div className="flex items-center gap-1.5 text-green-400">R$ {s.value}</div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-white/10 text-[9px] text-white/50 font-medium flex items-center gap-1">
-                          <GripVertical size={10} /> Arraste para mover
-                        </div>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
-                      </div>
+                      )}
                     </div>
                   ))}
                 </div>
