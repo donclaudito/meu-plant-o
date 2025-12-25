@@ -75,7 +75,9 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                   </span>
                 </div>
                 <div className="space-y-1">
-                  {item.shifts.map(s => (
+                  {item.shifts.map((s, shiftIdx) => {
+                    const isTopRows = Math.floor(idx / 7) < 2;
+                    return (
                     <div 
                       key={s.id} 
                       className="relative"
@@ -100,7 +102,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                       </div>
                       {activeTooltip?.shiftId === s.id && (
                         <div 
-                          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200"
+                          className={`absolute left-1/2 -translate-x-1/2 ${isTopRows ? 'top-full mt-2' : 'bottom-full mb-2'} w-56 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200`}
                           onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
                           onMouseLeave={() => setActiveTooltip(null)}
                         >
@@ -122,11 +124,12 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           <div className="mt-3 pt-3 border-t border-white/10 text-[9px] text-white/50 font-medium flex items-center gap-1">
                             <GripVertical size={10} /> Arraste para mover
                           </div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+                          <div className={`absolute ${isTopRows ? 'bottom-full' : 'top-full'} left-1/2 -translate-x-1/2 border-8 border-transparent ${isTopRows ? 'border-b-slate-900' : 'border-t-slate-900'}`}></div>
                         </div>
                       )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}

@@ -5,6 +5,8 @@ import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator,
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
 import DiscountsModule from '@/components/finance/DiscountsModule';
+import ExtraIncomeModule from '@/components/finance/ExtraIncomeModule';
+import DepositsModule from '@/components/finance/DepositsModule';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -72,19 +74,57 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     queryFn: () => base44.entities.Discount.list('-date'),
   });
 
+  const { data: extraIncomes = [] } = useQuery({
+    queryKey: ['extraIncomes'],
+    queryFn: () => base44.entities.ExtraIncome.list('-date'),
+  });
+
+  const { data: deposits = [] } = useQuery({
+    queryKey: ['deposits'],
+    queryFn: () => base44.entities.Deposit.list('-date'),
+  });
+
   const totalDiscounts = useMemo(() => {
     return discounts
       .filter(d => {
-        const date = new Date(d.date);
+        const [year, month] = d.date.split('-').map(Number);
         if (filters.startDate && d.date < filters.startDate) return false;
         if (filters.endDate && d.date > filters.endDate) return false;
         if (!filters.startDate && !filters.endDate) {
-          if (date.getMonth() !== currentMonth || date.getFullYear() !== currentYear) return false;
+          if (month !== currentMonth + 1 || year !== currentYear) return false;
         }
         return true;
       })
       .reduce((acc, d) => acc + (Number(d.value) || 0), 0);
   }, [discounts, currentMonth, currentYear, filters]);
+
+  const totalExtraIncome = useMemo(() => {
+    return extraIncomes
+      .filter(income => {
+        const [year, month] = income.date.split('-').map(Number);
+        if (filters.startDate && income.date < filters.startDate) return false;
+        if (filters.endDate && income.date > filters.endDate) return false;
+        if (!filters.startDate && !filters.endDate) {
+          if (month !== currentMonth + 1 || year !== currentYear) return false;
+        }
+        return true;
+      })
+      .reduce((acc, income) => acc + (Number(income.value) || 0), 0);
+  }, [extraIncomes, currentMonth, currentYear, filters]);
+
+  const totalDepositsAmount = useMemo(() => {
+    return deposits
+      .filter(deposit => {
+        const [year, month] = deposit.date.split('-').map(Number);
+        if (filters.startDate && deposit.date < filters.startDate) return false;
+        if (filters.endDate && deposit.date > filters.endDate) return false;
+        if (!filters.startDate && !filters.endDate) {
+          if (month !== currentMonth + 1 || year !== currentYear) return false;
+        }
+        return true;
+      })
+      .reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
+  }, [deposits, currentMonth, currentYear, filters]);
 
   const stats = useMemo(() => {
     // Valores de referência das definições
@@ -107,7 +147,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return acc + (calculatedHourlyRate * (shift.hours || 0));
     }, 0);
     
-    const netTotal = totalByConfig - totalDiscounts;
+    const grossTotal = totalByConfig + totalExtraIncome;
+    const netTotal = grossTotal - totalDiscounts;
     const valuePerHour = hours > 0 ? netTotal / hours : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
@@ -170,8 +211,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     
     return { 
       total: totalByConfig,
+      grossTotal,
+      totalExtraIncome,
       netTotal,
       totalDiscounts,
+      totalDepositsAmount,
       paid, 
       pending: totalByConfig - paid, 
       hours, 
@@ -180,7 +224,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       byType, 
       byDuration 
     };
-  }, [filteredShifts, user, totalDiscounts]);
+  }, [filteredShifts, user, totalDiscounts, totalExtraIncome, totalDepositsAmount]);
 
   const monthlyData = useMemo(() => {
     const monthsData = {};
@@ -391,13 +435,35 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
               <RefreshCw size={16} className={`text-blue-600 ${isRecalculating ? 'animate-spin' : ''}`} />
             </button>
           </div>
-          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Faturamento Bruto</p>
+          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Plantões</p>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-slate-400 font-bold text-xl">R$</span>
             <p className="text-4xl font-black text-slate-900 tracking-tight">{stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-blue-600 text-[10px] font-black uppercase">
             <TrendingUp size={14}/> {stats.count} plantões
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[2.5rem] border border-green-100 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-green-600 uppercase tracking-[0.2em]">Receitas Extras</p>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-green-300 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-green-700 tracking-tight">{stats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="mt-6 flex items-center gap-2 text-green-700 text-[10px] font-black uppercase">
+            <TrendingUp size={14}/> Ambulatório, Cirurgia, Bónus
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-8 rounded-[2.5rem] border-2 border-indigo-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-indigo-700 uppercase tracking-[0.2em]">Faturamento Bruto Total</p>
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-indigo-400 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-indigo-700 tracking-tight">{stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="mt-6 flex items-center gap-2 text-indigo-700 text-[10px] font-black uppercase">
+            <CheckCircle size={14}/> Plantões + Extras
           </div>
         </div>
 
@@ -537,10 +603,23 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
       </div>
 
-      <DiscountsModule 
-        currentMonth={currentMonth} 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <DiscountsModule 
+          currentMonth={currentMonth} 
+          currentYear={currentYear}
+          discountTypes={user?.discountTypes || []}
+        />
+        <ExtraIncomeModule 
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          showToast={(msg) => {}}
+        />
+      </div>
+
+      <DepositsModule 
+        currentMonth={currentMonth}
         currentYear={currentYear}
-        discountTypes={user?.discountTypes || []}
+        showToast={(msg) => {}}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
