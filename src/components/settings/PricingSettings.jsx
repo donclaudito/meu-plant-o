@@ -115,6 +115,10 @@ export default function PricingSettings({ user, showToast }) {
 
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
           <h4 className="text-sm font-black text-blue-900 mb-3">Valores Calculados</h4>
+          <div className="mb-4 p-3 bg-white/70 rounded-xl">
+            <p className="text-[10px] text-slate-500 font-bold mb-1">Valor por Hora Calculado (12h ÷ 12)</p>
+            <p className="text-2xl font-black text-purple-600">R$ {calculatedHourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h</p>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
               <p className="text-[10px] font-bold text-blue-600 uppercase">6h</p>
