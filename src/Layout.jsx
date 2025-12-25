@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { 
@@ -8,7 +8,9 @@ import {
   Stethoscope, 
   Building2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 const monthNames = [
@@ -19,6 +21,19 @@ const monthNames = [
 export default function Layout({ children, currentPageName }) {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
 
   const changeMonth = (offset) => {
     let newMonth = currentMonth + offset;
@@ -45,25 +60,25 @@ export default function Layout({ children, currentPageName }) {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans pb-28">
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans pb-28 transition-colors duration-200">
+      <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link to={createPageUrl('Shifts')} className="flex items-center gap-4 cursor-pointer">
-              <div className="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-200">
+          <div className="flex items-center gap-4 md:gap-8">
+            <Link to={createPageUrl('Shifts')} className="flex items-center gap-3 cursor-pointer">
+              <div className="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
                 <Hospital size={22} />
               </div>
               <h1 className="font-black text-xl tracking-tight hidden sm:block">Meu Plantão</h1>
             </Link>
-            <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+            <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-2xl border border-slate-200 dark:border-slate-600">
               {navItems.map(item => (
                 <Link 
                   key={item.page}
                   to={createPageUrl(item.page)} 
                   className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
                     currentPageName === item.page 
-                      ? 'bg-white shadow-sm text-blue-600' 
-                      : 'text-slate-400 hover:text-slate-600'
+                      ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' 
+                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   {item.label}
@@ -71,16 +86,25 @@ export default function Layout({ children, currentPageName }) {
               ))}
             </nav>
           </div>
-          <div className="flex items-center bg-slate-100 rounded-2xl p-1 border border-slate-200">
-            <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-white rounded-xl transition-all">
-              <ChevronLeft size={20} />
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setDarkMode(!darkMode)}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all"
+              title={darkMode ? 'Modo Claro' : 'Modo Escuro'}
+            >
+              {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600" />}
             </button>
-            <span className="px-4 text-[10px] font-black uppercase min-w-[140px] text-center">
-              {monthNames[currentMonth]} {currentYear}
-            </span>
-            <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-white rounded-xl transition-all">
-              <ChevronRight size={20} />
-            </button>
+            <div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 border border-slate-200 dark:border-slate-600">
+              <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
+                <ChevronLeft size={20} />
+              </button>
+              <span className="px-4 text-[10px] font-black uppercase min-w-[140px] text-center">
+                {monthNames[currentMonth]} {currentYear}
+              </span>
+              <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
+                <ChevronRight size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -90,7 +114,7 @@ export default function Layout({ children, currentPageName }) {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
         {navItems.map(item => {
           const Icon = item.icon;
           return (
@@ -99,8 +123,8 @@ export default function Layout({ children, currentPageName }) {
               to={createPageUrl(item.page)}
               className={`flex flex-col items-center p-3 rounded-2xl transition-all ${
                 currentPageName === item.page 
-                  ? 'text-blue-600 bg-blue-50' 
-                  : 'text-slate-400'
+                  ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' 
+                  : 'text-slate-400 dark:text-slate-500'
               }`}
             >
               <Icon size={22} />

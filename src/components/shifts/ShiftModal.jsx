@@ -80,24 +80,24 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl animate-in zoom-in-95">
-        <div className="p-8 border-b border-slate-100 flex justify-between items-center">
-          <h3 className="font-black text-2xl">Novo Plantão</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+    <div className="fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center md:justify-center p-4 items-end md:items-center">
+      <div className="bg-white dark:bg-slate-800 rounded-t-[2.5rem] md:rounded-[2.5rem] w-full max-w-lg shadow-2xl animate-in slide-in-from-bottom md:zoom-in-95">
+        <div className="p-8 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+          <h3 className="font-black text-2xl dark:text-white">Novo Plantão</h3>
+          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
             <X size={24} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data</label>
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data</label>
               <input 
                 type="date" 
                 required 
                 value={newShift.date} 
                 onChange={e => setNewShift({ ...newShift, date: e.target.value })} 
-                className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600" 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
               />
             </div>
             <div className="space-y-1">

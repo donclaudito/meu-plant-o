@@ -41,10 +41,10 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm mb-8 overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50 rounded-t-[2.5rem]">
+    <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm mb-8 overflow-hidden">
+      <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-t-[2.5rem]">
         {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => (
-          <div key={d} className="py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <div key={d} className="py-4 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
             {d}
           </div>
         ))}
@@ -56,9 +56,9 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
             onClick={() => item.day && onDayClick(item.date)}
             onDragOver={handleDragOver}
             onDrop={(e) => item.day && handleDrop(e, item.date)}
-            className={`min-h-[140px] p-2 border-r border-b border-slate-100 transition-colors ${
-              item.day ? 'hover:bg-blue-50/30 cursor-pointer' : 'bg-slate-50/30'
-            } ${draggedShift && item.day ? 'bg-blue-50/20' : ''}`}
+            className={`min-h-[120px] md:min-h-[140px] p-2 border-r border-b border-slate-100 dark:border-slate-700 transition-colors ${
+              item.day ? 'hover:bg-blue-50/30 dark:hover:bg-blue-900/20 cursor-pointer' : 'bg-slate-50/30 dark:bg-slate-900/30'
+            } ${draggedShift && item.day ? 'bg-blue-50/20 dark:bg-blue-900/20' : ''}`}
             style={{ position: 'relative', zIndex: activeTooltip?.cellIdx === idx ? 100 : 1 }}
           >
             {item.day && (
@@ -68,8 +68,8 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                     item.day === today.getDate() && 
                     currentMonth === today.getMonth() && 
                     currentYear === today.getFullYear()
-                      ? 'bg-blue-600 text-white w-6 h-6 flex items-center justify-center rounded-full shadow-lg'
-                      : 'text-slate-400'
+                      ? 'bg-blue-600 dark:bg-blue-500 text-white w-6 h-6 flex items-center justify-center rounded-full shadow-lg'
+                      : 'text-slate-400 dark:text-slate-500'
                   }`}>
                     {item.day}
                   </span>
@@ -102,7 +102,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                       </div>
                       {activeTooltip?.shiftId === s.id && (
                         <div 
-                          className={`absolute left-1/2 -translate-x-1/2 ${isTopRows ? 'top-full mt-2' : 'bottom-full mb-2'} w-56 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200`}
+                          className={`absolute left-1/2 -translate-x-1/2 ${isTopRows ? 'top-full mt-2' : 'bottom-full mb-2'} w-56 bg-slate-900 dark:bg-slate-950 text-white p-4 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200`}
                           onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
                           onMouseLeave={() => setActiveTooltip(null)}
                         >

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Calendar as CalendarIcon, Filter, List } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Filter, List, X } from 'lucide-react';
 import CalendarView from '@/components/shifts/CalendarView';
 import ListView from '@/components/shifts/ListView';
 import ShiftModal from '@/components/shifts/ShiftModal';
@@ -132,7 +132,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       <Toast message={message?.text} type={message?.type} />
 
       {todayShifts.length > 0 ? (
-        <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white p-4 rounded-2xl mb-6 shadow-lg animate-pulse">
+        <div className="bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 text-white p-4 rounded-2xl mb-6 shadow-lg dark:shadow-red-900/30 animate-pulse">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
             <div>
@@ -149,7 +149,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-2xl mb-6 shadow-lg">
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 text-white p-4 rounded-2xl mb-6 shadow-lg dark:shadow-blue-900/30">
           <p className="font-black text-sm uppercase tracking-wide">Hoje é dia de descanso. Aproveite a sua folga!</p>
           {nextShift && (
             <p className="text-xs opacity-90 mt-2">
@@ -160,36 +160,36 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       )}
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div className="flex gap-2 items-center">
-          <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 w-fit">
-            <div className="p-2 text-slate-400"><Filter size={16}/></div>
+        <div className="flex gap-2 items-center flex-wrap">
+          <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-fit">
+            <div className="p-2 text-slate-400 dark:text-slate-500"><Filter size={16}/></div>
             <select 
               value={filterSpecialty} 
               onChange={e => setFilterSpecialty(e.target.value)}
-              className="bg-transparent text-xs font-black uppercase tracking-widest border-none focus:ring-0 cursor-pointer text-slate-600 pr-8"
+              className="bg-transparent text-xs font-black uppercase tracking-widest border-none focus:ring-0 cursor-pointer text-slate-600 dark:text-slate-300 pr-8"
             >
               <option value="TODAS">TODAS ESPECIALIDADES</option>
               {specialties.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           
-          <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700">
             <button 
               onClick={() => setViewMode('calendar')}
-              className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}
+              className={`p-2 rounded-xl transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
             >
               <CalendarIcon size={18} />
             </button>
             <button 
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`}
+              className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}
             >
               <List size={18} />
             </button>
           </div>
         </div>
         
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+        <div className="hidden md:flex text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm items-center gap-2">
           <CalendarIcon size={14}/> {monthNames[currentMonth]} {currentYear}
         </div>
       </div>
@@ -211,9 +211,18 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         />
       )}
       
+      {/* FAB - Mobile */}
       <button 
         onClick={() => { setSelectedDate(null); setIsModalOpen(true); }}
-        className="w-full bg-slate-900 text-white font-black py-5 rounded-[2rem] hover:bg-slate-800 transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 uppercase tracking-widest text-sm"
+        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center z-40"
+      >
+        <Plus size={24} strokeWidth={3} />
+      </button>
+
+      {/* Desktop Button */}
+      <button 
+        onClick={() => { setSelectedDate(null); setIsModalOpen(true); }}
+        className="hidden md:flex w-full bg-slate-900 dark:bg-slate-700 text-white font-black py-5 rounded-[2rem] hover:bg-slate-800 dark:hover:bg-slate-600 transition-all items-center justify-center gap-3 shadow-xl active:scale-95 uppercase tracking-widest text-sm"
       >
         <Plus size={20} strokeWidth={3} /> Novo Plantão
       </button>
