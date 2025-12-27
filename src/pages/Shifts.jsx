@@ -5,6 +5,7 @@ import { Plus, Calendar as CalendarIcon, Filter, List, X, FileSpreadsheet } from
 import CalendarView from '@/components/shifts/CalendarView';
 import ListView from '@/components/shifts/ListView';
 import ShiftModal from '@/components/shifts/ShiftModal';
+import ImportShifts from '@/components/shifts/ImportShifts';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 
@@ -21,6 +22,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const [viewMode, setViewMode] = useState('calendar');
   const [filterSpecialty, setFilterSpecialty] = useState('TODAS');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
@@ -248,6 +250,28 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
           <CalendarIcon size={14}/> {monthNames[currentMonth]} {currentYear}
         </div>
       </div>
+
+      {showImport && (
+        <div className="mb-8">
+          <ImportShifts showToast={showToast} />
+          <button
+            onClick={() => setShowImport(false)}
+            className="mt-4 w-full py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+          >
+            Fechar Importação
+          </button>
+        </div>
+      )}
+
+      {!showImport && (
+        <button
+          onClick={() => setShowImport(true)}
+          className="mb-6 w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white rounded-2xl font-black text-sm uppercase tracking-wider hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all shadow-lg flex items-center justify-center gap-2"
+        >
+          <FileSpreadsheet size={20} />
+          Importar do Google Sheets
+        </button>
+      )}
 
       {viewMode === 'calendar' ? (
         <CalendarView 
