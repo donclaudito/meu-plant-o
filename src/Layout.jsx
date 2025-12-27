@@ -126,14 +126,6 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <h1 className="font-black text-xl tracking-tight hidden sm:block dark:text-white">Meu Plantão</h1>
             </Link>
-            <button
-              onClick={handleUninstall}
-              className="hidden md:flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-xl text-[10px] font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors border border-red-200 dark:border-red-800"
-              title="Desinstalar aplicação"
-            >
-              <Trash2 size={12} />
-              <span className="hidden lg:inline">Desinstalar</span>
-            </button>
             <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-2xl border border-slate-200 dark:border-slate-600">
               {navItems.map(item => (
                 <Link 
@@ -223,6 +215,14 @@ export default function Layout({ children, currentPageName }) {
             </Link>
           );
         })}
+        <button
+          onClick={handleUninstall}
+          className="flex flex-col items-center p-3 rounded-2xl transition-all text-red-500 dark:text-red-400"
+          title="Desinstalar"
+        >
+          <Trash2 size={22} />
+          <span className="text-[8px] font-black mt-1 uppercase">DESINST</span>
+        </button>
       </div>
     </div>
   );
