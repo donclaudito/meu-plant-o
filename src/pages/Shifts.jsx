@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Calendar as CalendarIcon, Filter, List, X } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Filter, List, X, FileSpreadsheet } from 'lucide-react';
 import CalendarView from '@/components/shifts/CalendarView';
 import ListView from '@/components/shifts/ListView';
 import ShiftModal from '@/components/shifts/ShiftModal';
@@ -42,13 +42,21 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   });
 
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors'],
-    queryFn: () => base44.entities.Doctor.list('name'),
+    queryKey: ['doctors', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list('name');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: hospitals = [] } = useQuery({
-    queryKey: ['hospitals'],
-    queryFn: () => base44.entities.Hospital.list('name'),
+    queryKey: ['hospitals', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Hospital.list('name');
+      return all.filter(h => h.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const createShiftMutation = useMutation({
@@ -136,6 +144,27 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const upcomingShifts = shifts.filter(s => s.date > todayStr).sort((a, b) => a.date.localeCompare(b.date));
   const nextShift = upcomingShifts[0];
 
+  const exportToCSV = () => {
+    const headers = ['Data', 'Hospital', 'Médico', 'Especialidade', 'Tipo', 'Horas', 'Valor', 'Status'];
+    const rows = filteredShifts.map(s => [
+      new Date(s.date + 'T00:00:00').toLocaleDateString('pt-PT'),
+      s.unit,
+      s.doctorName,
+      s.specialty,
+      s.type,
+      s.hours,
+      `R$ ${s.value.toFixed(2)}`,
+      s.paid ? 'Pago' : 'Pendente'
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `plantoes_${monthNames[currentMonth]}_${currentYear}.csv`;
+    link.click();
+  };
+
   return (
     <div className="animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
@@ -170,6 +199,12 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex gap-2 items-center flex-wrap">
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-md"
+          >
+            <FileSpreadsheet size={16} /> CSV
+          </button>
           <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-fit">
             <div className="p-2 text-slate-400 dark:text-slate-500"><Filter size={16}/></div>
             <select 

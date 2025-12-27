@@ -12,9 +12,18 @@ export default function Hospitals() {
 
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: hospitals = [] } = useQuery({
-    queryKey: ['hospitals'],
-    queryFn: () => base44.entities.Hospital.list('name'),
+    queryKey: ['hospitals', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Hospital.list('name');
+      return all.filter(h => h.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const createHospitalMutation = useMutation({
@@ -45,13 +54,24 @@ export default function Hospitals() {
     createHospitalMutation.mutate(newHospital);
   };
 
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400 dark:text-slate-500 font-bold">A carregar dados...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
 
-      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-        <h2 className="text-xl font-black mb-6 flex items-center gap-2">
-          <Building2 className="text-blue-600" /> Cadastro de Hospitais
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h2 className="text-xl font-black mb-6 flex items-center gap-2 dark:text-white">
+          <Building2 className="text-blue-600 dark:text-blue-400" /> Cadastro de Hospitais
         </h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input 
@@ -60,19 +80,19 @@ export default function Hospitals() {
             required 
             value={newHospital.name} 
             onChange={e => setNewHospital({ ...newHospital, name: e.target.value })} 
-            className="px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600" 
+            className="px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
           />
           <input 
             type="text" 
             placeholder="Localidade" 
             value={newHospital.city} 
             onChange={e => setNewHospital({ ...newHospital, city: e.target.value })} 
-            className="px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600" 
+            className="px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
           />
           <button 
             type="submit" 
             disabled={createHospitalMutation.isPending}
-            className="bg-blue-600 text-white font-black py-3 rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 disabled:opacity-50"
+            className="bg-blue-600 dark:bg-blue-500 text-white font-black py-3 rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 dark:shadow-blue-900/30 disabled:opacity-50"
           >
             <Save size={18} /> Salvar
           </button>
@@ -81,23 +101,23 @@ export default function Hospitals() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {hospitals.map(h => (
-          <div key={h.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 flex justify-between items-center group shadow-sm hover:shadow-md transition-all">
+          <div key={h.id} className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 flex justify-between items-center group shadow-sm hover:shadow-md transition-all">
             <div>
-              <p className="font-black text-slate-900">{h.name}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <p className="font-black text-slate-900 dark:text-white">{h.name}</p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                 {h.city || 'Localização não definida'}
               </p>
             </div>
             <button 
               onClick={() => setDeleteConfirmation({ isOpen: true, id: h.id, name: h.name })} 
-              className="p-2 text-slate-200 hover:text-red-500 transition-all"
+              className="p-2 text-slate-200 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-all"
             >
               <Trash2 size={18} />
             </button>
           </div>
         ))}
         {hospitals.length === 0 && (
-          <div className="col-span-full text-center py-12 text-slate-400 font-medium">
+          <div className="col-span-full text-center py-12 text-slate-400 dark:text-slate-500 font-medium">
             Nenhum hospital cadastrado
           </div>
         )}
