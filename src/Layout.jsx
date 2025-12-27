@@ -140,7 +140,7 @@ export default function Layout({ children, currentPageName }) {
                   <div className="flex items-center gap-2 ml-3">
                     <div className="hidden sm:flex flex-col items-end">
                       <span className="text-xs font-black text-slate-900 dark:text-white">{getUserDisplayName()}</span>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Médico'}</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500">{user.email}</span>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg">
                       {getUserInitials()}

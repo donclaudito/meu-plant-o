@@ -139,6 +139,17 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     updateShiftMutation.mutate({ id, data: { date: newDate } });
   };
 
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400 dark:text-slate-500 font-bold">A carregar plantões...</p>
+        </div>
+      </div>
+    );
+  }
+
   const todayStr = new Date().toISOString().split('T')[0];
   const todayShifts = shifts.filter(s => s.date === todayStr);
   const upcomingShifts = shifts.filter(s => s.date > todayStr).sort((a, b) => a.date.localeCompare(b.date));
