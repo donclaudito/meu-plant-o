@@ -51,6 +51,7 @@ export default function Layout({ children, currentPageName }) {
     localStorage.clear();
     sessionStorage.clear();
     await base44.auth.logout();
+    window.location.reload();
   };
 
   const getUserDisplayName = () => {
@@ -136,24 +137,23 @@ export default function Layout({ children, currentPageName }) {
                 </div>
 
                 {user && (
-                <div className="flex items-center gap-2 ml-3">
-                <div className="hidden sm:flex flex-col items-end">
-                  <span className="text-xs font-black text-slate-900 dark:text-white">{getUserDisplayName()}</span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Médico'}</span>
-                </div>
-                <div className="relative group">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg cursor-pointer">
-                    {getUserInitials()}
+                  <div className="flex items-center gap-2 ml-3">
+                    <div className="hidden sm:flex flex-col items-end">
+                      <span className="text-xs font-black text-slate-900 dark:text-white">{getUserDisplayName()}</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Médico'}</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg">
+                      {getUserInitials()}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors border border-slate-200 dark:border-slate-600"
+                      title="Sair da conta"
+                    >
+                      <LogOut size={14} />
+                      <span className="hidden lg:inline">Sair</span>
+                    </button>
                   </div>
-                  <button
-                    onClick={handleLogout}
-                    className="absolute top-full right-0 mt-2 hidden group-hover:flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-xs font-bold whitespace-nowrap z-50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                  >
-                    <LogOut size={14} />
-                    Sair
-                  </button>
-                </div>
-                </div>
                 )}
                 </div>
                 </div>
