@@ -187,6 +187,25 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [manualPayments, currentMonth, currentYear, filters]);
 
   const stats = useMemo(() => {
+    if (!filteredShifts || filteredShifts.length === 0) {
+      return {
+        total: 0,
+        grossTotal: 0,
+        totalExtraIncome: totalExtraIncome || 0,
+        netTotal: 0,
+        totalDiscounts: totalDiscounts || 0,
+        totalDepositsAmount: totalDepositsAmount || 0,
+        totalManualPayments: totalManualPayments || 0,
+        paid: 0,
+        pending: 0,
+        hours: 0,
+        count: 0,
+        valuePerHour: 0,
+        byType: {},
+        byDuration: {}
+      };
+    }
+
     // Valores de referência das definições
     const shift12hValue = user?.shift12hValue || 1800;
     const shift24hValue = user?.shift24hValue || 3000;
@@ -471,6 +490,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       printWindow.print();
     };
   };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400 dark:text-slate-500 font-bold">A carregar dados financeiros...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
