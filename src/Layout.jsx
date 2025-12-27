@@ -14,7 +14,8 @@ import {
   Moon,
   Sun,
   LogOut,
-  User
+  User,
+  Trash2
 } from 'lucide-react';
 
 const monthNames = [
@@ -52,6 +53,32 @@ export default function Layout({ children, currentPageName }) {
     sessionStorage.clear();
     await base44.auth.logout();
     window.location.reload();
+  };
+
+  const handleUninstall = async () => {
+    if (confirm('Tem a certeza que deseja desinstalar a aplicação? Todos os dados locais serão removidos.')) {
+      // Limpar todos os dados
+      queryClient.clear();
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Desregistar service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+      }
+      
+      // Limpar cache
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
+      
+      alert('Aplicação desinstalada. Por favor, feche esta janela.');
+      window.close();
+    }
   };
 
   const getUserDisplayName = () => {
@@ -92,13 +119,21 @@ export default function Layout({ children, currentPageName }) {
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans pb-28 transition-colors duration-200">
       <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center gap-3 md:gap-8">
             <Link to={createPageUrl('Shifts')} className="flex items-center gap-3 cursor-pointer">
-              <div className="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
+              <div className="bg-blue-600 dark:bg-blue-500 p-2.5 rounded-xl text-white shadow-lg shadow-blue-200 dark:shadow-blue-900/30">
                 <Hospital size={22} />
               </div>
-              <h1 className="font-black text-xl tracking-tight hidden sm:block">Meu Plantão</h1>
+              <h1 className="font-black text-xl tracking-tight hidden sm:block dark:text-white">Meu Plantão</h1>
             </Link>
+            <button
+              onClick={handleUninstall}
+              className="hidden md:flex items-center gap-1.5 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-xl text-[10px] font-bold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors border border-red-200 dark:border-red-800"
+              title="Desinstalar aplicação"
+            >
+              <Trash2 size={12} />
+              <span className="hidden lg:inline">Desinstalar</span>
+            </button>
             <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-2xl border border-slate-200 dark:border-slate-600">
               {navItems.map(item => (
                 <Link 

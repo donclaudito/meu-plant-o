@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins } from 'lucide-react';
+import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins, FileSpreadsheet } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
 import DiscountsModule from '@/components/finance/DiscountsModule';
@@ -512,12 +512,20 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-          <Wallet className="text-blue-600" size={28} /> Resumo Financeiro
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+          <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Resumo Financeiro
         </h2>
-        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white px-4 py-2 rounded-xl border border-slate-200">
-          {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
+          >
+            <FileSpreadsheet size={18} /> Exportar CSV
+          </button>
+          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+            {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
+          </div>
         </div>
       </div>
 
@@ -744,14 +752,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button
-          onClick={exportToCSV}
-          className="bg-green-600 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
-        >
-          <Download size={16}/> Exportar CSV
-        </button>
-        <button
           onClick={exportToPDF}
-          className="bg-red-600 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-lg"
+          className="bg-red-600 dark:bg-red-500 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 dark:hover:bg-red-600 transition-colors flex items-center justify-center gap-2 shadow-lg"
         >
           <FileText size={16}/> Exportar PDF
         </button>
