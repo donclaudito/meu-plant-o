@@ -128,6 +128,13 @@ export default function Doctors() {
             >
               {specialties.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            <input 
+              type="tel" 
+              placeholder="Telefone (opcional)" 
+              value={newDoctor.phone} 
+              onChange={e => setNewDoctor({ ...newDoctor, phone: e.target.value })} 
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+            />
             <button 
               type="submit" 
               disabled={createDoctorMutation.isPending}
@@ -176,8 +183,9 @@ export default function Doctors() {
                 className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-black text-slate-900 dark:text-white truncate">{d.name}</p>
-                <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">{d.specialty}</p>
+                <p className="font-black text-slate-900 dark:text-white text-sm leading-tight">
+                  {d.name} | {d.specialty} {d.phone && `| ${d.phone}`}
+                </p>
               </div>
               <button 
                 onClick={() => setDeleteConfirmation({ isOpen: true, id: d.id, name: d.name })} 

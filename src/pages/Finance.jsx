@@ -599,93 +599,93 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-green-100 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-green-600 uppercase tracking-[0.2em]">Receitas Extras</p>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-green-100 dark:border-green-900/30 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-green-600 dark:text-green-400 uppercase tracking-[0.2em]">Receitas Extras</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-300 font-bold text-xl">R$</span>
-            <p className="text-4xl font-black text-green-700 tracking-tight">{stats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-green-300 font-bold text-xl">€</span>
+            <p className="text-4xl font-black text-green-700 dark:text-green-400 tracking-tight">{safeStats.totalExtraIncome.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-green-700 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-green-700 dark:text-green-400 text-[10px] font-black uppercase">
             <TrendingUp size={14}/> Ambulatório, Cirurgia, Bónus
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-8 rounded-[2.5rem] border-2 border-indigo-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-indigo-700 uppercase tracking-[0.2em]">Faturamento Bruto Total</p>
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 p-8 rounded-[2.5rem] border-2 border-indigo-200 dark:border-indigo-800 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-[0.2em]">Faturamento Bruto Total</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-indigo-400 font-bold text-xl">R$</span>
-            <p className="text-4xl font-black text-indigo-700 tracking-tight">{stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-indigo-400 font-bold text-xl">€</span>
+            <p className="text-4xl font-black text-indigo-700 dark:text-indigo-300 tracking-tight">{safeStats.grossTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-indigo-700 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-indigo-700 dark:text-indigo-400 text-[10px] font-black uppercase">
             <CheckCircle size={14}/> Plantões + Extras
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-red-100 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Descontos</p>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-red-500 dark:text-red-400 uppercase tracking-[0.2em]">Descontos</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-red-200 font-bold text-xl">R$</span>
-            <p className="text-4xl font-black text-red-600 tracking-tight">{stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-red-200 font-bold text-xl">€</span>
+            <p className="text-4xl font-black text-red-600 dark:text-red-400 tracking-tight">{safeStats.totalDiscounts.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-red-600 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-red-600 dark:text-red-400 text-[10px] font-black uppercase">
             <MinusCircle size={14}/> Deduzido
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-[2.5rem] border-2 border-green-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-green-700 uppercase tracking-[0.2em]">Líquido Total</p>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-8 rounded-[2.5rem] border-2 border-green-200 dark:border-green-800 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-green-700 dark:text-green-400 uppercase tracking-[0.2em]">Líquido Total</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-400 font-bold text-xl">R$</span>
-            <p className="text-4xl font-black text-green-700 tracking-tight">{stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-green-400 font-bold text-xl">€</span>
+            <p className="text-4xl font-black text-green-700 dark:text-green-300 tracking-tight">{safeStats.netTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-green-700 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-green-700 dark:text-green-400 text-[10px] font-black uppercase">
             <CheckCircle size={14}/> Após descontos
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-green-500 uppercase tracking-[0.2em]">Valor Liquidado</p>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-green-500 dark:text-green-400 uppercase tracking-[0.2em]">Valor Liquidado</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-200 font-bold text-xl">R$</span>
-            <p className="text-5xl font-black text-green-600 tracking-tight">{stats.paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-green-200 font-bold text-xl">€</span>
+            <p className="text-5xl font-black text-green-600 dark:text-green-400 tracking-tight">{safeStats.paid.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-green-600 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-green-600 dark:text-green-400 text-[10px] font-black uppercase">
             <CheckCircle size={14}/> Valores confirmados
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
           <div className="absolute top-4 right-4">
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="p-2 hover:bg-green-50 rounded-xl transition-colors"
+              className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-colors"
               title="Registar pagamento recebido"
             >
-              <HandCoins size={16} className="text-green-600" />
+              <HandCoins size={16} className="text-green-600 dark:text-green-400" />
             </button>
           </div>
-          <p className="text-[11px] font-black text-amber-500 uppercase tracking-[0.2em]">Valor Pendente</p>
+          <p className="text-[11px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-[0.2em]">Valor Pendente</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-amber-200 font-bold text-xl">R$</span>
-            <p className="text-5xl font-black text-amber-600 tracking-tight">{stats.pending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-amber-200 font-bold text-xl">€</span>
+            <p className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{safeStats.pending.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-amber-600 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase">
             <Clock size={14}/> Aguardando pagamento
           </div>
-          {stats.totalManualPayments > 0 && (
-            <div className="mt-2 text-[9px] text-green-600 font-bold">
-              Abatido: R$ {stats.totalManualPayments.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          {safeStats.totalManualPayments > 0 && (
+            <div className="mt-2 text-[9px] text-green-600 dark:text-green-400 font-bold">
+              Abatido: € {safeStats.totalManualPayments.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
             </div>
           )}
         </div>
 
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-purple-500 uppercase tracking-[0.2em]">Carga Horária</p>
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
+          <p className="text-[11px] font-black text-purple-500 dark:text-purple-400 uppercase tracking-[0.2em]">Carga Horária</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <p className="text-5xl font-black text-purple-600 tracking-tight">{stats.hours}</p>
+            <p className="text-5xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{safeStats.hours}</p>
             <span className="text-purple-400 font-black text-2xl uppercase">H</span>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-purple-600 text-[10px] font-black uppercase">
+          <div className="mt-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 text-[10px] font-black uppercase">
             <PieChart size={14}/> Total de horas trabalhadas
           </div>
         </div>
