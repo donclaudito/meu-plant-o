@@ -195,15 +195,22 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [manualPayments, currentMonth, currentYear, filters]);
 
   const stats = useMemo(() => {
-    if (!filteredShifts || filteredShifts.length === 0) {
+    // Proteção defensiva contra dados inválidos
+    const safeShifts = filteredShifts || [];
+    const safeExtraIncome = Number(totalExtraIncome) || 0;
+    const safeDiscounts = Number(totalDiscounts) || 0;
+    const safeDeposits = Number(totalDepositsAmount) || 0;
+    const safeManualPayments = Number(totalManualPayments) || 0;
+    
+    if (safeShifts.length === 0) {
       return {
         total: 0,
-        grossTotal: 0,
-        totalExtraIncome: totalExtraIncome || 0,
-        netTotal: 0,
-        totalDiscounts: totalDiscounts || 0,
-        totalDepositsAmount: totalDepositsAmount || 0,
-        totalManualPayments: totalManualPayments || 0,
+        grossTotal: safeExtraIncome,
+        totalExtraIncome: safeExtraIncome,
+        netTotal: safeExtraIncome - safeDiscounts,
+        totalDiscounts: safeDiscounts,
+        totalDepositsAmount: safeDeposits,
+        totalManualPayments: safeManualPayments,
         paid: 0,
         pending: 0,
         hours: 0,
@@ -214,55 +221,80 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       };
     }
 
-    // Valores de referência das definições
-    const shift12hValue = user?.shift12hValue || 1800;
-    const shift24hValue = user?.shift24hValue || 3000;
+    // Valores de referência das definições com proteção defensiva
+    const shift12hValue = Number(user?.shift12hValue) || 1800;
+    const shift24hValue = Number(user?.shift24hValue) || 3000;
     const calculatedHourlyRate = shift12hValue / 12;
     
+    // Proteção contra valores inválidos nos plantões
+    const validShifts = safeShifts.filter(shift => 
+      shift && 
+      typeof shift.hours === 'number' && 
+      shift.hours > 0
+    );
+    
     // Calcular horas e valores baseados nas configurações
-    const hours = filteredShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
+    const hours = validShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
     
-    const totalByConfig = filteredShifts.reduce((acc, shift) => {
-      if (shift.hours === 24) return acc + shift24hValue;
-      if (shift.hours === 12) return acc + shift12hValue;
-      return acc + (calculatedHourlyRate * (shift.hours || 0));
+    const totalByConfig = validShifts.reduce((acc, shift) => {
+      try {
+        const shiftHours = Number(shift.hours) || 0;
+        if (shiftHours === 24) return acc + shift24hValue;
+        if (shiftHours === 12) return acc + shift12hValue;
+        return acc + (calculatedHourlyRate * shiftHours);
+      } catch (error) {
+        console.error('Erro ao calcular valor do plantão:', error);
+        return acc;
+      }
     }, 0);
     
-    const paid = filteredShifts.filter(s => s.paid).reduce((acc, shift) => {
-      if (shift.hours === 24) return acc + shift24hValue;
-      if (shift.hours === 12) return acc + shift12hValue;
-      return acc + (calculatedHourlyRate * (shift.hours || 0));
+    const paid = validShifts.filter(s => s.paid).reduce((acc, shift) => {
+      try {
+        const shiftHours = Number(shift.hours) || 0;
+        if (shiftHours === 24) return acc + shift24hValue;
+        if (shiftHours === 12) return acc + shift12hValue;
+        return acc + (calculatedHourlyRate * shiftHours);
+      } catch (error) {
+        console.error('Erro ao calcular valor pago:', error);
+        return acc;
+      }
     }, 0);
     
-    const grossTotal = totalByConfig + totalExtraIncome;
-    const netTotal = grossTotal - totalDiscounts;
-    const pending = totalByConfig - paid - totalManualPayments;
-    const valuePerHour = hours > 0 ? netTotal / hours : 0;
+    const grossTotal = totalByConfig + safeExtraIncome;
+    const netTotal = Math.max(0, grossTotal - safeDiscounts);
+    const pending = Math.max(0, totalByConfig - paid - safeManualPayments);
+    const valuePerHour = hours > 0 ? (netTotal / hours) : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
-    const byType = filteredShifts.reduce((acc, shift) => {
-      let type = shift.type || 'Outro';
+    const byType = validShifts.reduce((acc, shift) => {
+      try {
+        let type = shift.type || 'Outro';
       
-      // Consolidar 12h Dia e 12h Noite em "12h"
-      if (type === '12h Dia' || type === '12h Noite') {
-        type = '12h';
+        // Consolidar 12h Dia e 12h Noite em "12h"
+        if (type === '12h Dia' || type === '12h Noite') {
+          type = '12h';
+        }
+        
+        if (!acc[type]) {
+          acc[type] = { count: 0, hours: 0, value: 0 };
+        }
+        acc[type].count++;
+        const shiftHours = Number(shift.hours) || 0;
+        acc[type].hours += shiftHours;
+        
+        // Calcular valor baseado nas definições
+        if (shiftHours === 24) {
+          acc[type].value += shift24hValue;
+        } else if (shiftHours === 12) {
+          acc[type].value += shift12hValue;
+        } else {
+          acc[type].value += calculatedHourlyRate * shiftHours;
+        }
+        return acc;
+      } catch (error) {
+        console.error('Erro ao processar tipo de plantão:', error);
+        return acc;
       }
-      
-      if (!acc[type]) {
-        acc[type] = { count: 0, hours: 0, value: 0 };
-      }
-      acc[type].count++;
-      acc[type].hours += shift.hours || 0;
-      
-      // Calcular valor baseado nas definições
-      if (shift.hours === 24) {
-        acc[type].value += shift24hValue;
-      } else if (shift.hours === 12) {
-        acc[type].value += shift12hValue;
-      } else {
-        acc[type].value += calculatedHourlyRate * (shift.hours || 0);
-      }
-      return acc;
     }, {});
     
     // Calcular valor/hora para cada tipo
@@ -271,24 +303,29 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     });
     
     // Breakdown por duração (6h, 12h, 24h)
-    const byDuration = filteredShifts.reduce((acc, shift) => {
-      const hours = shift.hours || 0;
-      const key = `${hours}h`;
-      if (!acc[key]) {
-        acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0 };
+    const byDuration = validShifts.reduce((acc, shift) => {
+      try {
+        const hours = Number(shift.hours) || 0;
+        const key = `${hours}h`;
+        if (!acc[key]) {
+          acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0 };
+        }
+        acc[key].count++;
+        acc[key].hours += hours;
+        
+        // Valor baseado nas definições
+        if (hours === 24) {
+          acc[key].value += shift24hValue;
+        } else if (hours === 12) {
+          acc[key].value += shift12hValue;
+        } else {
+          acc[key].value += calculatedHourlyRate * hours;
+        }
+        return acc;
+      } catch (error) {
+        console.error('Erro ao processar duração do plantão:', error);
+        return acc;
       }
-      acc[key].count++;
-      acc[key].hours += hours;
-      
-      // Valor baseado nas definições
-      if (hours === 24) {
-        acc[key].value += shift24hValue;
-      } else if (hours === 12) {
-        acc[key].value += shift12hValue;
-      } else {
-        acc[key].value += calculatedHourlyRate * hours;
-      }
-      return acc;
     }, {});
     
     // Calcular médias para cada duração
@@ -298,18 +335,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     });
     
     return { 
-      total: totalByConfig,
-      grossTotal,
-      totalExtraIncome,
-      netTotal,
-      totalDiscounts,
-      totalDepositsAmount,
-      totalManualPayments,
-      paid, 
-      pending, 
-      hours, 
-      count: filteredShifts.length, 
-      valuePerHour,
+      total: Number(totalByConfig) || 0,
+      grossTotal: Number(grossTotal) || 0,
+      totalExtraIncome: safeExtraIncome,
+      netTotal: Number(netTotal) || 0,
+      totalDiscounts: safeDiscounts,
+      totalDepositsAmount: safeDeposits,
+      totalManualPayments: safeManualPayments,
+      paid: Number(paid) || 0, 
+      pending: Number(pending) || 0, 
+      hours: Number(hours) || 0, 
+      count: validShifts.length, 
+      valuePerHour: Number(valuePerHour) || 0,
       byType, 
       byDuration 
     };
@@ -503,12 +540,21 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-400 dark:text-slate-500 font-bold">A carregar dados financeiros...</p>
+          <p className="text-xs text-slate-400 dark:text-slate-600 mt-2">Por favor aguarde...</p>
         </div>
       </div>
     );
   }
+
+  // Proteção adicional contra renderização com dados inválidos
+  const safeStats = stats || {
+    total: 0, grossTotal: 0, totalExtraIncome: 0, netTotal: 0,
+    totalDiscounts: 0, totalDepositsAmount: 0, totalManualPayments: 0,
+    paid: 0, pending: 0, hours: 0, count: 0, valuePerHour: 0,
+    byType: {}, byDuration: {}
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
@@ -532,24 +578,24 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
           <div className="absolute top-4 right-4">
             <button
               onClick={recalculateValues}
               disabled={isRecalculating}
-              className="p-2 hover:bg-blue-50 rounded-xl transition-colors disabled:opacity-50"
+              className="p-2 hover:bg-blue-50 dark:hover:bg-slate-700 rounded-xl transition-colors disabled:opacity-50"
               title="Recalcular valores conforme definições"
             >
-              <RefreshCw size={16} className={`text-blue-600 ${isRecalculating ? 'animate-spin' : ''}`} />
+              <RefreshCw size={16} className={`text-blue-600 dark:text-blue-400 ${isRecalculating ? 'animate-spin' : ''}`} />
             </button>
           </div>
-          <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Plantões</p>
+          <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Plantões</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-slate-400 font-bold text-xl">R$</span>
-            <p className="text-4xl font-black text-slate-900 tracking-tight">{stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <span className="text-slate-400 dark:text-slate-500 font-bold text-xl">€</span>
+            <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{safeStats.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="mt-6 flex items-center gap-2 text-blue-600 text-[10px] font-black uppercase">
-            <TrendingUp size={14}/> {stats.count} plantões
+          <div className="mt-6 flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase">
+            <TrendingUp size={14}/> {safeStats.count} plantões
           </div>
         </div>
 
