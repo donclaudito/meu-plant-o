@@ -27,9 +27,18 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: shifts = [] } = useQuery({
-    queryKey: ['shifts'],
-    queryFn: () => base44.entities.Shift.list('-date'),
+    queryKey: ['shifts', user?.email],
+    queryFn: async () => {
+      const allShifts = await base44.entities.Shift.list('-date');
+      return allShifts.filter(s => s.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: doctors = [] } = useQuery({

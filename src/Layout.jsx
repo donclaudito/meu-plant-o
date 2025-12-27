@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Hospital, 
   Calendar as CalendarIcon, 
@@ -10,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Moon,
-  Sun
+  Sun,
+  LogOut
 } from 'lucide-react';
 
 const monthNames = [
@@ -25,6 +28,12 @@ export default function Layout({ children, currentPageName }) {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
+  const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -34,6 +43,11 @@ export default function Layout({ children, currentPageName }) {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  const handleLogout = async () => {
+    queryClient.clear();
+    await base44.auth.logout();
+  };
 
   const changeMonth = (offset) => {
     let newMonth = currentMonth + offset;
@@ -94,6 +108,13 @@ export default function Layout({ children, currentPageName }) {
             >
               {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600" />}
             </button>
+            <button 
+              onClick={handleLogout}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all text-slate-600 dark:text-slate-400"
+              title="Sair"
+            >
+              <LogOut size={20} />
+            </button>
             <div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 border border-slate-200 dark:border-slate-600">
               <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
                 <ChevronLeft size={20} />
@@ -112,6 +133,12 @@ export default function Layout({ children, currentPageName }) {
       <main className="max-w-full mx-auto px-4 pt-8">
         {childWithProps}
       </main>
+
+      {user && (
+        <div className="fixed bottom-20 md:bottom-4 left-4 text-[9px] text-slate-400 dark:text-slate-600 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+          {user.email}
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">

@@ -46,8 +46,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const queryClient = useQueryClient();
 
   const { data: shifts = [] } = useQuery({
-    queryKey: ['shifts'],
-    queryFn: () => base44.entities.Shift.list('-date'),
+    queryKey: ['shifts', user?.email],
+    queryFn: async () => {
+      const allShifts = await base44.entities.Shift.list('-date');
+      return allShifts.filter(s => s.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: doctors = [] } = useQuery({
@@ -88,23 +92,39 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [shifts, currentMonth, currentYear, filters]);
 
   const { data: discounts = [] } = useQuery({
-    queryKey: ['discounts'],
-    queryFn: () => base44.entities.Discount.list('-date'),
+    queryKey: ['discounts', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Discount.list('-date');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: extraIncomes = [] } = useQuery({
-    queryKey: ['extraIncomes'],
-    queryFn: () => base44.entities.ExtraIncome.list('-date'),
+    queryKey: ['extraIncomes', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.ExtraIncome.list('-date');
+      return all.filter(i => i.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: deposits = [] } = useQuery({
-    queryKey: ['deposits'],
-    queryFn: () => base44.entities.Deposit.list('-date'),
+    queryKey: ['deposits', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Deposit.list('-date');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: manualPayments = [] } = useQuery({
-    queryKey: ['manualPayments'],
-    queryFn: () => base44.entities.ManualPayment.list('-date'),
+    queryKey: ['manualPayments', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.ManualPayment.list('-date');
+      return all.filter(p => p.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const createManualPaymentMutation = useMutation({
