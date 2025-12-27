@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Upload, FileText, Loader2, CheckCircle } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tantml:react-query';
+import { FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function ImportDoctors({ showToast }) {
   const [isUploading, setIsUploading] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
   const createDoctorsMutation = useMutation({
@@ -68,73 +69,92 @@ export default function ImportDoctors({ showToast }) {
 
         createDoctorsMutation.mutate(doctors);
       } else {
-        showToast('Erro ao processar arquivo: ' + (result.details || 'Formato inválido'), 'error');
+        setImportResult({ success: false, error: result.details || 'Erro ao processar ficheiro' });
       }
     } catch (error) {
-      showToast('Erro ao importar arquivo: ' + error.message, 'error');
+      setImportResult({ success: false, error: error.message });
     } finally {
       setIsUploading(false);
-      e.target.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-          <Upload size={20} className="text-white" />
-        </div>
-        <div>
-          <h4 className="text-sm font-black text-slate-900">Importar Médicos</h4>
-          <p className="text-xs text-slate-500">Excel, CSV ou PDF</p>
-        </div>
-      </div>
+    <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-[2.5rem] border-2 border-green-200 dark:border-green-800 shadow-sm">
+      <h2 className="text-xl font-black mb-6 flex items-center gap-2 dark:text-white">
+        <FileSpreadsheet className="text-green-600 dark:text-green-400" size={24} /> 
+        Importar do Google Sheets
+      </h2>
 
-      <input
-        type="file"
-        id="doctor-file-upload"
-        accept=".csv,.xlsx,.xls,.pdf"
-        onChange={handleFileUpload}
-        className="hidden"
-        disabled={isUploading}
-      />
-
-      <label
-        htmlFor="doctor-file-upload"
-        className={`flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-xl font-black text-xs uppercase cursor-pointer hover:bg-blue-700 transition-colors ${
-          isUploading ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-      >
-        {isUploading ? (
-          <>
-            <Loader2 size={16} className="animate-spin" />
-            Processando...
-          </>
-        ) : (
-          <>
-            <FileText size={16} />
-            Selecionar Arquivo
-          </>
-        )}
-      </label>
-
-      {importResult && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
-          <CheckCircle size={16} className="text-green-600" />
-          <p className="text-xs font-bold text-green-700">
-            {importResult.count} médicos importados
+      {!importResult && (
+        <>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".csv,.xlsx,.xls,image/*,.pdf"
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 text-white font-black py-5 rounded-2xl hover:from-green-700 hover:to-emerald-700 dark:hover:from-green-600 dark:hover:to-emerald-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-green-200 dark:shadow-green-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FileSpreadsheet size={24} />
+            {isUploading ? 'A processar ficheiro...' : 'Selecionar Ficheiro do Google Sheets'}
+          </button>
+          <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-3 font-medium">
+            Aceita CSV, Excel, imagem ou PDF exportado do Google Sheets
           </p>
-        </div>
+
+          <div className="mt-6 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-green-200 dark:border-green-800">
+            <div className="flex items-start gap-3 mb-3">
+              <FileSpreadsheet className="text-green-600 dark:text-green-400 flex-shrink-0" size={20} />
+              <div>
+                <p className="text-xs font-black text-slate-700 dark:text-slate-300 mb-1">Como Exportar do Google Sheets:</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  Ficheiro → Transferir → Valores separados por vírgulas (.csv)
+                </p>
+              </div>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded-xl font-mono text-[10px] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+              <span className="text-green-600 dark:text-green-400 font-black">Nome,Especialidade,Telefone</span><br/>
+              Dr. João Silva,CIRURGIA GERAL,912345678<br/>
+              Dra. Maria Santos,PEDIATRIA,913456789
+            </div>
+          </div>
+        </>
       )}
 
-      <div className="mt-4 p-3 bg-white rounded-xl">
-        <p className="text-[9px] font-bold text-slate-500 mb-2 uppercase">Formato esperado:</p>
-        <div className="text-[10px] text-slate-600 font-mono bg-slate-50 p-2 rounded">
-          Nome | Especialidade | Telefone<br/>
-          Dr. João Silva | Cirurgia Geral | 912345678<br/>
-          Dra. Maria Santos | Pediatria | 913456789
+      {importResult && (
+        <div className={`p-6 rounded-2xl flex items-center gap-4 ${
+          importResult.success 
+            ? 'bg-green-50 dark:bg-green-900/30 border-2 border-green-200 dark:border-green-800' 
+            : 'bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-800'
+        }`}>
+          {importResult.success ? (
+            <>
+              <CheckCircle className="text-green-600 dark:text-green-400" size={32} />
+              <div>
+                <p className="font-black text-green-700 dark:text-green-300 text-lg">
+                  {importResult.count} médicos importados!
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  Os dados foram adicionados com sucesso
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <AlertCircle className="text-red-600 dark:text-red-400" size={32} />
+              <div>
+                <p className="font-black text-red-700 dark:text-red-300">Erro na importação</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{importResult.error}</p>
+              </div>
+            </>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
