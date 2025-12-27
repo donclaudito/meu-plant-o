@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Moon,
   Sun,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
 
 const monthNames = [
@@ -45,8 +46,21 @@ export default function Layout({ children, currentPageName }) {
   }, [darkMode]);
 
   const handleLogout = async () => {
+    // Limpar todo o cache e estado da aplicação
     queryClient.clear();
+    localStorage.clear();
+    sessionStorage.clear();
     await base44.auth.logout();
+  };
+
+  const getUserDisplayName = () => {
+    if (!user) return 'Médico';
+    return user.full_name || user.email?.split('@')[0] || 'Médico';
+  };
+
+  const getUserInitials = () => {
+    const name = getUserDisplayName();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const changeMonth = (offset) => {
@@ -100,22 +114,16 @@ export default function Layout({ children, currentPageName }) {
               ))}
             </nav>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 md:gap-3">
             <button 
               onClick={() => setDarkMode(!darkMode)}
               className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all"
               title={darkMode ? 'Modo Claro' : 'Modo Escuro'}
             >
-              {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600" />}
+              {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600 dark:text-slate-400" />}
             </button>
-            <button 
-              onClick={handleLogout}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all text-slate-600 dark:text-slate-400"
-              title="Sair"
-            >
-              <LogOut size={20} />
-            </button>
-            <div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 border border-slate-200 dark:border-slate-600">
+            
+            <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 border border-slate-200 dark:border-slate-600">
               <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
                 <ChevronLeft size={20} />
               </button>
@@ -124,18 +132,39 @@ export default function Layout({ children, currentPageName }) {
               </span>
               <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
                 <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+                </button>
+                </div>
+
+                {user && (
+                <div className="flex items-center gap-2 ml-3">
+                <div className="hidden sm:flex flex-col items-end">
+                  <span className="text-xs font-black text-slate-900 dark:text-white">{getUserDisplayName()}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500">{user.role === 'admin' ? 'Administrador' : 'Médico'}</span>
+                </div>
+                <div className="relative group">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg cursor-pointer">
+                    {getUserInitials()}
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="absolute top-full right-0 mt-2 hidden group-hover:flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-xs font-bold whitespace-nowrap z-50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <LogOut size={14} />
+                    Sair
+                  </button>
+                </div>
+                </div>
+                )}
+                </div>
+                </div>
+                </header>
 
       <main className="max-w-full mx-auto px-4 pt-8">
         {childWithProps}
       </main>
 
       {user && (
-        <div className="fixed bottom-20 md:bottom-4 left-4 text-[9px] text-slate-400 dark:text-slate-600 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+        <div className="hidden md:block fixed bottom-4 left-4 text-[9px] text-slate-400 dark:text-slate-600 font-mono bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded opacity-50 hover:opacity-100 transition-opacity">
           {user.email}
         </div>
       )}
