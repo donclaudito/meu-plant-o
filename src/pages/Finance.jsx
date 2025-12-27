@@ -45,6 +45,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: shifts = [] } = useQuery({
     queryKey: ['shifts', user?.email],
     queryFn: async () => {
@@ -55,18 +60,21 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   });
 
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors'],
-    queryFn: () => base44.entities.Doctor.list('name'),
+    queryKey: ['doctors', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list('name');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const { data: hospitals = [] } = useQuery({
-    queryKey: ['hospitals'],
-    queryFn: () => base44.entities.Hospital.list('name'),
-  });
-
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
+    queryKey: ['hospitals', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Hospital.list('name');
+      return all.filter(h => h.created_by === user?.email);
+    },
+    enabled: !!user,
   });
 
   const filteredShifts = useMemo(() => {
