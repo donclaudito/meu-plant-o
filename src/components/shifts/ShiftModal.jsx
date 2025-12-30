@@ -7,27 +7,29 @@ const specialties = [
 ];
 
 export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals, initialDate }) {
+  const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift12hValue: 1800, shift24hValue: 3000 });
   const [newShift, setNewShift] = useState({
-    date: '',
+    date: initialDate || new Date().toISOString().split('T')[0],
     unit: '',
     doctorName: '',
     specialty: 'CIRURGIA GERAL',
     type: '12h Dia',
-    value: 2000,
+    value: 1800,
     paid: false,
     hours: 12
   });
-  const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift12hValue: 1800, shift24hValue: 3000 });
 
   useEffect(() => {
     const loadUserSettings = async () => {
       try {
         const user = await base44.auth.me();
-        setUserSettings({
+        const settings = {
           hourlyRate: user.hourlyRate || 150,
           shift12hValue: user.shift12hValue || 1800,
           shift24hValue: user.shift24hValue || 3000
-        });
+        };
+        setUserSettings(settings);
+        setNewShift(prev => ({ ...prev, value: settings.shift12hValue }));
       } catch (e) {
         console.error('Error loading user settings:', e);
       }
@@ -37,13 +39,16 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
 
   useEffect(() => {
     if (isOpen) {
-      if (initialDate) {
-        setNewShift(prev => ({ ...prev, date: initialDate }));
-      } else {
-        setNewShift(prev => ({ ...prev, date: new Date().toISOString().split('T')[0] }));
-      }
+      const dateToUse = initialDate || new Date().toISOString().split('T')[0];
+      setNewShift(prev => ({ 
+        ...prev, 
+        date: dateToUse,
+        unit: '',
+        doctorName: '',
+        value: userSettings.shift12hValue || 1800
+      }));
     }
-  }, [isOpen, initialDate]);
+  }, [isOpen, initialDate, userSettings.shift12hValue]);
 
   const doctorsBySpecialty = doctors.filter(d => d.specialty === newShift.specialty);
 
@@ -119,8 +124,8 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
               />
               {calculateSuggestedValue() !== newShift.value && (
-                <p className="text-[9px] text-slate-500 ml-1">
-                  Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
+                  Sugerido: € {calculateSuggestedValue().toLocaleString('pt-PT')}
                 </p>
               )}
             </div>
@@ -162,10 +167,19 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
             >
               <option value="">Selecione o médico...</option>
-              {doctorsBySpecialty.map(d => (
-                <option key={d.id} value={d.name}>{d.name}</option>
-              ))}
+              {doctorsBySpecialty && doctorsBySpecialty.length > 0 ? (
+                doctorsBySpecialty.map(d => (
+                  <option key={d.id} value={d.name}>{d.name}</option>
+                ))
+              ) : (
+                <option disabled>Nenhum médico desta especialidade</option>
+              )}
             </select>
+            {(!doctorsBySpecialty || doctorsBySpecialty.length === 0) && (
+              <p className="text-[9px] text-amber-600 dark:text-amber-400 ml-1 mt-1">
+                ⚠️ Cadastre médicos de {newShift.specialty} na aba MÉDICOS
+              </p>
+            )}
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Hospital</label>
@@ -176,10 +190,19 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
             >
               <option value="">Selecione o hospital...</option>
-              {hospitals.map(h => (
-                <option key={h.id} value={h.name}>{h.name}</option>
-              ))}
+              {hospitals && hospitals.length > 0 ? (
+                hospitals.map(h => (
+                  <option key={h.id} value={h.name}>{h.name}</option>
+                ))
+              ) : (
+                <option disabled>Nenhum hospital cadastrado</option>
+              )}
             </select>
+            {(!hospitals || hospitals.length === 0) && (
+              <p className="text-[9px] text-amber-600 dark:text-amber-400 ml-1 mt-1">
+                ⚠️ Cadastre hospitais na aba HOSPITAIS primeiro
+              </p>
+            )}
           </div>
           <button 
             type="submit" 
