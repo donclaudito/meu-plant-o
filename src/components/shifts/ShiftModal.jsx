@@ -97,16 +97,16 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 required 
                 value={newShift.date} 
                 onChange={e => setNewShift({ ...newShift, date: e.target.value })} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center justify-between">
-                <span>Valor (R$)</span>
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                <span>Valor (€)</span>
                 <button
                   type="button"
                   onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-[9px]"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
                 >
                   <Calculator size={10} /> Auto
                 </button>
@@ -116,7 +116,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 required 
                 value={newShift.value} 
                 onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
-                className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600" 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
               />
               {calculateSuggestedValue() !== newShift.value && (
                 <p className="text-[9px] text-slate-500 ml-1">
@@ -127,21 +127,21 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Especialidade</label>
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Especialidade</label>
               <select 
                 value={newShift.specialty} 
                 onChange={e => setNewShift({ ...newShift, specialty: e.target.value, doctorName: '' })} 
-                className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600"
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
               >
                 {specialties.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo</label>
               <select 
                 value={newShift.type} 
                 onChange={e => handleTypeChange(e.target.value)} 
-                className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600"
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
               >
                 <option value="12h Dia">12h Dia</option>
                 <option value="12h Noite">12h Noite</option>
@@ -152,14 +152,14 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
               Médico ({newShift.specialty})
             </label>
             <select 
               required 
               value={newShift.doctorName} 
               onChange={e => setNewShift({ ...newShift, doctorName: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600"
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
             >
               <option value="">Selecione o médico...</option>
               {doctorsBySpecialty.map(d => (
@@ -168,12 +168,12 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hospital</label>
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Hospital</label>
             <select 
               required 
               value={newShift.unit} 
               onChange={e => setNewShift({ ...newShift, unit: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600"
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
             >
               <option value="">Selecione o hospital...</option>
               {hospitals.map(h => (
@@ -183,7 +183,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
           </div>
           <button 
             type="submit" 
-            className="w-full py-5 bg-blue-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-5 bg-blue-600 dark:bg-blue-500 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 dark:shadow-blue-900/50 hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
           >
             <Save size={18} /> Salvar Plantão
           </button>

@@ -151,11 +151,11 @@ export default function Layout({ children, currentPageName }) {
               {darkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600 dark:text-slate-400" />}
             </button>
             
-            <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 border border-slate-200 dark:border-slate-600">
+            <div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-2xl p-1 border border-slate-200 dark:border-slate-600">
               <button onClick={() => changeMonth(-1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
                 <ChevronLeft size={20} />
               </button>
-              <span className="px-4 text-[10px] font-black uppercase min-w-[140px] text-center">
+              <span className="px-2 md:px-4 text-[10px] font-black uppercase min-w-[100px] md:min-w-[140px] text-center">
                 {monthNames[currentMonth]} {currentYear}
               </span>
               <button onClick={() => changeMonth(1)} className="p-1.5 hover:bg-white dark:hover:bg-slate-600 rounded-xl transition-all">
