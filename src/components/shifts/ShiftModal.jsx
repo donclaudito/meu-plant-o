@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Calculator } from 'lucide-react';
+import { X, Save, Calculator, Plus } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const specialties = [
   "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "OUTRA"
 ];
 
 export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals, initialDate }) {
+  const queryClient = useQueryClient();
   const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift12hValue: 1800, shift24hValue: 3000 });
   const [newShift, setNewShift] = useState({
     date: initialDate || new Date().toISOString().split('T')[0],
@@ -18,6 +20,10 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     paid: false,
     hours: 12
   });
+  const [showQuickAddDoctor, setShowQuickAddDoctor] = useState(false);
+  const [quickDoctorName, setQuickDoctorName] = useState('');
+  const [showQuickAddHospital, setShowQuickAddHospital] = useState(false);
+  const [quickHospitalData, setQuickHospitalData] = useState({ name: '', city: '' });
 
   useEffect(() => {
     const loadUserSettings = async () => {
@@ -51,6 +57,35 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
   }, [isOpen, initialDate, userSettings.shift12hValue]);
 
   const doctorsBySpecialty = doctors.filter(d => d.specialty === newShift.specialty);
+
+  const handleQuickAddDoctor = async () => {
+    if (!quickDoctorName.trim()) return;
+    try {
+      const newDoc = await base44.entities.Doctor.create({
+        name: quickDoctorName,
+        specialty: newShift.specialty
+      });
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      setNewShift({ ...newShift, doctorName: newDoc.name });
+      setQuickDoctorName('');
+      setShowQuickAddDoctor(false);
+    } catch (error) {
+      console.error('Erro ao adicionar médico:', error);
+    }
+  };
+
+  const handleQuickAddHospital = async () => {
+    if (!quickHospitalData.name.trim()) return;
+    try {
+      const newHosp = await base44.entities.Hospital.create(quickHospitalData);
+      queryClient.invalidateQueries({ queryKey: ['hospitals'] });
+      setNewShift({ ...newShift, unit: newHosp.name });
+      setQuickHospitalData({ name: '', city: '' });
+      setShowQuickAddHospital(false);
+    } catch (error) {
+      console.error('Erro ao adicionar hospital:', error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -157,51 +192,132 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
-              Médico ({newShift.specialty})
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+              <span>Médico ({newShift.specialty})</span>
+              <button
+                type="button"
+                onClick={() => setShowQuickAddDoctor(!showQuickAddDoctor)}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
+              >
+                <Plus size={12} /> Adicionar
+              </button>
             </label>
-            <select 
-              required 
-              value={newShift.doctorName} 
-              onChange={e => setNewShift({ ...newShift, doctorName: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
-            >
-              <option value="">Selecione o médico...</option>
-              {doctorsBySpecialty && doctorsBySpecialty.length > 0 ? (
-                doctorsBySpecialty.map(d => (
-                  <option key={d.id} value={d.name}>{d.name}</option>
-                ))
-              ) : (
-                <option disabled>Nenhum médico desta especialidade</option>
-              )}
-            </select>
-            {(!doctorsBySpecialty || doctorsBySpecialty.length === 0) && (
-              <p className="text-[9px] text-amber-600 dark:text-amber-400 ml-1 mt-1">
-                ⚠️ Cadastre médicos de {newShift.specialty} na aba MÉDICOS
-              </p>
+            {showQuickAddDoctor ? (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={quickDoctorName}
+                  onChange={e => setQuickDoctorName(e.target.value)}
+                  placeholder="Nome do médico"
+                  className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={handleQuickAddDoctor}
+                  className="px-4 py-3 bg-green-600 dark:bg-green-500 text-white rounded-2xl font-bold hover:bg-green-700 dark:hover:bg-green-600"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickAddDoctor(false)}
+                  className="px-4 py-3 bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-400 dark:hover:bg-slate-500"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <>
+                <select 
+                  required 
+                  value={newShift.doctorName} 
+                  onChange={e => setNewShift({ ...newShift, doctorName: e.target.value })} 
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                >
+                  <option value="">Selecione o médico...</option>
+                  {doctorsBySpecialty && doctorsBySpecialty.length > 0 ? (
+                    doctorsBySpecialty.map(d => (
+                      <option key={d.id} value={d.name}>{d.name}</option>
+                    ))
+                  ) : (
+                    <option disabled>Nenhum médico desta especialidade</option>
+                  )}
+                </select>
+                {(!doctorsBySpecialty || doctorsBySpecialty.length === 0) && (
+                  <p className="text-[9px] text-amber-600 dark:text-amber-400 ml-1 mt-1">
+                    ⚠️ Clique em "Adicionar" acima para cadastrar rapidamente
+                  </p>
+                )}
+              </>
             )}
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Hospital</label>
-            <select 
-              required 
-              value={newShift.unit} 
-              onChange={e => setNewShift({ ...newShift, unit: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
-            >
-              <option value="">Selecione o hospital...</option>
-              {hospitals && hospitals.length > 0 ? (
-                hospitals.map(h => (
-                  <option key={h.id} value={h.name}>{h.name}</option>
-                ))
-              ) : (
-                <option disabled>Nenhum hospital cadastrado</option>
-              )}
-            </select>
-            {(!hospitals || hospitals.length === 0) && (
-              <p className="text-[9px] text-amber-600 dark:text-amber-400 ml-1 mt-1">
-                ⚠️ Cadastre hospitais na aba HOSPITAIS primeiro
-              </p>
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+              <span>Hospital</span>
+              <button
+                type="button"
+                onClick={() => setShowQuickAddHospital(!showQuickAddHospital)}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
+              >
+                <Plus size={12} /> Adicionar
+              </button>
+            </label>
+            {showQuickAddHospital ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={quickHospitalData.name}
+                  onChange={e => setQuickHospitalData({ ...quickHospitalData, name: e.target.value })}
+                  placeholder="Nome do hospital"
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={quickHospitalData.city}
+                    onChange={e => setQuickHospitalData({ ...quickHospitalData, city: e.target.value })}
+                    placeholder="Cidade (opcional)"
+                    className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleQuickAddHospital}
+                    className="px-4 py-3 bg-green-600 dark:bg-green-500 text-white rounded-2xl font-bold hover:bg-green-700 dark:hover:bg-green-600"
+                  >
+                    <Plus size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickAddHospital(false)}
+                    className="px-4 py-3 bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-400 dark:hover:bg-slate-500"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <select 
+                  required 
+                  value={newShift.unit} 
+                  onChange={e => setNewShift({ ...newShift, unit: e.target.value })} 
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                >
+                  <option value="">Selecione o hospital...</option>
+                  {hospitals && hospitals.length > 0 ? (
+                    hospitals.map(h => (
+                      <option key={h.id} value={h.name}>{h.name}</option>
+                    ))
+                  ) : (
+                    <option disabled>Nenhum hospital cadastrado</option>
+                  )}
+                </select>
+                {(!hospitals || hospitals.length === 0) && (
+                  <p className="text-[9px] text-amber-600 dark:text-amber-400 ml-1 mt-1">
+                    ⚠️ Clique em "Adicionar" acima para cadastrar rapidamente
+                  </p>
+                )}
+              </>
             )}
           </div>
           <button 
