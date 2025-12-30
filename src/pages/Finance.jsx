@@ -239,6 +239,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const totalByConfig = validShifts.reduce((acc, shift) => {
       try {
         const shiftHours = Number(shift.hours) || 0;
+        const shiftValue = Number(shift.value) || 0;
+
+        // Usa o valor configurado se disponível, senão calcula
+        if (shiftValue > 0) return acc + shiftValue;
         if (shiftHours === 24) return acc + shift24hValue;
         if (shiftHours === 12) return acc + shift12hValue;
         return acc + (calculatedHourlyRate * shiftHours);
@@ -247,43 +251,44 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         return acc;
       }
     }, 0);
-    
+
     const paid = validShifts.filter(s => s.paid).reduce((acc, shift) => {
       try {
-        const shiftHours = Number(shift.hours) || 0;
-        if (shiftHours === 24) return acc + shift24hValue;
-        if (shiftHours === 12) return acc + shift12hValue;
-        return acc + (calculatedHourlyRate * shiftHours);
+        const shiftValue = Number(shift.value) || 0;
+        return acc + shiftValue;
       } catch (error) {
         console.error('Erro ao calcular valor pago:', error);
         return acc;
       }
     }, 0);
-    
-    const grossTotal = totalByConfig + safeExtraIncome;
-    const netTotal = Math.max(0, grossTotal - safeDiscounts);
-    const pending = Math.max(0, totalByConfig - paid - safeManualPayments);
-    const valuePerHour = hours > 0 ? (netTotal / hours) : 0;
+
+    const grossTotal = Number(totalByConfig) + Number(safeExtraIncome);
+    const netTotal = Math.max(0, Number(grossTotal) - Number(safeDiscounts));
+    const pending = Math.max(0, Number(totalByConfig) - Number(paid) - Number(safeManualPayments));
+    const valuePerHour = hours > 0 ? (Number(netTotal) / Number(hours)) : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
     const byType = validShifts.reduce((acc, shift) => {
       try {
         let type = shift.type || 'Outro';
-      
+
         // Consolidar 12h Dia e 12h Noite em "12h"
         if (type === '12h Dia' || type === '12h Noite') {
           type = '12h';
         }
-        
+
         if (!acc[type]) {
           acc[type] = { count: 0, hours: 0, value: 0 };
         }
         acc[type].count++;
         const shiftHours = Number(shift.hours) || 0;
+        const shiftValue = Number(shift.value) || 0;
         acc[type].hours += shiftHours;
-        
-        // Calcular valor baseado nas definições
-        if (shiftHours === 24) {
+
+        // Usar o valor do plantão se disponível, senão calcular
+        if (shiftValue > 0) {
+          acc[type].value += shiftValue;
+        } else if (shiftHours === 24) {
           acc[type].value += shift24hValue;
         } else if (shiftHours === 12) {
           acc[type].value += shift12hValue;
@@ -306,15 +311,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const byDuration = validShifts.reduce((acc, shift) => {
       try {
         const hours = Number(shift.hours) || 0;
+        const shiftValue = Number(shift.value) || 0;
         const key = `${hours}h`;
         if (!acc[key]) {
           acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0 };
         }
         acc[key].count++;
         acc[key].hours += hours;
-        
-        // Valor baseado nas definições
-        if (hours === 24) {
+
+        // Usar o valor do plantão se disponível, senão calcular
+        if (shiftValue > 0) {
+          acc[key].value += shiftValue;
+        } else if (hours === 24) {
           acc[key].value += shift24hValue;
         } else if (hours === 12) {
           acc[key].value += shift12hValue;
