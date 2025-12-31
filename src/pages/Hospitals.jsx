@@ -99,28 +99,32 @@ export default function Hospitals() {
         </form>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {hospitals.map(h => (
-          <div key={h.id} className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 flex justify-between items-center group shadow-sm hover:shadow-md transition-all">
-            <div>
-              <p className="font-black text-slate-900 dark:text-white">{h.name}</p>
-              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                {h.city || 'Localização não definida'}
-              </p>
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h3 className="text-lg font-black mb-6 dark:text-white">Lista de Hospitais</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {hospitals.map(h => (
+            <div key={h.id} className="bg-slate-50 dark:bg-slate-700 p-4 rounded-2xl border border-slate-200 dark:border-slate-600 flex justify-between items-center group hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-slate-900 dark:text-white text-sm">{h.name}</p>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                  {h.city || 'Localização não definida'}
+                </p>
+              </div>
+              <button 
+                onClick={() => setDeleteConfirmation({ isOpen: true, id: h.id, name: h.name })} 
+                className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+              >
+                <Trash2 size={18} />
+              </button>
             </div>
-            <button 
-              onClick={() => setDeleteConfirmation({ isOpen: true, id: h.id, name: h.name })} 
-              className="p-2 text-slate-200 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-all"
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        ))}
-        {hospitals.length === 0 && (
-          <div className="col-span-full text-center py-12 text-slate-400 dark:text-slate-500 font-medium">
-            Nenhum hospital cadastrado
-          </div>
-        )}
+          ))}
+          {hospitals.length === 0 && (
+            <div className="col-span-full text-center py-12 text-slate-400 dark:text-slate-500 font-medium">
+              Nenhum hospital cadastrado
+            </div>
+          )}
+        </div>
       </div>
 
       <DeleteConfirmation 
