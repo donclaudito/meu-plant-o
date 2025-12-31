@@ -76,7 +76,7 @@ export default function PricingSettings({ user, showToast }) {
               type="number"
               value={shift6hValue}
               onChange={(e) => setShift6hValue(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 text-slate-900 text-lg"
               min="0"
               step="50"
             />
@@ -91,7 +91,7 @@ export default function PricingSettings({ user, showToast }) {
               type="number"
               value={shift12hValue}
               onChange={(e) => setShift12hValue(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 text-slate-900 text-lg"
               min="0"
               step="100"
             />
@@ -106,7 +106,7 @@ export default function PricingSettings({ user, showToast }) {
               type="number"
               value={shift24hValue}
               onChange={(e) => setShift24hValue(Number(e.target.value))}
-              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 text-slate-900 text-lg"
               min="0"
               step="100"
             />
