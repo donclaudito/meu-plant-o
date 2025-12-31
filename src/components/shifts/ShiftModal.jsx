@@ -30,7 +30,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
       try {
         const user = await base44.auth.me();
         const settings = {
-          hourlyRate: user.hourlyRate || 150,
+          shift6hValue: user.shift6hValue || 900,
           shift12hValue: user.shift12hValue || 1800,
           shift24hValue: user.shift24hValue || 3000
         };
@@ -102,7 +102,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
       calculatedValue = userSettings.shift24hValue;
     } else if (val.includes("6h")) {
       h = 6;
-      calculatedValue = userSettings.hourlyRate * 6;
+      calculatedValue = userSettings.shift6hValue;
     } else if (val.includes("12h")) {
       h = 12;
       calculatedValue = userSettings.shift12hValue;
@@ -114,7 +114,9 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
   const calculateSuggestedValue = () => {
     if (newShift.hours === 24) return userSettings.shift24hValue;
     if (newShift.hours === 12) return userSettings.shift12hValue;
-    return Math.round(userSettings.hourlyRate * newShift.hours);
+    if (newShift.hours === 6) return userSettings.shift6hValue;
+    const hourlyRate = userSettings.shift6hValue / 6;
+    return Math.round(hourlyRate * newShift.hours);
   };
 
   if (!isOpen) return null;
@@ -142,7 +144,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                <span>Valor (€)</span>
+                <span>Valor (R$)</span>
                 <button
                   type="button"
                   onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
@@ -160,7 +162,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               />
               {calculateSuggestedValue() !== newShift.value && (
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
-                  Sugerido: € {calculateSuggestedValue().toLocaleString('pt-PT')}
+                  Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
                 </p>
               )}
             </div>

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function PricingSettings({ user, showToast }) {
-  const [hourlyRate, setHourlyRate] = useState(150);
+  const [shift6hValue, setShift6hValue] = useState(900);
   const [shift12hValue, setShift12hValue] = useState(1800);
   const [shift24hValue, setShift24hValue] = useState(3000);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export default function PricingSettings({ user, showToast }) {
     const loadSettings = async () => {
       try {
         const userData = await base44.auth.me();
-        setHourlyRate(userData.hourlyRate || 150);
+        setShift6hValue(userData.shift6hValue || 900);
         setShift12hValue(userData.shift12hValue || 1800);
         setShift24hValue(userData.shift24hValue || 3000);
       } catch (e) {
@@ -39,17 +39,18 @@ export default function PricingSettings({ user, showToast }) {
 
   const handleSave = (e) => {
     e.preventDefault();
-    updateSettingsMutation.mutate({ hourlyRate, shift12hValue, shift24hValue });
+    updateSettingsMutation.mutate({ shift6hValue, shift12hValue, shift24hValue });
   };
 
   const calculateShiftValue = (hours) => {
-    const calculatedHourlyRate = shift12hValue / 12;
+    const calculatedHourlyRate = shift6hValue / 6;
     if (hours === 24) return shift24hValue;
     if (hours === 12) return shift12hValue;
+    if (hours === 6) return shift6hValue;
     return Math.round(calculatedHourlyRate * hours);
   };
   
-  const calculatedHourlyRate = shift12hValue / 12;
+  const calculatedHourlyRate = shift6hValue / 6;
 
   if (loading) {
     return (
@@ -69,17 +70,17 @@ export default function PricingSettings({ user, showToast }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">
-              Valor por Hora (R$)
+              Valor Plantão 6h (R$)
             </label>
             <input
               type="number"
-              value={hourlyRate}
-              onChange={(e) => setHourlyRate(Number(e.target.value))}
+              value={shift6hValue}
+              onChange={(e) => setShift6hValue(Number(e.target.value))}
               className="w-full px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600"
               min="0"
-              step="10"
+              step="50"
             />
-            <p className="text-[9px] text-slate-500 ml-1">Base para cálculo de 6h, 18h, etc.</p>
+            <p className="text-[9px] text-slate-500 ml-1">Base para cálculo de outros plantões</p>
           </div>
 
           <div className="space-y-2">
@@ -116,7 +117,7 @@ export default function PricingSettings({ user, showToast }) {
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
           <h4 className="text-sm font-black text-blue-900 mb-3">Valores Calculados</h4>
           <div className="mb-4 p-3 bg-white/70 rounded-xl">
-            <p className="text-[10px] text-slate-500 font-bold mb-1">Valor por Hora Calculado (12h ÷ 12)</p>
+            <p className="text-[10px] text-slate-500 font-bold mb-1">Valor por Hora Calculado (6h ÷ 6)</p>
             <p className="text-2xl font-black text-purple-600">R$ {calculatedHourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
