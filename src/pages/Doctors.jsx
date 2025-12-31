@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserPlus, Save, Trash2 } from 'lucide-react';
+import { UserPlus, Save, Trash2, Download } from 'lucide-react';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 import ImportDoctors from '@/components/doctors/ImportDoctors';
@@ -92,6 +92,38 @@ export default function Doctors() {
     }
   };
 
+  const downloadTemplate = () => {
+    const csvContent = `name,specialty,phone
+Dr. João Silva,CIRURGIA GERAL,+351 912 345 678
+Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'modelo_medicos.csv';
+    link.click();
+  };
+
+  const exportDoctors = () => {
+    if (doctors.length === 0) {
+      showToast('Nenhum médico para exportar', 'error');
+      return;
+    }
+    
+    const csvHeader = 'name,specialty,phone\n';
+    const csvRows = doctors.map(d => 
+      `${d.name},${d.specialty},${d.phone || ''}`
+    ).join('\n');
+    
+    const csvContent = csvHeader + csvRows;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `medicos_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    showToast('Médicos exportados!');
+  };
+
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -149,8 +181,27 @@ export default function Doctors() {
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
           <h3 className="text-lg font-black dark:text-white">Lista de Médicos</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={downloadTemplate}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs font-bold"
+              title="Descarregar modelo CSV"
+            >
+              <Download size={14} />
+              Modelo
+            </button>
+            {doctors.length > 0 && (
+              <button
+                onClick={exportDoctors}
+                className="flex items-center gap-1.5 px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors text-xs font-bold"
+                title="Exportar médicos para CSV"
+              >
+                <Download size={14} />
+                Exportar
+              </button>
+            )}
           {doctors.length > 0 && (
             <div className="flex items-center gap-2">
               <button
@@ -171,9 +222,10 @@ export default function Doctors() {
               )}
             </div>
           )}
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {doctors.map(d => (
             <div key={d.id} className="bg-slate-50 dark:bg-slate-700 p-4 rounded-2xl border border-slate-200 dark:border-slate-600 flex items-center gap-3 group hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
               <input
