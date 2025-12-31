@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle, AlertCircle, Download } from 'lucide-react';
 
 export default function ImportShifts({ showToast }) {
   const [isUploading, setIsUploading] = useState(false);
@@ -20,6 +20,18 @@ export default function ImportShifts({ showToast }) {
       setTimeout(() => setImportResult(null), 5000);
     },
   });
+
+  const downloadTemplate = () => {
+    const csvContent = `date,unit,doctorName,specialty,type,value,hours,paid
+2025-01-15,Hospital Central,Dr. Silva,CIRURGIA GERAL,12h Dia,1800,12,false
+2025-01-16,Clínica Norte,Dra. Costa,PEDIATRIA,24h,3000,24,true`;
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'modelo_plantoes.csv';
+    link.click();
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -71,10 +83,20 @@ export default function ImportShifts({ showToast }) {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm">
-      <h2 className="text-xl font-black mb-6 flex items-center gap-2 dark:text-white">
-        <FileSpreadsheet className="text-blue-600 dark:text-blue-400" size={24} /> 
-        Importar Plantões do Google Sheets
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-black flex items-center gap-2 dark:text-white">
+          <FileSpreadsheet className="text-blue-600 dark:text-blue-400" size={24} /> 
+          Importar Plantões do Google Sheets
+        </h2>
+        <button
+          onClick={downloadTemplate}
+          className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors text-xs font-bold border border-blue-200 dark:border-blue-700 shadow-sm"
+          title="Descarregar modelo CSV"
+        >
+          <Download size={14} />
+          Modelo
+        </button>
+      </div>
 
       {!importResult && (
         <>
@@ -98,19 +120,14 @@ export default function ImportShifts({ showToast }) {
           </p>
 
           <div className="mt-6 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-blue-200 dark:border-blue-800">
-            <div className="flex items-start gap-3 mb-3">
+            <div className="flex items-start gap-3">
               <FileSpreadsheet className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
               <div>
-                <p className="text-xs font-black text-slate-700 dark:text-slate-300 mb-1">Como Exportar do Google Sheets:</p>
+                <p className="text-xs font-black text-slate-700 dark:text-slate-300 mb-1">💡 Dica Rápida:</p>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                  Ficheiro → Transferir → Valores separados por vírgulas (.csv)
+                  Clique no botão <span className="font-bold text-blue-600 dark:text-blue-400">"Modelo"</span> acima para descarregar um ficheiro de exemplo. Edite-o no Google Sheets ou Excel e depois faça o upload aqui.
                 </p>
               </div>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded-xl font-mono text-[10px] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600 overflow-x-auto">
-              <span className="text-blue-600 dark:text-blue-400 font-black">date,unit,doctorName,specialty,type,value,hours,paid</span><br/>
-              2025-01-15,Hospital Central,Dr. Silva,CIRURGIA GERAL,12h Dia,150,12,false<br/>
-              2025-01-16,Clínica Norte,Dra. Costa,PEDIATRIA,24h,300,24,true
             </div>
           </div>
         </>
