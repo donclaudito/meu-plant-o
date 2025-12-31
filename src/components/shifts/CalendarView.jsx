@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Euro, Trash2, GripVertical } from 'lucide-react';
+import { Clock, Euro, Trash2, GripVertical, Info } from 'lucide-react';
 
 export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift, onUpdateShiftDate }) {
   const today = new Date();
@@ -85,24 +85,33 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                       <div 
                         key={s.id} 
                         className="relative"
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, s)}
-                        onDragEnd={handleDragEnd}
                         onClick={(e) => e.stopPropagation()}
-                        onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
-                        onMouseLeave={() => setActiveTooltip(null)}
                       >
-                        <div className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 ${
-                          getShiftColor(s)
-                        } ${s.paid ? 'ring-2 ring-green-500/40' : ''} ${draggedShift?.id === s.id ? 'opacity-40' : ''}`}>
-                          <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5 hidden md:block" />
-                          <div className="flex-1 min-w-0">
-                            <div className="truncate uppercase font-black">{s.unit}</div>
-                            <div className="flex justify-between items-center mt-1 text-[8px] opacity-80">
-                              <span className="font-black">{s.hours}h</span>
-                              <span className="font-black">€{s.value}</span>
+                        <div className="flex gap-1 items-start">
+                          <div 
+                            className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 flex-1 ${
+                              getShiftColor(s)
+                            } ${s.paid ? 'ring-2 ring-green-500/40' : ''} ${draggedShift?.id === s.id ? 'opacity-40' : ''}`}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, s)}
+                            onDragEnd={handleDragEnd}
+                          >
+                            <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5 hidden md:block" />
+                            <div className="flex-1 min-w-0">
+                              <div className="truncate uppercase font-black">{s.unit}</div>
+                              <div className="flex justify-between items-center mt-1 text-[8px] opacity-80">
+                                <span className="font-black">{s.hours}h</span>
+                                <span className="font-black">€{s.value}</span>
+                              </div>
                             </div>
                           </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setActiveTooltip({ shiftId: s.id, cellIdx: idx }); }}
+                            className="p-1.5 bg-slate-700 dark:bg-slate-600 text-white rounded-lg hover:bg-slate-800 dark:hover:bg-slate-500 transition-colors flex-shrink-0"
+                            title="Ver detalhes"
+                          >
+                            <Info size={10} />
+                          </button>
                         </div>
                         {activeTooltip?.shiftId === s.id && (
                           <>
