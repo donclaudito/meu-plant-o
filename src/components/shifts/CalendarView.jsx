@@ -105,12 +105,16 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           </div>
                         </div>
                         {activeTooltip?.shiftId === s.id && (
-                          <div 
-                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[280px] bg-slate-900 dark:bg-slate-950 text-white p-5 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200"
-                            onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
-                            onMouseLeave={() => setActiveTooltip(null)}
-                            onClick={(e) => e.stopPropagation()}
-                          >
+                          <>
+                            <div 
+                              className="fixed inset-0 bg-black/50 z-[199]"
+                              onClick={(e) => { e.stopPropagation(); setActiveTooltip(null); }}
+                            ></div>
+                            <div 
+                              className="fixed left-[50%] top-[50%] w-[90vw] max-w-[300px] bg-slate-900 dark:bg-slate-950 text-white p-5 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200"
+                              style={{ transform: 'translate(-50%, -50%)' }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
                             <div className="flex justify-between items-center mb-3">
                               <span className="text-[10px] font-black text-blue-400 uppercase">Detalhes</span>
                               <button 
@@ -128,11 +132,13 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                             </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); setActiveTooltip(null); }}
-                              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold text-xs uppercase transition-colors"
+                              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-bold text-xs uppercase transition-colors"
                             >
                               Fechar
                             </button>
                           </div>
+                          </>
+                        )}
                         )}
                       </div>
                       );
