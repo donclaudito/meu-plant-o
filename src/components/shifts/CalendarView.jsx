@@ -106,18 +106,10 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                         </div>
                         {activeTooltip?.shiftId === s.id && (
                           <div 
-                            className={`fixed md:absolute ${isRightEdge ? 'md:right-0 md:left-auto md:-translate-x-0' : 'md:left-1/2 md:-translate-x-1/2'} left-1/2 -translate-x-1/2 ${isTopRows ? 'top-auto bottom-auto md:top-full md:mt-2' : 'top-auto bottom-auto md:bottom-full md:mb-2'} w-[90vw] max-w-[280px] md:w-64 bg-slate-900 dark:bg-slate-950 text-white p-4 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200`}
-                            style={{ 
-                              top: 'auto',
-                              bottom: 'auto',
-                              marginTop: window.innerWidth < 768 ? '0' : undefined,
-                              marginBottom: window.innerWidth < 768 ? '0' : undefined,
-                              position: window.innerWidth < 768 ? 'fixed' : 'absolute',
-                              left: window.innerWidth < 768 ? '50%' : undefined,
-                              transform: window.innerWidth < 768 ? 'translate(-50%, -50%)' : undefined
-                            }}
+                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[280px] bg-slate-900 dark:bg-slate-950 text-white p-5 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200"
                             onMouseEnter={() => setActiveTooltip({ shiftId: s.id, cellIdx: idx })}
                             onMouseLeave={() => setActiveTooltip(null)}
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <div className="flex justify-between items-center mb-3">
                               <span className="text-[10px] font-black text-blue-400 uppercase">Detalhes</span>
@@ -134,10 +126,12 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                               <div className="flex items-center gap-1.5 text-blue-300"><Clock size={12}/> {s.hours}h</div>
                               <div className="flex items-center gap-1.5 text-green-400">€ {s.value}</div>
                             </div>
-                            <div className="mt-3 pt-3 border-t border-white/10 text-[9px] text-white/50 font-medium hidden md:flex items-center gap-1">
-                              <GripVertical size={10} /> Arraste para mover
-                            </div>
-                            <div className={`hidden md:block absolute ${isTopRows ? 'bottom-full' : 'top-full'} ${isRightEdge ? 'right-4' : 'left-1/2 -translate-x-1/2'} border-8 border-transparent ${isTopRows ? 'border-b-slate-900 dark:border-b-slate-950' : 'border-t-slate-900 dark:border-t-slate-950'}`}></div>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setActiveTooltip(null); }}
+                              className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold text-xs uppercase transition-colors"
+                            >
+                              Fechar
+                            </button>
                           </div>
                         )}
                       </div>
