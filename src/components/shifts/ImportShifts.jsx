@@ -82,11 +82,11 @@ export default function ImportShifts({ showToast }) {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-black flex items-center gap-2 dark:text-white">
-          <FileSpreadsheet className="text-blue-600 dark:text-blue-400" size={24} /> 
-          Importar Plantões do Google Sheets
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-2xl border border-blue-200 dark:border-blue-800 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-black flex items-center gap-2 dark:text-white">
+          <FileSpreadsheet className="text-blue-600 dark:text-blue-400" size={20} /> 
+          Importar Plantões
         </h2>
         <button
           onClick={downloadTemplate}
@@ -110,22 +110,22 @@ export default function ImportShifts({ showToast }) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white font-black py-5 rounded-2xl hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-blue-200 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white font-black py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            <FileSpreadsheet size={24} />
-            {isUploading ? 'A processar ficheiro...' : 'Selecionar Ficheiro do Google Sheets'}
+            <FileSpreadsheet size={18} />
+            {isUploading ? 'A processar...' : 'Selecionar Ficheiro'}
           </button>
-          <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-3 font-medium">
-            Aceita CSV, Excel, imagem ou PDF exportado do Google Sheets
+          <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
+            CSV, Excel, imagem ou PDF
           </p>
 
-          <div className="mt-6 p-5 bg-white dark:bg-slate-800 rounded-2xl border border-blue-200 dark:border-blue-800">
-            <div className="flex items-start gap-3">
-              <FileSpreadsheet className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={20} />
+          <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-2">
+              <FileSpreadsheet className="text-blue-600 dark:text-blue-400 flex-shrink-0" size={16} />
               <div>
-                <p className="text-xs font-black text-slate-700 dark:text-slate-300 mb-1">💡 Dica Rápida:</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                  Clique no botão <span className="font-bold text-blue-600 dark:text-blue-400">"Modelo"</span> acima para descarregar um ficheiro de exemplo. Edite-o no Google Sheets ou Excel e depois faça o upload aqui.
+                <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 mb-1">💡 Dica:</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400">
+                  Clique em <span className="font-bold text-blue-600 dark:text-blue-400">"Modelo"</span> para descarregar o exemplo.
                 </p>
               </div>
             </div>
