@@ -98,7 +98,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           >
                             <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5 hidden md:block" />
                             <div className="flex-1 min-w-0">
-                              <div className="truncate uppercase font-black">{s.unit}</div>
+                              <div className="truncate uppercase font-black">{s.doctorName}</div>
                               <div className="flex justify-between items-center mt-1 text-[8px] opacity-80">
                                 <span className="font-black">{s.hours}h</span>
                                 <span className="font-black">€{s.value}</span>
