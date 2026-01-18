@@ -116,7 +116,6 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                               <div className="truncate uppercase font-black text-slate-800 dark:text-slate-900">{s.doctorName}</div>
                               <div className="flex justify-between items-center mt-1 text-[8px]">
                                 <span className="font-black text-slate-700 dark:text-slate-800">{s.hours}h</span>
-                                <span className="font-black text-slate-700 dark:text-slate-800">€{s.value}</span>
                               </div>
                             </div>
                           </div>
