@@ -6,6 +6,21 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
   const [draggedShift, setDraggedShift] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
 
+  const getShiftOrder = (type) => {
+    const order = {
+      '12h Dia': 1,
+      '6h Dia': 2,
+      '6h Noite': 3,
+      '12h Noite': 4,
+      '24h': 5
+    };
+    return order[type] || 6;
+  };
+
+  const sortShifts = (shifts) => {
+    return [...shifts].sort((a, b) => getShiftOrder(a.type) - getShiftOrder(b.type));
+  };
+
   const getShiftColor = (shift) => {
     const type = shift.type;
     if (type === '6h Dia') return 'bg-sky-100 border-sky-200 text-sky-700';
@@ -80,7 +95,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                     </span>
                   </div>
                   <div className="space-y-1">
-                    {item.shifts.map((s, shiftIdx) => {
+                    {sortShifts(item.shifts).map((s, shiftIdx) => {
                       return (
                       <div 
                         key={s.id} 
