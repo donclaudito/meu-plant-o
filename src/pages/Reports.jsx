@@ -266,30 +266,30 @@ export default function Reports() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-8 rounded-[2.5rem] text-white shadow-xl">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-3xl font-black mb-2 flex items-center gap-3">
-              <FileText size={32} /> Relatórios Avançados
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] text-white shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black mb-1 sm:mb-2 flex items-center gap-2 md:gap-3">
+              <FileText size={24} className="sm:w-7 sm:h-7 md:w-8 md:h-8" /> Relatórios
             </h1>
-            <p className="text-blue-100 font-medium">
-              Análise detalhada de plantões, desempenho e estatísticas
+            <p className="text-blue-100 font-medium text-xs sm:text-sm">
+              Análise detalhada de plantões e estatísticas
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button
               onClick={exportToCSV}
               disabled={filteredShifts.length === 0}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm text-xs sm:text-sm"
             >
-              <Download size={18} /> CSV
+              <Download size={16} /> CSV
             </button>
             <button
               onClick={printReport}
               disabled={filteredShifts.length === 0}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm text-xs sm:text-sm"
             >
-              <Printer size={18} /> Imprimir
+              <Printer size={16} /> Imprimir
             </button>
           </div>
         </div>

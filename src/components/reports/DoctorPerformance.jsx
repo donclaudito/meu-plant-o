@@ -19,16 +19,16 @@ export default function DoctorPerformance({ stats }) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-black dark:text-white flex items-center gap-2">
-          <Users size={20} className="text-purple-600 dark:text-purple-400" />
-          Desempenho por Médico
+    <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+        <h3 className="text-base sm:text-lg font-black dark:text-white flex items-center gap-1.5 sm:gap-2">
+          <Users size={18} className="sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400" />
+          <span className="text-sm sm:text-base">Desempenho por Médico</span>
         </h3>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="px-3 py-2 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold text-xs focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+          className="w-full sm:w-auto px-3 py-2 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold text-[11px] sm:text-xs focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="total">Total Recebido</option>
           <option value="count">Nº de Plantões</option>
@@ -38,18 +38,19 @@ export default function DoctorPerformance({ stats }) {
         </select>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="inline-block min-w-full align-middle px-4 sm:px-0">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">
-              <th className="text-left py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Médico</th>
-              <th className="text-left py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden sm:table-cell">Especialidade</th>
-              <th className="text-center py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Plantões</th>
-              <th className="text-center py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden md:table-cell">Horas</th>
-              <th className="text-right py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Total</th>
-              <th className="text-right py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden lg:table-cell">Pago</th>
-              <th className="text-right py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden lg:table-cell">Pendente</th>
-              <th className="text-center py-3 px-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden xl:table-cell">R$/Hora</th>
+              <th className="text-left py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Médico</th>
+              <th className="text-left py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden sm:table-cell">Especialidade</th>
+              <th className="text-center py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Plantões</th>
+              <th className="text-center py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden md:table-cell">Horas</th>
+              <th className="text-right py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Total</th>
+              <th className="text-right py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden lg:table-cell">Pago</th>
+              <th className="text-right py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden lg:table-cell">Pendente</th>
+              <th className="text-center py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase hidden xl:table-cell">R$/Hora</th>
             </tr>
           </thead>
           <tbody>
@@ -58,42 +59,42 @@ export default function DoctorPerformance({ stats }) {
                 key={doctor.name} 
                 className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
               >
-                <td className="py-4 px-2">
+                <td className="py-3 sm:py-4 px-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-xs flex-shrink-0">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-black text-[10px] sm:text-xs flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="font-black text-slate-900 dark:text-white text-sm">{doctor.name}</span>
+                    <span className="font-black text-slate-900 dark:text-white text-xs sm:text-sm">{doctor.name}</span>
                   </div>
                 </td>
-                <td className="py-4 px-2 text-sm text-slate-600 dark:text-slate-400 font-medium hidden sm:table-cell">
+                <td className="py-3 sm:py-4 px-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium hidden sm:table-cell">
                   {doctor.specialty}
                 </td>
-                <td className="py-4 px-2 text-center font-black text-slate-900 dark:text-white">
+                <td className="py-3 sm:py-4 px-2 text-center font-black text-slate-900 dark:text-white text-sm">
                   {doctor.count}
                 </td>
-                <td className="py-4 px-2 text-center font-bold text-slate-700 dark:text-slate-300 hidden md:table-cell">
+                <td className="py-3 sm:py-4 px-2 text-center font-bold text-slate-700 dark:text-slate-300 hidden md:table-cell text-sm">
                   {doctor.hours}h
                 </td>
-                <td className="py-4 px-2 text-right font-black text-green-600 dark:text-green-400">
+                <td className="py-3 sm:py-4 px-2 text-right font-black text-green-600 dark:text-green-400 text-xs sm:text-sm">
                   R$ {doctor.total.toLocaleString('pt-BR')}
                 </td>
-                <td className="py-4 px-2 text-right font-bold text-blue-600 dark:text-blue-400 hidden lg:table-cell">
+                <td className="py-3 sm:py-4 px-2 text-right font-bold text-blue-600 dark:text-blue-400 hidden lg:table-cell text-sm">
                   R$ {doctor.paid.toLocaleString('pt-BR')}
                 </td>
-                <td className="py-4 px-2 text-right font-bold text-amber-600 dark:text-amber-400 hidden lg:table-cell">
+                <td className="py-3 sm:py-4 px-2 text-right font-bold text-amber-600 dark:text-amber-400 hidden lg:table-cell text-sm">
                   R$ {doctor.pending.toLocaleString('pt-BR')}
                 </td>
-                <td className="py-4 px-2 text-center hidden xl:table-cell">
+                <td className="py-3 sm:py-4 px-2 text-center hidden xl:table-cell">
                   <div className="flex items-center justify-center gap-1">
                     {doctor.avgPerHour > 0 && (
                       doctor.avgPerHour >= (stats.hourlyRate || 0) ? (
-                        <TrendingUp size={14} className="text-green-500 dark:text-green-400" />
+                        <TrendingUp size={12} className="sm:w-3.5 sm:h-3.5 text-green-500 dark:text-green-400" />
                       ) : (
-                        <TrendingDown size={14} className="text-red-500 dark:text-red-400" />
+                        <TrendingDown size={12} className="sm:w-3.5 sm:h-3.5 text-red-500 dark:text-red-400" />
                       )
                     )}
-                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                    <span className="font-bold text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
                       R$ {doctor.avgPerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -102,11 +103,12 @@ export default function DoctorPerformance({ stats }) {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {doctorData.length > 5 && (
-        <div className="mt-4 text-center">
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+        <div className="mt-3 sm:mt-4 text-center">
+          <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
             Exibindo {doctorData.length} médicos | Use os filtros acima para refinar
           </p>
         </div>

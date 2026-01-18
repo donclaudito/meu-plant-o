@@ -22,55 +22,56 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
   const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-black dark:text-white flex items-center gap-2">
-          <Filter size={20} className="text-blue-600 dark:text-blue-400" />
-          Filtros de Pesquisa
+    <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="text-base sm:text-lg font-black dark:text-white flex items-center gap-1.5 sm:gap-2">
+          <Filter size={18} className="sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+          <span className="hidden sm:inline">Filtros de Pesquisa</span>
+          <span className="sm:hidden">Filtros</span>
         </h3>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-1.5 px-3 py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-bold"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg sm:rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-[10px] sm:text-xs font-bold"
           >
-            <X size={14} /> Limpar
+            <X size={12} className="sm:w-3.5 sm:h-3.5" /> Limpar
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
             Data Inicial
           </label>
           <input
             type="date"
             value={filters.startDate}
             onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
             Data Final
           </label>
           <input
             type="date"
             value={filters.endDate}
             onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           />
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
             Médico
           </label>
           <select
             value={filters.doctorName}
             onChange={(e) => setFilters({ ...filters, doctorName: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           >
             <option value="">Todos os Médicos</option>
             {doctors.map(d => (
@@ -80,13 +81,13 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
             Hospital
           </label>
           <select
             value={filters.unit}
             onChange={(e) => setFilters({ ...filters, unit: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           >
             <option value="">Todos os Hospitais</option>
             {hospitals.map(h => (
@@ -96,13 +97,13 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
             Especialidade
           </label>
           <select
             value={filters.specialty}
             onChange={(e) => setFilters({ ...filters, specialty: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           >
             <option value="">Todas as Especialidades</option>
             {specialties.map(s => (
@@ -112,13 +113,13 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
         </div>
 
         <div className="space-y-1">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
             Tipo de Plantão
           </label>
           <select
             value={filters.type}
             onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           >
             <option value="">Todos os Tipos</option>
             {shiftTypes.map(t => (

@@ -139,24 +139,25 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
     <div className="space-y-6 animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-          <h2 className="text-xl font-black mb-6 flex items-center gap-2 dark:text-white">
-            <UserPlus className="text-blue-600 dark:text-blue-400" /> Cadastro de Médicos
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h2 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 flex items-center gap-2 dark:text-white">
+            <UserPlus size={20} className="sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" /> 
+            <span className="text-base sm:text-xl">Cadastro de Médicos</span>
           </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <input 
               type="text" 
               placeholder="Nome completo" 
               required 
               value={newDoctor.name} 
               onChange={e => setNewDoctor({ ...newDoctor, name: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
             />
             <select 
               value={newDoctor.specialty} 
               onChange={e => setNewDoctor({ ...newDoctor, specialty: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base"
             >
               {specialties.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -165,14 +166,14 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
               placeholder="Telefone (opcional)" 
               value={newDoctor.phone} 
               onChange={e => setNewDoctor({ ...newDoctor, phone: e.target.value })} 
-              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
             />
             <button 
               type="submit" 
               disabled={createDoctorMutation.isPending}
-              className="w-full bg-blue-600 dark:bg-blue-500 text-white font-black py-3 rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 dark:shadow-blue-900/30 disabled:opacity-50"
+              className="w-full bg-blue-600 dark:bg-blue-500 text-white font-black py-2.5 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 dark:shadow-blue-900/30 disabled:opacity-50 text-sm sm:text-base"
             >
-              <Save size={18} /> Salvar
+              <Save size={16} className="sm:w-[18px] sm:h-[18px]" /> Salvar
             </button>
           </form>
         </div>
@@ -180,70 +181,71 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
         <ImportDoctors showToast={showToast} />
       </div>
 
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-          <h3 className="text-lg font-black dark:text-white">Lista de Médicos</h3>
+      <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+          <h3 className="text-base sm:text-lg font-black dark:text-white">Lista de Médicos</h3>
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={downloadTemplate}
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs font-bold"
+              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg sm:rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-[11px] sm:text-xs font-bold"
               title="Descarregar modelo CSV"
             >
-              <Download size={14} />
-              Modelo
+              <Download size={13} className="sm:w-3.5 sm:h-3.5" />
+              <span className="hidden sm:inline">Modelo</span>
             </button>
             {doctors.length > 0 && (
               <button
                 onClick={exportDoctors}
-                className="flex items-center gap-1.5 px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors text-xs font-bold"
+                className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg sm:rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors text-[11px] sm:text-xs font-bold"
                 title="Exportar médicos para CSV"
               >
-                <Download size={14} />
-                Exportar
+                <Download size={13} className="sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">Exportar</span>
               </button>
             )}
           {doctors.length > 0 && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleSelectAll}
-                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-              >
-                {selectedDoctors.length === doctors.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
-              </button>
-              {selectedDoctors.length > 0 && (
-                <button
-                  onClick={handleDeleteSelected}
-                  disabled={deleteDoctorsMutation.isPending}
-                  className="flex items-center gap-2 text-xs font-bold text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
-                >
-                  <Trash2 size={14} />
-                  Eliminar ({selectedDoctors.length})
-                </button>
-              )}
-            </div>
+           <div className="flex items-center gap-2">
+             <button
+               onClick={toggleSelectAll}
+               className="text-[11px] sm:text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors whitespace-nowrap"
+             >
+               <span className="hidden sm:inline">{selectedDoctors.length === doctors.length ? 'Desmarcar' : 'Selecionar'}</span>
+               <span className="sm:hidden">✓</span>
+             </button>
+             {selectedDoctors.length > 0 && (
+               <button
+                 onClick={handleDeleteSelected}
+                 disabled={deleteDoctorsMutation.isPending}
+                 className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-white bg-red-500 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl transition-colors disabled:opacity-50"
+               >
+                 <Trash2 size={13} className="sm:w-3.5 sm:h-3.5" />
+                 <span className="hidden sm:inline">Eliminar</span> ({selectedDoctors.length})
+               </button>
+             )}
+           </div>
           )}
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {doctors.map(d => (
-            <div key={d.id} className="bg-slate-50 dark:bg-slate-700 p-4 rounded-2xl border border-slate-200 dark:border-slate-600 flex items-center gap-3 group hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
+            <div key={d.id} className="bg-slate-50 dark:bg-slate-700 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-600 flex items-center gap-2 sm:gap-3 group hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
               <input
                 type="checkbox"
                 checked={selectedDoctors.includes(d.id)}
                 onChange={() => toggleSelectDoctor(d.id)}
-                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-black text-slate-900 dark:text-white text-sm leading-tight">
-                  {d.name} | {d.specialty} {d.phone && `| ${d.phone}`}
+                <p className="font-black text-slate-900 dark:text-white text-xs sm:text-sm leading-tight break-words">
+                  {d.name} <span className="text-slate-500 dark:text-slate-400">|</span> {d.specialty} {d.phone && <><span className="text-slate-500 dark:text-slate-400">|</span> {d.phone}</>}
                 </p>
               </div>
               <button 
                 onClick={() => setDeleteConfirmation({ isOpen: true, id: d.id, name: d.name })} 
-                className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-all opacity-0 group-hover:opacity-100"
+                className="p-1.5 sm:p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
               >
-                <Trash2 size={16} />
+                <Trash2 size={14} className="sm:w-4 sm:h-4" />
               </button>
             </div>
           ))}

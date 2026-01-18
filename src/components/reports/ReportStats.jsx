@@ -18,111 +18,113 @@ export default function ReportStats({ stats }) {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar size={16} className="text-blue-600 dark:text-blue-400" />
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Plantões</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <Calendar size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Plantões</p>
           </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white">{stats.count}</p>
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.count}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock size={16} className="text-purple-600 dark:text-purple-400" />
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Horas</p>
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <Clock size={14} className="sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Horas</p>
           </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white">{stats.hours}h</p>
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.hours}h</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign size={16} className="text-green-600 dark:text-green-400" />
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Total</p>
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <DollarSign size={14} className="sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Total</p>
           </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white">R$ {stats.total.toLocaleString('pt-BR')}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.total.toLocaleString('pt-BR')}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign size={16} className="text-blue-600 dark:text-blue-400" />
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pago</p>
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <DollarSign size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pago</p>
           </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white">R$ {stats.paid.toLocaleString('pt-BR')}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.paid.toLocaleString('pt-BR')}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign size={16} className="text-amber-600 dark:text-amber-400" />
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pendente</p>
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <DollarSign size={14} className="sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pendente</p>
           </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white">R$ {stats.pending.toLocaleString('pt-BR')}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.pending.toLocaleString('pt-BR')}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp size={16} className="text-indigo-600 dark:text-indigo-400" />
-            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Valor/Hora</p>
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-2 sm:col-span-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <TrendingUp size={14} className="sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Valor/Hora</p>
           </div>
-          <p className="text-2xl font-black text-slate-900 dark:text-white">R$ {stats.hourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.hourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-          <h3 className="text-lg font-black mb-4 dark:text-white flex items-center gap-2">
-            <PieChart size={20} className="text-blue-600 dark:text-blue-400" />
-            Receita por Tipo de Plantão
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-base sm:text-lg font-black mb-3 sm:mb-4 dark:text-white flex items-center gap-1.5 sm:gap-2">
+            <PieChart size={18} className="sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
+            <span className="text-sm sm:text-base">Receita por Tipo</span>
           </h3>
           {typeChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
               <BarChart data={typeChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="name" style={{ fontSize: '11px', fontWeight: 'bold' }} stroke="#94a3b8" />
-                <YAxis style={{ fontSize: '11px', fontWeight: 'bold' }} stroke="#94a3b8" />
+                <XAxis dataKey="name" style={{ fontSize: '9px' }} stroke="#94a3b8" className="sm:text-[11px]" />
+                <YAxis style={{ fontSize: '9px' }} stroke="#94a3b8" className="sm:text-[11px]" />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#fff', 
                     border: '2px solid #e2e8f0', 
                     borderRadius: '12px',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontSize: '11px'
                   }}
                   formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
                 />
-                <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-slate-400 dark:text-slate-500 py-12">Sem dados</p>
+            <p className="text-center text-slate-400 dark:text-slate-500 py-8 sm:py-12 text-sm">Sem dados</p>
           )}
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-          <h3 className="text-lg font-black mb-4 dark:text-white flex items-center gap-2">
-            <Building2 size={20} className="text-green-600 dark:text-green-400" />
-            Receita por Hospital
+        <div className="bg-white dark:bg-slate-800 p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-base sm:text-lg font-black mb-3 sm:mb-4 dark:text-white flex items-center gap-1.5 sm:gap-2">
+            <Building2 size={18} className="sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
+            <span className="text-sm sm:text-base">Receita por Hospital</span>
           </h3>
           {unitChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
               <BarChart data={unitChartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="name" style={{ fontSize: '11px', fontWeight: 'bold' }} stroke="#94a3b8" />
-                <YAxis style={{ fontSize: '11px', fontWeight: 'bold' }} stroke="#94a3b8" />
+                <XAxis dataKey="name" style={{ fontSize: '9px' }} stroke="#94a3b8" className="sm:text-[11px]" />
+                <YAxis style={{ fontSize: '9px' }} stroke="#94a3b8" className="sm:text-[11px]" />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#fff', 
                     border: '2px solid #e2e8f0', 
                     borderRadius: '12px',
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
+                    fontSize: '11px'
                   }}
                   formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
                 />
-                <Bar dataKey="value" fill="#10b981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="value" fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-slate-400 dark:text-slate-500 py-12">Sem dados</p>
+            <p className="text-center text-slate-400 dark:text-slate-500 py-8 sm:py-12 text-sm">Sem dados</p>
           )}
         </div>
       </div>
