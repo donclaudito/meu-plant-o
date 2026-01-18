@@ -20,15 +20,15 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
   const hasActiveFilters = Object.values(filters).some(v => v && v !== 'TODOS' && v !== 'TODAS');
 
   return (
-    <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-          <Filter size={16} className="text-blue-600" /> Filtros Avançados
+        <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <Filter size={16} className="text-blue-600 dark:text-blue-400" /> Filtros Avançados
         </h3>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1"
+            className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-1"
           >
             <X size={14} /> Limpar
           </button>
@@ -39,7 +39,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
         <select
           value={filters.doctor}
           onChange={(e) => setFilters({ ...filters, doctor: e.target.value })}
-          className="px-3 py-2 bg-slate-50 rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600"
+          className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="TODOS">Todos Médicos</option>
           {doctors.map(d => (
@@ -50,7 +50,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
         <select
           value={filters.hospital}
           onChange={(e) => setFilters({ ...filters, hospital: e.target.value })}
-          className="px-3 py-2 bg-slate-50 rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600"
+          className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="TODOS">Todos Hospitais</option>
           {hospitals.map(h => (
@@ -61,7 +61,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
         <select
           value={filters.specialty}
           onChange={(e) => setFilters({ ...filters, specialty: e.target.value })}
-          className="px-3 py-2 bg-slate-50 rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600"
+          className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="TODAS">Todas Especialidades</option>
           {specialties.map(s => (
@@ -72,7 +72,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
         <select
           value={filters.paid}
           onChange={(e) => setFilters({ ...filters, paid: e.target.value })}
-          className="px-3 py-2 bg-slate-50 rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600"
+          className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="TODOS">Todos Status</option>
           <option value="PAGO">Apenas Pagos</option>
@@ -84,7 +84,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
           value={filters.startDate}
           onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
           placeholder="Data Início"
-          className="px-3 py-2 bg-slate-50 rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600"
+          className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         />
 
         <input
@@ -92,7 +92,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
           value={filters.endDate}
           onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
           placeholder="Data Fim"
-          className="px-3 py-2 bg-slate-50 rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600"
+          className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         />
       </div>
     </div>
