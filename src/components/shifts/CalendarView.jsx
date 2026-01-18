@@ -113,7 +113,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           >
                             <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5 hidden md:block" />
                             <div className="flex-1 min-w-0">
-                              <div className="truncate uppercase font-black text-slate-800 dark:text-slate-900">{s.doctorName}</div>
+                              <div className="truncate uppercase font-black text-[10px] text-slate-800 dark:text-slate-900">{s.doctorName}</div>
                               <div className="flex justify-between items-center mt-1 text-[8px]">
                                 <span className="font-black text-slate-700 dark:text-slate-800">{s.hours}h</span>
                               </div>
