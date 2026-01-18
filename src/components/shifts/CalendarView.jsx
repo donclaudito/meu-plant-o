@@ -58,7 +58,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm mb-8 overflow-x-auto">
       <div className="min-w-[640px]">
-        <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 rounded-t-[2.5rem]">
+        <div className="grid grid-cols-7 border-b-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/50 rounded-t-[2.5rem]">
           {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(d => (
             <div key={d} className="py-4 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
               {d}
