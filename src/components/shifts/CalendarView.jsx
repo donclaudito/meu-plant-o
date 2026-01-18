@@ -150,9 +150,8 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                             </div>
                             <p className="text-sm font-bold leading-tight mb-1 text-white">{s.doctorName}</p>
                             <p className="text-[10px] opacity-60 mb-3">{s.unit} • {s.type}</p>
-                            <div className="grid grid-cols-2 gap-3 text-[11px] font-black">
+                            <div className="text-[11px] font-black">
                               <div className="flex items-center gap-1.5 text-blue-300"><Clock size={12}/> {s.hours}h</div>
-                              <div className="flex items-center gap-1.5 text-green-400">€ {s.value}</div>
                             </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); setActiveTooltip(null); }}
