@@ -99,10 +99,9 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                       return (
                       <div 
                         key={s.id} 
-                        className="relative"
                         onClick={(e) => e.stopPropagation()}
+                        className="flex gap-1 items-start relative"
                       >
-                        <div className="flex gap-1 items-start">
                           <div 
                             className={`text-[9px] p-2 rounded-xl border font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 flex-1 ${
                               getShiftColor(s)
