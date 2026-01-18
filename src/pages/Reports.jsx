@@ -265,7 +265,7 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 md:space-y-5 lg:space-y-6 animate-in fade-in duration-300">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] text-white shadow-xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="w-full sm:w-auto">

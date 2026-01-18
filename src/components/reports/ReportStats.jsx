@@ -19,7 +19,7 @@ export default function ReportStats({ stats }) {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
             <Calendar size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
@@ -60,7 +60,7 @@ export default function ReportStats({ stats }) {
           <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.pending.toLocaleString('pt-BR')}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-2 sm:col-span-1">
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-2 md:col-span-1">
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
             <TrendingUp size={14} className="sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Valor/Hora</p>

@@ -136,10 +136,10 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 md:space-y-5 lg:space-y-6 animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
         <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
           <h2 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 flex items-center gap-2 dark:text-white">
             <UserPlus size={20} className="sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" /> 
@@ -227,7 +227,7 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
           </div>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           {doctors.map(d => (
             <div key={d.id} className="bg-slate-50 dark:bg-slate-700 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-600 flex items-center gap-2 sm:gap-3 group hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all">
               <input

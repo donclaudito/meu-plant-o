@@ -118,7 +118,7 @@ export default function Layout({ children, currentPageName }) {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans pb-28 transition-colors duration-200">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans pb-24 lg:pb-0 transition-colors duration-200">
       <header className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-8">
@@ -128,7 +128,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
               <h1 className="font-black text-xl tracking-tight hidden sm:block dark:text-white">Meu Plantão</h1>
             </Link>
-            <nav className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-2xl border border-slate-200 dark:border-slate-600">
+            <nav className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 p-1 rounded-2xl border border-slate-200 dark:border-slate-600">
               {navItems.map(item => (
                 <Link 
                   key={item.page}
@@ -188,7 +188,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
                 </header>
 
-      <main className="max-w-full mx-auto px-4 pt-8">
+      <main className="max-w-full mx-auto px-3 md:px-4 lg:px-6 pt-4 md:pt-6 lg:pt-8">
         {childWithProps}
       </main>
 
@@ -199,7 +199,7 @@ export default function Layout({ children, currentPageName }) {
       )}
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
         {navItems.map(item => {
           const Icon = item.icon;
           return (

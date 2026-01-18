@@ -38,9 +38,9 @@ export default function DoctorPerformance({ stats }) {
         </select>
       </div>
 
-      <div className="overflow-x-auto -mx-4 sm:mx-0">
-        <div className="inline-block min-w-full align-middle px-4 sm:px-0">
-        <table className="w-full min-w-[640px]">
+      <div className="overflow-x-auto -mx-4 md:mx-0">
+        <div className="inline-block min-w-full align-middle px-4 md:px-0">
+        <table className="w-full min-w-[500px] md:min-w-0">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">
               <th className="text-left py-2.5 sm:py-3 px-2 text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Médico</th>
