@@ -21,6 +21,31 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
     return [...shifts].sort((a, b) => getShiftOrder(a.type) - getShiftOrder(b.type));
   };
 
+  const getDoctorColor = (doctorName) => {
+    const colors = [
+      { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800' },
+      { bg: 'bg-green-100', border: 'border-green-300', text: 'text-green-800' },
+      { bg: 'bg-red-100', border: 'border-red-300', text: 'text-red-800' },
+      { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800' },
+      { bg: 'bg-yellow-100', border: 'border-yellow-300', text: 'text-yellow-800' },
+      { bg: 'bg-pink-100', border: 'border-pink-300', text: 'text-pink-800' },
+      { bg: 'bg-indigo-100', border: 'border-indigo-300', text: 'text-indigo-800' },
+      { bg: 'bg-cyan-100', border: 'border-cyan-300', text: 'text-cyan-800' },
+      { bg: 'bg-amber-100', border: 'border-amber-300', text: 'text-amber-800' },
+      { bg: 'bg-emerald-100', border: 'border-emerald-300', text: 'text-emerald-800' },
+    ];
+    
+    let hash = 0;
+    for (let i = 0; i < doctorName.length; i++) {
+      hash = ((hash << 5) - hash) + doctorName.charCodeAt(i);
+      hash = hash & hash;
+    }
+    
+    const colorIndex = Math.abs(hash) % colors.length;
+    const color = colors[colorIndex];
+    return `${color.bg} border-2 ${color.border} ${color.text}`;
+  };
+
   const getShiftColor = (shift) => {
     const type = shift.type;
     if (type === '6h Dia') return 'bg-sky-100 border-sky-200 text-sky-700';
