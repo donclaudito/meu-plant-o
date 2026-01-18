@@ -4,19 +4,20 @@ import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
-  Hospital, 
-  Calendar as CalendarIcon, 
-  Wallet, 
-  Stethoscope, 
-  Building2,
-  ChevronLeft,
-  ChevronRight,
-  Moon,
-  Sun,
-  LogOut,
-  User,
-  Trash2
-} from 'lucide-react';
+        Hospital, 
+        Calendar as CalendarIcon, 
+        Wallet, 
+        Stethoscope, 
+        Building2,
+        ChevronLeft,
+        ChevronRight,
+        Moon,
+        Sun,
+        LogOut,
+        User,
+        Trash2,
+        FileText
+      } from 'lucide-react';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -103,6 +104,7 @@ export default function Layout({ children, currentPageName }) {
   const navItems = [
     { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
     { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
+    { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
     { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
     { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
     { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
