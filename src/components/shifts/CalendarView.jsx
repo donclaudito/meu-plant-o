@@ -126,7 +126,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           >
                             <Info size={10} />
                           </button>
-                        </div>
+                          </div>
                         {activeTooltip?.shiftId === s.id && (
                           <>
                             <div 
