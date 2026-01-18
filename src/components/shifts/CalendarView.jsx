@@ -76,7 +76,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
               onClick={() => item.day && onDayClick(item.date)}
               onDragOver={handleDragOver}
               onDrop={(e) => item.day && handleDrop(e, item.date)}
-              className={`min-h-[120px] md:min-h-[140px] p-2 border-r border-b border-slate-100 dark:border-slate-700 transition-colors ${
+              className={`min-h-[120px] md:min-h-[140px] p-2 border-r-2 border-b-2 border-slate-300 dark:border-slate-600 transition-colors ${
                 item.day ? 'hover:bg-blue-50/30 dark:hover:bg-blue-900/20 cursor-pointer' : 'bg-slate-50/30 dark:bg-slate-900/30'
               } ${draggedShift && item.day ? 'bg-blue-50/20 dark:bg-blue-900/20' : ''}`}
               style={{ position: 'relative', zIndex: activeTooltip?.cellIdx === idx ? 100 : 1 }}
