@@ -21,6 +21,8 @@ const specialties = [
 export default function Shifts({ currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear() }) {
   const [viewMode, setViewMode] = useState('calendar');
   const [filterSpecialty, setFilterSpecialty] = useState('TODAS');
+  const [filterDoctor, setFilterDoctor] = useState('TODOS');
+  const [filterWeek, setFilterWeek] = useState('TODAS');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -98,9 +100,20 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       const [year, month] = s.date.split('-').map(Number);
       const matchMonth = month === currentMonth + 1 && year === currentYear;
       const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
-      return matchMonth && matchSpecialty;
+      const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
+      
+      // Filtro por semana - usa date-fns para calcular a semana ISO
+      let matchWeek = true;
+      if (filterWeek !== 'TODAS') {
+        const weekNum = parseInt(filterWeek);
+        const shiftDate = new Date(s.date + 'T00:00:00');
+        const shiftWeek = Math.ceil((shiftDate.getDate() + new Date(year, month - 1, 1).getDay()) / 7);
+        matchWeek = shiftWeek === weekNum;
+      }
+      
+      return matchMonth && matchSpecialty && matchDoctor && matchWeek;
     }).sort((a, b) => b.date.localeCompare(a.date));
-  }, [shifts, currentMonth, currentYear, filterSpecialty]);
+  }, [shifts, currentMonth, currentYear, filterSpecialty, filterDoctor, filterWeek]);
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1);
@@ -218,6 +231,35 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
           >
             <FileSpreadsheet size={16} /> CSV
           </button>
+          
+          <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-fit">
+            <div className="p-2 text-slate-400 dark:text-slate-500"><Filter size={16}/></div>
+            <select 
+              value={filterDoctor} 
+              onChange={e => setFilterDoctor(e.target.value)}
+              className="bg-transparent text-xs font-black uppercase tracking-widest border-none focus:ring-0 cursor-pointer text-slate-600 dark:text-slate-300 pr-8"
+            >
+              <option value="TODOS">TODOS MÉDICOS</option>
+              {doctors.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+            </select>
+          </div>
+          
+          <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-fit">
+            <div className="p-2 text-slate-400 dark:text-slate-500"><Filter size={16}/></div>
+            <select 
+              value={filterWeek} 
+              onChange={e => setFilterWeek(e.target.value)}
+              className="bg-transparent text-xs font-black uppercase tracking-widest border-none focus:ring-0 cursor-pointer text-slate-600 dark:text-slate-300 pr-8"
+            >
+              <option value="TODAS">TODAS SEMANAS</option>
+              <option value="1">SEMANA 1</option>
+              <option value="2">SEMANA 2</option>
+              <option value="3">SEMANA 3</option>
+              <option value="4">SEMANA 4</option>
+              <option value="5">SEMANA 5</option>
+            </select>
+          </div>
+          
           <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-fit">
             <div className="p-2 text-slate-400 dark:text-slate-500"><Filter size={16}/></div>
             <select 
