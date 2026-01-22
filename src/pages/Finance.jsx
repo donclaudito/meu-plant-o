@@ -8,6 +8,7 @@ import DiscountsModule from '@/components/finance/DiscountsModule';
 import ExtraIncomeModule from '@/components/finance/ExtraIncomeModule';
 import DepositsModule from '@/components/finance/DepositsModule';
 import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
+import PixImportModal from '@/components/finance/PixImportModal';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
