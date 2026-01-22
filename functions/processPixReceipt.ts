@@ -43,14 +43,15 @@ Deno.serve(async (req) => {
     const pixValue = Number(pixData.value);
     const pixDate = pixData.date;
 
-    // Get shifts for the doctor in the specified month
-    const shifts = await base44.asServiceRole.entities.Shift.filter({
-      doctorName: doctorName,
+    // Get all shifts for the user
+    const allShifts = await base44.asServiceRole.entities.Shift.filter({
       created_by: user.email
     });
 
-    // Filter shifts from the specified month
-    const monthShifts = shifts.filter(s => {
+    // Filter shifts by doctor, month and year
+    const monthShifts = allShifts.filter(s => {
+      if (s.doctorName !== doctorName) return false;
+      
       const [year_str, month_str] = s.date.split('-');
       const shiftYear = parseInt(year_str);
       const shiftMonth = parseInt(month_str);
