@@ -100,9 +100,26 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       const [year, month] = s.date.split('-').map(Number);
       const matchMonth = month === currentMonth + 1 && year === currentYear;
 
-      return matchMonth;
+      // Aplicar filtros de médico, especialidade e semana
+      const normalizedFilterDoctor = filterDoctor === 'TODOS' ? 'TODOS' : filterDoctor.trim().toUpperCase();
+      const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
+      const matchDoctor = normalizedFilterDoctor === 'TODOS' || normalizedDoctorName === normalizedFilterDoctor;
+
+      const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
+
+      let matchWeek = true;
+      if (filterWeek !== 'TODAS') {
+        const weekNum = parseInt(filterWeek);
+        const [, , day] = s.date.split('-').map(Number);
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+        const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+        const weekOfMonth = Math.ceil((day + adjustedFirstDay) / 7);
+        matchWeek = weekOfMonth === weekNum;
+      }
+
+      return matchMonth && matchDoctor && matchSpecialty && matchWeek;
     }).sort((a, b) => b.date.localeCompare(a.date));
-  }, [shifts, currentMonth, currentYear]);
+  }, [shifts, currentMonth, currentYear, filterDoctor, filterSpecialty, filterWeek]);
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1);
