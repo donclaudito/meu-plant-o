@@ -494,131 +494,131 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   const exportToPDF = async () => {
     const reportHTML = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; padding: 40px; }
-          h1 { color: #1e293b; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
-          h2 { color: #1e293b; margin-top: 30px; font-size: 18px; }
-          .header-section { background: #f1f5f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-          .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 30px 0; }
-          .summary-card { background: #f1f5f9; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; }
-          .summary-label { font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase; }
-          .summary-value { font-size: 24px; font-weight: bold; color: #1e293b; margin-top: 5px; }
-          .payment-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
-          .payment-card { padding: 15px; border-radius: 8px; }
-          .paid-card { background: #dcfce7; border: 2px solid #22c55e; }
-          .pending-card { background: #fef3c7; border: 2px solid #f59e0b; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th { background: #3b82f6; color: white; padding: 12px; text-align: left; font-size: 11px; }
-          td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-          tr:nth-child(even) { background: #f8fafc; }
-          .footer { margin-top: 40px; text-align: center; color: #64748b; font-size: 11px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-        </style>
-      </head>
-      <body>
-        <div class="header-section">
-          <h1 style="margin: 0 0 15px 0;">Relatório Financeiro Detalhado - Plantões</h1>
-          <p style="margin: 5px 0;"><strong>Período:</strong> ${filters.startDate ? new Date(filters.startDate).toLocaleDateString('pt-PT') : 'Início'} até ${filters.endDate ? new Date(filters.endDate).toLocaleDateString('pt-PT') : new Date().toLocaleDateString('pt-PT')}</p>
-          <p style="margin: 5px 0;"><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-PT')}</p>
-          ${filters.doctor !== 'TODOS' ? `<p style="margin: 5px 0;"><strong>Filtro Médico:</strong> ${filters.doctor}</p>` : ''}
-          ${filters.hospital !== 'TODOS' ? `<p style="margin: 5px 0;"><strong>Filtro Hospital:</strong> ${filters.hospital}</p>` : ''}
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { color: #1e293b; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; }
+            h2 { color: #1e293b; margin-top: 30px; font-size: 18px; }
+            .header-section { background: #f1f5f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+            .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 30px 0; }
+            .summary-card { background: #f1f5f9; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; }
+            .summary-label { font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase; }
+            .summary-value { font-size: 24px; font-weight: bold; color: #1e293b; margin-top: 5px; }
+            .payment-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+            .payment-card { padding: 15px; border-radius: 8px; }
+            .paid-card { background: #dcfce7; border: 2px solid #22c55e; }
+            .pending-card { background: #fef3c7; border: 2px solid #f59e0b; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background: #3b82f6; color: white; padding: 12px; text-align: left; font-size: 11px; }
+            td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+            tr:nth-child(even) { background: #f8fafc; }
+            .footer { margin-top: 40px; text-align: center; color: #64748b; font-size: 11px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+          </style>
+        </head>
+        <body>
+          <div class="header-section">
+            <h1 style="margin: 0 0 15px 0;">Relatório Financeiro Detalhado - Plantões</h1>
+            <p style="margin: 5px 0;"><strong>Período:</strong> ${filters.startDate ? new Date(filters.startDate).toLocaleDateString('pt-PT') : 'Início'} até ${filters.endDate ? new Date(filters.endDate).toLocaleDateString('pt-PT') : new Date().toLocaleDateString('pt-PT')}</p>
+            <p style="margin: 5px 0;"><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-PT')}</p>
+            ${filters.doctor !== 'TODOS' ? `<p style="margin: 5px 0;"><strong>Filtro Médico:</strong> ${filters.doctor}</p>` : ''}
+            ${filters.hospital !== 'TODOS' ? `<p style="margin: 5px 0;"><strong>Filtro Hospital:</strong> ${filters.hospital}</p>` : ''}
+          </div>
 
-        <h2>Resumo Financeiro</h2>
-        <div class="summary-grid">
-          <div class="summary-card">
-            <div class="summary-label">Faturamento Bruto</div>
-            <div class="summary-value">€ ${stats.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
+          <h2>Resumo Financeiro</h2>
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-label">Faturamento Bruto</div>
+              <div class="summary-value">R$ ${stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Receitas Extras</div>
+              <div class="summary-value">R$ ${stats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Total Bruto</div>
+              <div class="summary-value">R$ ${stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Descontos</div>
+              <div class="summary-value">R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+            </div>
           </div>
-          <div class="summary-card">
-            <div class="summary-label">Receitas Extras</div>
-            <div class="summary-value">€ ${stats.totalExtraIncome.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-label">Total Bruto</div>
-            <div class="summary-value">€ ${stats.grossTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-label">Descontos</div>
-            <div class="summary-value">€ ${stats.totalDiscounts.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
-          </div>
-        </div>
 
-        <h2>Status de Pagamentos</h2>
-        <div class="payment-summary">
-          <div class="payment-card paid-card">
-            <div class="summary-label" style="color: #166534;">Valor Liquidado</div>
-            <div style="font-size: 28px; font-weight: bold; color: #16a34a; margin-top: 8px;">€ ${stats.paid.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
-            <div style="font-size: 12px; color: #166534; margin-top: 5px;">${filteredShifts.filter(s => s.paid).length} plantões pagos</div>
+          <h2>Status de Pagamentos</h2>
+          <div class="payment-summary">
+            <div class="payment-card paid-card">
+              <div class="summary-label" style="color: #166534;">Valor Liquidado</div>
+              <div style="font-size: 28px; font-weight: bold; color: #16a34a; margin-top: 8px;">R$ ${stats.paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div style="font-size: 12px; color: #166534; margin-top: 5px;">${filteredShifts.filter(s => s.paid).length} plantões pagos</div>
+            </div>
+            <div class="payment-card pending-card">
+              <div class="summary-label" style="color: #92400e;">Valor Pendente</div>
+              <div style="font-size: 28px; font-weight: bold; color: #d97706; margin-top: 8px;">R$ ${stats.pending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div style="font-size: 12px; color: #92400e; margin-top: 5px;">${filteredShifts.filter(s => !s.paid).length} plantões pendentes</div>
+            </div>
           </div>
-          <div class="payment-card pending-card">
-            <div class="summary-label" style="color: #92400e;">Valor Pendente</div>
-            <div style="font-size: 28px; font-weight: bold; color: #d97706; margin-top: 8px;">€ ${stats.pending.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
-            <div style="font-size: 12px; color: #92400e; margin-top: 5px;">${filteredShifts.filter(s => !s.paid).length} plantões pendentes</div>
-          </div>
-        </div>
 
-        <h2>Detalhamento por Tipo de Plantão</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Quantidade</th>
-              <th>Horas</th>
-              <th>Valor Total</th>
-              <th>Valor/Hora</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${Object.entries(stats.byType).map(([type, data]) => `
+          <h2>Detalhamento por Tipo de Plantão</h2>
+          <table>
+            <thead>
               <tr>
-                <td><strong>${type}</strong></td>
-                <td>${data.count}</td>
-                <td>${data.hours}h</td>
-                <td>€ ${data.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
-                <td>€ ${(data.value / data.hours).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+                <th>Horas</th>
+                <th>Valor Total</th>
+                <th>Valor/Hora</th>
               </tr>
-            `).join('')}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${Object.entries(stats.byType).map(([type, data]) => `
+                <tr>
+                  <td><strong>${type}</strong></td>
+                  <td>${data.count}</td>
+                  <td>${data.hours}h</td>
+                  <td>R$ ${data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td>R$ ${(data.value / data.hours).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
 
-        <h2>Lista Completa de Plantões</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Hospital</th>
-              <th>Médico</th>
-              <th>Tipo</th>
-              <th>Horas</th>
-              <th>Valor</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${[...filteredShifts].sort((a, b) => a.date.localeCompare(b.date)).map(s => `
+          <h2>Lista Completa de Plantões</h2>
+          <table>
+            <thead>
               <tr>
-                <td>${new Date(s.date + 'T00:00:00').toLocaleDateString('pt-PT')}</td>
-                <td>${s.unit}</td>
-                <td>${s.doctorName}</td>
-                <td>${s.type}</td>
-                <td>${s.hours}h</td>
-                <td>€ ${s.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
-                <td>${s.paid ? '✓ Pago' : '⏳ Pendente'}</td>
+                <th>Data</th>
+                <th>Hospital</th>
+                <th>Médico</th>
+                <th>Tipo</th>
+                <th>Horas</th>
+                <th>Valor</th>
+                <th>Status</th>
               </tr>
-            `).join('')}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${[...filteredShifts].sort((a, b) => a.date.localeCompare(b.date)).map(s => `
+                <tr>
+                  <td>${new Date(s.date + 'T00:00:00').toLocaleDateString('pt-PT')}</td>
+                  <td>${s.unit}</td>
+                  <td>${s.doctorName.toUpperCase()}</td>
+                  <td>${s.type}</td>
+                  <td>${s.hours}h</td>
+                  <td>R$ ${s.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td>${s.paid ? '✓ Pago' : '⏳ Pendente'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
 
-        <div class="footer">
-          <p>Relatório gerado automaticamente por Meu Plantão</p>
-        </div>
-      </body>
-      </html>
-    `;
+          <div class="footer">
+            <p>Relatório gerado automaticamente por Meu Plantão</p>
+          </div>
+        </body>
+        </html>
+      `;
 
     const blob = new Blob([reportHTML], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
