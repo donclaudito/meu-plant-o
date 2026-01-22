@@ -761,20 +761,21 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
-          <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-white dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600 p-1">
               <button
                 onClick={() => setShowPixModal(true)}
-                className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-xl transition-colors"
+                className="p-2.5 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg transition-colors flex items-center justify-center"
                 title="Importar comprovativo PIX"
               >
-                <Sparkles size={16} className="text-purple-600 dark:text-purple-400" />
+                <Sparkles size={18} className="text-purple-600 dark:text-purple-400" />
               </button>
+              <div className="w-px h-6 bg-slate-200 dark:bg-slate-600"></div>
               <button
                 onClick={() => setShowPaymentModal(true)}
-                className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-colors"
-                title="Registar pagamento recebido"
+                className="p-2.5 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-lg transition-colors flex items-center justify-center"
+                title="Registar pagamento manual"
               >
-                <HandCoins size={16} className="text-green-600 dark:text-green-400" />
+                <HandCoins size={18} className="text-green-600 dark:text-green-400" />
               </button>
             </div>
           <p className="text-[11px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-[0.2em]">Valor Pendente</p>
