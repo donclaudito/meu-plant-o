@@ -761,15 +761,22 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
-          <div className="absolute top-4 right-4">
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-colors"
-              title="Registar pagamento recebido"
-            >
-              <HandCoins size={16} className="text-green-600 dark:text-green-400" />
-            </button>
-          </div>
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+              <button
+                onClick={() => setShowPixModal(true)}
+                className="p-2 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-xl transition-colors"
+                title="Importar comprovativo PIX"
+              >
+                <Sparkles size={16} className="text-purple-600 dark:text-purple-400" />
+              </button>
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-colors"
+                title="Registar pagamento recebido"
+              >
+                <HandCoins size={16} className="text-green-600 dark:text-green-400" />
+              </button>
+            </div>
           <p className="text-[11px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-[0.2em]">Valor Pendente</p>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-amber-200 font-bold text-xl">€</span>
