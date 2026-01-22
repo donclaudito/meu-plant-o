@@ -900,13 +900,44 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         onSave={(data) => createManualPaymentMutation.mutate(data)}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button
-          onClick={exportToPDF}
-          className="bg-red-600 dark:bg-red-500 text-white px-6 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-700 dark:hover:bg-red-600 transition-colors flex items-center justify-center gap-2 shadow-lg"
-        >
-          <FileText size={16}/> Exportar PDF
-        </button>
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+        <h3 className="text-xl font-black mb-6">Resumo de Pagamentos</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-2xl border-2 border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[11px] font-black text-green-700 dark:text-green-400 uppercase tracking-widest">Valor Liquidado</p>
+              <ArrowUp size={18} className="text-green-600" />
+            </div>
+            <p className="text-4xl font-black text-green-700 dark:text-green-300 mb-2">€ {safeStats.paid.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <div className="text-xs text-green-700 dark:text-green-400 font-bold">
+              {filteredShifts.filter(s => s.paid).length} plantão{filteredShifts.filter(s => s.paid).length !== 1 ? 'es' : ''} pagos
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-6 rounded-2xl border-2 border-amber-200 dark:border-amber-800">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[11px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest">Valor Pendente</p>
+              <ArrowDown size={18} className="text-amber-600" />
+            </div>
+            <p className="text-4xl font-black text-amber-700 dark:text-amber-300 mb-2">€ {safeStats.pending.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <div className="text-xs text-amber-700 dark:text-amber-400 font-bold">
+              {filteredShifts.filter(s => !s.paid).length} plantão{filteredShifts.filter(s => !s.paid).length !== 1 ? 'es' : ''} pendentes
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-2xl border-2 border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[11px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest">Taxa de Liquidação</p>
+              <CheckCircle size={18} className="text-blue-600" />
+            </div>
+            <p className="text-4xl font-black text-blue-700 dark:text-blue-300 mb-2">
+              {filteredShifts.length > 0 ? Math.round((filteredShifts.filter(s => s.paid).length / filteredShifts.length) * 100) : 0}%
+            </p>
+            <div className="text-xs text-blue-700 dark:text-blue-400 font-bold">
+              Dos plantões registados
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
