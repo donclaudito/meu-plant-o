@@ -99,21 +99,10 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       // Extrai ano e mês diretamente da string YYYY-MM-DD para evitar problemas de timezone
       const [year, month] = s.date.split('-').map(Number);
       const matchMonth = month === currentMonth + 1 && year === currentYear;
-      const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
-      const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
-      
-      // Filtro por semana - usa date-fns para calcular a semana ISO
-      let matchWeek = true;
-      if (filterWeek !== 'TODAS') {
-        const weekNum = parseInt(filterWeek);
-        const shiftDate = new Date(s.date + 'T00:00:00');
-        const shiftWeek = Math.ceil((shiftDate.getDate() + new Date(year, month - 1, 1).getDay()) / 7);
-        matchWeek = shiftWeek === weekNum;
-      }
-      
-      return matchMonth && matchSpecialty && matchDoctor && matchWeek;
+
+      return matchMonth;
     }).sort((a, b) => b.date.localeCompare(a.date));
-  }, [shifts, currentMonth, currentYear, filterSpecialty, filterDoctor, filterWeek]);
+  }, [shifts, currentMonth, currentYear]);
 
   const calendarDays = useMemo(() => {
     const firstDay = new Date(currentYear, currentMonth, 1);
@@ -130,7 +119,23 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     // Adicionar dias do mês
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-      const dayShifts = filteredShifts.filter(s => s.date === dateStr);
+      const dayShifts = filteredShifts.filter(s => {
+        if (s.date !== dateStr) return false;
+
+        const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
+        const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
+
+        let matchWeek = true;
+        if (filterWeek !== 'TODAS') {
+          const weekNum = parseInt(filterWeek);
+          const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+          const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+          const weekOfMonth = Math.ceil((i + adjustedFirstDay) / 7);
+          matchWeek = weekOfMonth === weekNum;
+        }
+
+        return matchDoctor && matchSpecialty && matchWeek;
+      });
       days.push({ day: i, date: dateStr, shifts: dayShifts });
     }
     
@@ -326,7 +331,23 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         />
       ) : (
         <ListView 
-          shifts={filteredShifts}
+          shifts={filteredShifts.filter(s => {
+            const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
+            const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
+
+            let matchWeek = true;
+            if (filterWeek !== 'TODAS') {
+              const weekNum = parseInt(filterWeek);
+              const shiftDate = new Date(s.date + 'T00:00:00');
+              const day = shiftDate.getDate();
+              const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+              const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+              const weekOfMonth = Math.ceil((day + adjustedFirstDay) / 7);
+              matchWeek = weekOfMonth === weekNum;
+            }
+
+            return matchDoctor && matchSpecialty && matchWeek;
+          })}
           onTogglePaid={handleTogglePaid}
           onDeleteShift={handleDeleteShift}
         />
