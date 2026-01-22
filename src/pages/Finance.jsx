@@ -270,7 +270,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
     const grossTotal = Number(totalByConfig) + Number(safeExtraIncome);
     const netTotal = Math.max(0, Number(grossTotal) - Number(safeDiscounts));
-    const pending = Math.max(0, Number(totalByConfig) - Number(paid) - Number(safeManualPayments));
+    const totalPaid = Number(paid) + Number(safeManualPayments);
+    const pending = Math.max(0, Number(totalByConfig) - Number(totalPaid));
     const valuePerHour = hours > 0 ? (Number(netTotal) / Number(hours)) : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
