@@ -774,7 +774,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             <p className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{safeStats.pending.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase">
-            <Clock size={14}/> Aguardando pagamento
+            <ArrowDown size={14}/> Aguardando recebimento
           </div>
           {safeStats.totalManualPayments > 0 && (
             <div className="mt-2 text-[9px] text-green-600 dark:text-green-400 font-bold">
