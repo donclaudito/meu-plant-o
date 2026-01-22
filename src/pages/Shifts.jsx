@@ -123,6 +123,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         if (s.date !== dateStr) return false;
 
         const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
+        console.log
         const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
 
         let matchWeek = true;
@@ -333,6 +334,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         <ListView 
           shifts={filteredShifts.filter(s => {
             const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
+            console.log
             const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
 
             let matchWeek = true;
