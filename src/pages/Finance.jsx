@@ -651,21 +651,33 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-          <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Resumo Financeiro
-        </h2>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={exportToCSV}
-            className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
-          >
-            <FileSpreadsheet size={18} /> Exportar CSV
-          </button>
-          <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-            {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
-          </div>
-        </div>
-      </div>
+         <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+           <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Resumo Financeiro
+         </h2>
+         <div className="flex items-center gap-2 flex-wrap">
+           <button
+             onClick={exportToCSV}
+             className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
+           >
+             <FileSpreadsheet size={18} /> CSV
+           </button>
+           <button
+             onClick={exportToXLSX}
+             className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg"
+           >
+             <Download size={18} /> Excel
+           </button>
+           <button
+             onClick={exportToPDF}
+             className="flex items-center gap-2 bg-red-600 dark:bg-red-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors shadow-lg"
+           >
+             <FileText size={18} /> PDF
+           </button>
+           <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+             {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
+           </div>
+         </div>
+       </div>
 
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
