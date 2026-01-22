@@ -192,8 +192,8 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayShifts = shifts.filter(s => s.date === todayStr);
-  const upcomingShifts = shifts.filter(s => s.date > todayStr).sort((a, b) => a.date.localeCompare(b.date));
+  const todayShifts = filteredShifts.filter(s => s.date === todayStr);
+  const upcomingShifts = filteredShifts.filter(s => s.date > todayStr).sort((a, b) => a.date.localeCompare(b.date));
   const nextShift = upcomingShifts[0];
 
   const exportToCSV = () => {
