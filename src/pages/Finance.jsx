@@ -599,7 +599,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             </tr>
           </thead>
           <tbody>
-            ${filteredShifts.map(s => `
+            ${[...filteredShifts].sort((a, b) => a.date.localeCompare(b.date)).map(s => `
               <tr>
                 <td>${new Date(s.date + 'T00:00:00').toLocaleDateString('pt-PT')}</td>
                 <td>${s.unit}</td>
