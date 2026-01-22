@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins, FileSpreadsheet } from 'lucide-react';
+import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins, FileSpreadsheet, ArrowDown, ArrowUp } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
 import DiscountsModule from '@/components/finance/DiscountsModule';
