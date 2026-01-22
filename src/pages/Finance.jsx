@@ -909,6 +909,16 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         onSave={(data) => createManualPaymentMutation.mutate(data)}
       />
 
+      <PixImportModal
+        isOpen={showPixModal}
+        onClose={() => setShowPixModal(false)}
+        doctors={doctors}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['manualPayments'] });
+          queryClient.invalidateQueries({ queryKey: ['discounts'] });
+        }}
+      />
+
       <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
         <h3 className="text-xl font-black mb-6">Resumo de Pagamentos</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
