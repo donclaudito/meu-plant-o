@@ -44,6 +44,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   });
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPixModal, setShowPixModal] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
