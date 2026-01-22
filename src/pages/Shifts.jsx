@@ -354,24 +354,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         />
       ) : (
         <ListView 
-          shifts={filteredShifts.filter(s => {
-            const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
-            console.log('Filtro Médico:', filterDoctor, 's.doctorName:', s.doctorName, 'matchDoctor:', matchDoctor);
-            const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
-
-            let matchWeek = true;
-            if (filterWeek !== 'TODAS') {
-              const weekNum = parseInt(filterWeek);
-              const shiftDate = new Date(s.date + 'T00:00:00');
-              const day = shiftDate.getDate();
-              const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
-              const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-              const weekOfMonth = Math.ceil((day + adjustedFirstDay) / 7);
-              matchWeek = weekOfMonth === weekNum;
-            }
-
-            return matchDoctor && matchSpecialty && matchWeek;
-          })}
+          shifts={filteredShifts}
           onTogglePaid={handleTogglePaid}
           onDeleteShift={handleDeleteShift}
         />
