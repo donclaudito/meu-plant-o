@@ -230,7 +230,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
               <p className="text-xs opacity-90 mt-1">
                 {todayShifts.map((s, i) => (
                   <span key={s.id}>
-                    {s.unit} ({s.type})
+                    <strong>{s.doctorName}</strong> em {s.unit} ({s.type})
                     {i < todayShifts.length - 1 ? ' • ' : ''}
                   </span>
                 ))}
@@ -240,8 +240,10 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         </div>
       ) : (
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 text-white p-4 rounded-2xl mb-6 shadow-lg dark:shadow-blue-900/30">
-          <p className="font-black text-sm uppercase tracking-wide">Hoje é dia de descanso. Aproveite a sua folga!</p>
-          {nextShift && (
+          <p className="font-black text-sm uppercase tracking-wide">
+            {filterDoctor !== 'TODOS' ? `${filterDoctor} está de folga hoje.` : 'Hoje é dia de descanso. Aproveite a sua folga!'}
+          </p>
+          {nextShift && filterDoctor !== 'TODOS' && (
             <p className="text-xs opacity-90 mt-2">
               Próximo plantão: {new Date(nextShift.date + 'T00:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' })} • {nextShift.unit} ({nextShift.type})
             </p>
