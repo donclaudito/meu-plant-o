@@ -33,9 +33,15 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
   });
 
   const availableDoctors = useMemo(() => {
-    const uniqueDoctors = [...new Set(shifts.map(s => s.doctorName))];
-    return uniqueDoctors.sort();
-  }, [shifts]);
+      const uniqueDoctorsMap = new Map();
+      shifts.forEach(s => {
+        const normalizedName = s.doctorName.toUpperCase();
+        if (!uniqueDoctorsMap.has(normalizedName)) {
+          uniqueDoctorsMap.set(normalizedName, s.doctorName);
+        }
+      });
+      return Array.from(uniqueDoctorsMap.values()).sort();
+    }, [shifts]);
 
   const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];

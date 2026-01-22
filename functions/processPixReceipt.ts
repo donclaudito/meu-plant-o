@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
 
     // Filter shifts by doctor, month and year
     const monthShifts = allShifts.filter(s => {
-      if (s.doctorName !== doctorName) return false;
+      if (s.doctorName.toUpperCase() !== doctorName.toUpperCase()) return false;
       
       const [year_str, month_str] = s.date.split('-');
       const shiftYear = parseInt(year_str);
