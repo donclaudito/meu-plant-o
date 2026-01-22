@@ -110,20 +110,23 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     const adjustedFirstDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Segunda = 0, Domingo = 6
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const days = [];
-    
+
     // Adicionar dias vazios antes do início do mês
     for (let i = 0; i < adjustedFirstDay; i++) {
       days.push({ day: null, date: null, shifts: [] });
     }
-    
+
     // Adicionar dias do mês
     for (let i = 1; i <= daysInMonth; i++) {
       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayShifts = filteredShifts.filter(s => {
         if (s.date !== dateStr) return false;
 
-        const matchDoctor = filterDoctor === 'TODOS' || s.doctorName === filterDoctor;
-        console.log('Filtro Médico:', filterDoctor, 's.doctorName:', s.doctorName, 'matchDoctor:', matchDoctor);
+        const normalizedFilterDoctor = filterDoctor === 'TODOS' ? 'TODOS' : filterDoctor.trim().toUpperCase();
+        const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
+        const matchDoctor = normalizedFilterDoctor === 'TODOS' || normalizedDoctorName === normalizedFilterDoctor;
+
+        console.log('Filtro Médico:', normalizedFilterDoctor, 's.doctorName:', normalizedDoctorName, 'matchDoctor:', matchDoctor);
         const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
 
         let matchWeek = true;
@@ -139,9 +142,9 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       });
       days.push({ day: i, date: dateStr, shifts: dayShifts });
     }
-    
+
     return days;
-  }, [currentMonth, currentYear, filteredShifts]);
+  }, [currentMonth, currentYear, filteredShifts, filterDoctor, filterSpecialty, filterWeek]);
 
   const handleDayClick = (date) => {
     setSelectedDate(date);
