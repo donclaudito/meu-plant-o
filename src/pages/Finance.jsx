@@ -89,7 +89,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       }
       
       // Other filters
-      if (filters.doctor !== 'TODOS' && s.doctorName !== filters.doctor) return false;
+      if (filters.doctor !== 'TODOS') {
+        const normalizedFilterDoctor = filters.doctor.trim().toUpperCase();
+        const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
+        if (normalizedDoctorName !== normalizedFilterDoctor) return false;
+      }
       if (filters.hospital !== 'TODOS' && s.unit !== filters.hospital) return false;
       if (filters.specialty !== 'TODAS' && s.specialty !== filters.specialty) return false;
       if (filters.paid === 'PAGO' && !s.paid) return false;
