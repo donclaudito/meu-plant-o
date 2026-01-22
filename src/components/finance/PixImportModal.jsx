@@ -166,10 +166,10 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
               <div>
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">Médico</label>
                 <select
-                  value={selectedDoctor}
-                  onChange={(e) => setSelectedDoctor(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 rounded-xl font-bold border-none focus:ring-2 focus:ring-purple-600 text-slate-900 dark:text-white"
-                >
+                   value={selectedDoctor}
+                   onChange={(e) => setSelectedDoctor(e.target.value)}
+                   className="w-full px-4 py-3 bg-white dark:bg-slate-700 rounded-xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-purple-600 text-slate-900 dark:text-white"
+                 >
                   <option value="">Selecione um médico</option>
                   {availableDoctors.map(doc => (
                     <option key={doc} value={doc}>{doc}</option>
@@ -183,7 +183,7 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
                   <select
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 rounded-xl font-bold border-none focus:ring-2 focus:ring-purple-600 text-slate-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 rounded-xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-purple-600 text-slate-900 dark:text-white"
                   >
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
                       <option key={m} value={m}>{m.toString().padStart(2, '0')}</option>
@@ -196,7 +196,7 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
                     type="number"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 rounded-xl font-bold border-none focus:ring-2 focus:ring-purple-600 text-slate-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 rounded-xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-purple-600 text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
