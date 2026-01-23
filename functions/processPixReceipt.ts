@@ -69,32 +69,20 @@ Deno.serve(async (req) => {
     // Calculate gross total
     const grossTotal = monthShifts.reduce((sum, s) => sum + (s.value || 0), 0);
 
-    // Calculate discount
-    const discount = grossTotal - pixValue;
-
     // Create ManualPayment record
     const manualPayment = await base44.entities.ManualPayment.create({
       date: pixDate.includes('-') ? pixDate : pixDate.split('/').reverse().join('-'),
       value: pixValue,
-      description: `Pagamento PIX - ${doctorName}`
-    });
-
-    // Create Discount record
-    const discountRecord = await base44.entities.Discount.create({
-      date: new Date().toISOString().split('T')[0],
-      type: 'PIX Desconto',
-      description: `Desconto calculado de recibo PIX de ${doctorName} - ${month}/${year}`,
-      value: Math.max(0, discount)
+      description: `Pagamento PIX - ${doctorName} (${month}/${year})`
     });
 
     return Response.json({
       success: true,
       pixValue,
       grossTotal,
-      discount: Math.max(0, discount),
+      pendingValue: Math.max(0, grossTotal - pixValue),
       shiftsCount: monthShifts.length,
-      manualPayment,
-      discountRecord
+      manualPayment
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

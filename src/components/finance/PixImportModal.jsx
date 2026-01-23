@@ -252,10 +252,10 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
                         R$ {result.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
-                    <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded-xl">
-                      <p className="text-[10px] text-red-700 dark:text-red-400 font-bold uppercase">Desconto Calculado</p>
-                      <p className="text-lg font-black text-red-700 dark:text-red-300">
-                        R$ {result.discount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    <div className="bg-amber-100 dark:bg-amber-900/20 p-3 rounded-xl">
+                      <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase">Valor Pendente</p>
+                      <p className="text-lg font-black text-amber-700 dark:text-amber-300">
+                        R$ {result.pendingValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
