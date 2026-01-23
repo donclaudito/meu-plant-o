@@ -29,6 +29,10 @@ Deno.serve(async (req) => {
           date: { 
             type: "string", 
             description: "Data do pagamento no formato DD/MM/YYYY ou YYYY-MM-DD"
+          },
+          payerName: {
+            type: "string",
+            description: "Nome completo de quem enviou o PIX (pagador)"
           }
         },
         required: ["value", "date"]
@@ -42,6 +46,7 @@ Deno.serve(async (req) => {
     const pixData = extractResult.output;
     const pixValue = Number(pixData.value);
     const pixDate = pixData.date;
+    const payerName = pixData.payerName || 'Não identificado';
 
     // Get all shifts for the user
     const allShifts = await base44.asServiceRole.entities.Shift.filter({
@@ -69,20 +74,37 @@ Deno.serve(async (req) => {
     // Calculate gross total
     const grossTotal = monthShifts.reduce((sum, s) => sum + (s.value || 0), 0);
 
-    // Create ManualPayment record
-    const manualPayment = await base44.entities.ManualPayment.create({
+    // Calculate discount
+    const discountValue = Math.max(0, grossTotal - pixValue);
+
+    // Create Deposit record
+    const deposit = await base44.entities.Deposit.create({
       date: pixDate.includes('-') ? pixDate : pixDate.split('/').reverse().join('-'),
       value: pixValue,
-      description: `Pagamento PIX - ${doctorName} (${month}/${year})`
+      description: `Depósito PIX de ${payerName} para ${doctorName} (${month}/${year})`
     });
+
+    // Create Discount record if there's a discount
+    let discount = null;
+    if (discountValue > 0) {
+      discount = await base44.entities.Discount.create({
+        date: pixDate.includes('-') ? pixDate : pixDate.split('/').reverse().join('-'),
+        type: 'Desconto PIX',
+        description: `Desconto calculado: ${doctorName} (${month}/${year}) - Pagador: ${payerName}`,
+        value: discountValue
+      });
+    }
 
     return Response.json({
       success: true,
       pixValue,
       grossTotal,
-      pendingValue: Math.max(0, grossTotal - pixValue),
+      discountValue,
+      netTotal: pixValue,
+      payerName,
       shiftsCount: monthShifts.length,
-      manualPayment
+      deposit,
+      discount
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

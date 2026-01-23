@@ -83,7 +83,7 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
       setExtractedData(data);
 
       if (data.success) {
-        queryClient.invalidateQueries({ queryKey: ['manualPayments'] });
+        queryClient.invalidateQueries({ queryKey: ['deposits'] });
         queryClient.invalidateQueries({ queryKey: ['discounts'] });
         
         setTimeout(() => {
@@ -238,27 +238,34 @@ export default function PixImportModal({ isOpen, onClose, doctors, onSuccess }) 
                 <h4 className="font-black text-lg text-slate-900 dark:text-white mb-4">Recibo Processado!</h4>
                 
                 <div className="space-y-3 text-sm">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
-                    <p className="text-[11px] text-blue-700 dark:text-blue-400 font-bold uppercase mb-1">Valor PIX Recebido</p>
-                    <p className="text-2xl font-black text-blue-900 dark:text-blue-200">
-                      R$ {result.pixValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
+                  {result.payerName && (
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-xl border border-purple-200 dark:border-purple-800 mb-3">
+                      <p className="text-[10px] text-purple-700 dark:text-purple-400 font-bold uppercase">Pagador</p>
+                      <p className="text-sm font-black text-purple-900 dark:text-purple-200">{result.payerName}</p>
+                    </div>
+                  )}
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-xl">
-                      <p className="text-[10px] text-slate-600 dark:text-slate-400 font-bold uppercase">Faturamento Bruto</p>
-                      <p className="text-lg font-black text-slate-900 dark:text-white">
-                        R$ {result.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-200 dark:border-green-800">
+                      <p className="text-[11px] text-green-700 dark:text-green-400 font-bold uppercase mb-1">Valor Liquidado (Depositado)</p>
+                      <p className="text-2xl font-black text-green-900 dark:text-green-200">
+                        R$ {result.pixValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
-                    <div className="bg-amber-100 dark:bg-amber-900/20 p-3 rounded-xl">
-                      <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase">Valor Pendente</p>
-                      <p className="text-lg font-black text-amber-700 dark:text-amber-300">
-                        R$ {result.pendingValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </p>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-xl">
+                        <p className="text-[10px] text-slate-600 dark:text-slate-400 font-bold uppercase">Faturamento Bruto</p>
+                        <p className="text-lg font-black text-slate-900 dark:text-white">
+                          R$ {result.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                      <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded-xl">
+                        <p className="text-[10px] text-red-700 dark:text-red-400 font-bold uppercase">Desconto Calculado</p>
+                        <p className="text-lg font-black text-red-700 dark:text-red-300">
+                          R$ {result.discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
                   <p className="text-[11px] text-slate-600 dark:text-slate-400">
                     {result.shiftsCount} plantão{result.shiftsCount !== 1 ? 'ões' : ''} registado{result.shiftsCount !== 1 ? 's' : ''} processado{result.shiftsCount !== 1 ? 's' : ''}
