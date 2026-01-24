@@ -7,7 +7,7 @@ import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 export default function DiscountsModule({ currentMonth, currentYear, discountTypes = [] }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [newDiscount, setNewDiscount] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     type: '',
     description: '',
     value: 0
@@ -27,7 +27,7 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
       queryClient.invalidateQueries({ queryKey: ['discounts'] });
       setIsFormOpen(false);
       setNewDiscount({
-        date: new Date().toISOString().split('T')[0],
+        date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
         type: '',
         description: '',
         value: 0
@@ -52,7 +52,12 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createDiscountMutation.mutate(newDiscount);
+    // Convert YYYY-MM to YYYY-MM-01 for storage
+    const discountData = {
+      ...newDiscount,
+      date: `${newDiscount.date}-01`
+    };
+    createDiscountMutation.mutate(discountData);
   };
 
   return (
@@ -80,9 +85,9 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
         <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-red-50 rounded-2xl border border-red-100">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mês e Ano</label>
               <input
-                type="date"
+                type="month"
                 required
                 value={newDiscount.date}
                 onChange={e => setNewDiscount({ ...newDiscount, date: e.target.value })}
@@ -148,7 +153,7 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
               onClick={() => {
                 setIsFormOpen(false);
                 setNewDiscount({
-                  date: new Date().toISOString().split('T')[0],
+                  date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
                   type: '',
                   description: '',
                   value: 0
