@@ -61,11 +61,11 @@ Deno.serve(async (req) => {
       const normalizedShiftName = s.doctorName.trim().toUpperCase();
       const normalizedDoctorName = doctorName.trim().toUpperCase();
       
-      // Check if shift doctor name contains the search name or vice versa
-      const nameMatch = normalizedShiftName.includes(normalizedDoctorName.split(' ')[0]) || 
-                        normalizedDoctorName.includes(normalizedShiftName.split(' ')[0]);
+      // Match by first name (case-insensitive, handles "claudio", "Claudio", " Claudio", etc.)
+      const firstNameShift = normalizedShiftName.split(' ')[0];
+      const firstNameDoctor = normalizedDoctorName.split(' ')[0];
       
-      if (!nameMatch) return false;
+      if (firstNameShift !== firstNameDoctor) return false;
       
       const [year_str, month_str] = s.date.split('-');
       const shiftYear = parseInt(year_str);
