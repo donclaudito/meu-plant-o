@@ -44,9 +44,9 @@ export default function DiscountTypes({ user, showToast }) {
   };
 
   return (
-    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-      <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-        <MinusCircle className="text-red-600" /> Tipos de Desconto
+    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+      <h3 className="text-xl font-black mb-6 flex items-center gap-2 dark:text-white">
+        <MinusCircle className="text-red-600 dark:text-red-500" /> Tipos de Desconto
       </h3>
 
       <form onSubmit={handleAddType} className="mb-6">
