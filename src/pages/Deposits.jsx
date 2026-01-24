@@ -72,6 +72,14 @@ export default function Deposits() {
     },
   });
 
+  const deleteExtraIncomeMutation = useMutation({
+    mutationFn: (id) => base44.entities.ExtraIncome.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['extraIncomes'] });
+      setDeleteConfirmation({ isOpen: false, id: '', name: '' });
+    },
+  });
+
   const filteredDeposits = useMemo(() => {
     return deposits.filter(deposit => {
       const [year, month] = deposit.date.split('-').map(Number);
@@ -440,7 +448,15 @@ export default function Deposits() {
                     {income.description && <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{income.description}</p>}
                   </div>
                 </div>
-                <span className="font-black text-lg text-green-700 dark:text-green-300">R$ {income.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-black text-lg text-green-700 dark:text-green-300">R$ {income.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  <button
+                    onClick={() => setDeleteConfirmation({ isOpen: true, id: income.id, name: 'Receita Extra' })}
+                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -479,7 +495,13 @@ export default function Deposits() {
       <DeleteConfirmation 
         isOpen={deleteConfirmation.isOpen}
         name={deleteConfirmation.name}
-        onConfirm={() => deleteDepositMutation.mutate(deleteConfirmation.id)}
+        onConfirm={() => {
+          if (deleteConfirmation.name === 'Receita Extra') {
+            deleteExtraIncomeMutation.mutate(deleteConfirmation.id);
+          } else {
+            deleteDepositMutation.mutate(deleteConfirmation.id);
+          }
+        }}
         onCancel={() => setDeleteConfirmation({ isOpen: false, id: '', name: '' })}
       />
     </div>
