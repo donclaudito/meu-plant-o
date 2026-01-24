@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 
 export default function ManualPaymentModal({ isOpen, onClose, onSave }) {
   const [newPayment, setNewPayment] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     value: 0,
     description: ''
   });
@@ -12,8 +12,13 @@ export default function ManualPaymentModal({ isOpen, onClose, onSave }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSave(newPayment);
-    setNewPayment({ date: new Date().toISOString().split('T')[0], value: 0, description: '' });
+    // Convert YYYY-MM to YYYY-MM-01 for storage
+    const paymentData = {
+      ...newPayment,
+      date: `${newPayment.date}-01`
+    };
+    await onSave(paymentData);
+    setNewPayment({ date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`, value: 0, description: '' });
     onClose();
   };
 
@@ -39,8 +44,11 @@ export default function ManualPaymentModal({ isOpen, onClose, onSave }) {
       });
 
       if (result.status === 'success' && result.output) {
+        // Extract year and month from the date
+        const extractedDate = result.output.date || new Date().toISOString().split('T')[0];
+        const [year, month] = extractedDate.split('-');
         setNewPayment({
-          date: result.output.date || new Date().toISOString().split('T')[0],
+          date: `${year}-${month}`,
           value: result.output.value || 0,
           description: result.output.description || ''
         });
@@ -91,9 +99,9 @@ export default function ManualPaymentModal({ isOpen, onClose, onSave }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mês e Ano</label>
               <input 
-                type="date" 
+                type="month" 
                 required 
                 value={newPayment.date} 
                 onChange={e => setNewPayment({ ...newPayment, date: e.target.value })} 
