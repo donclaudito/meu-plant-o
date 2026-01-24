@@ -19,9 +19,11 @@ export default function Doctors() {
     pixKey: '',
     pixKeyType: 'CPF'
   });
+  const [editingDoctor, setEditingDoctor] = useState(null);
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
   const [selectedDoctors, setSelectedDoctors] = useState([]);
+  const [isExtractingPix, setIsExtractingPix] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -55,6 +57,15 @@ export default function Doctors() {
     },
   });
 
+  const updateDoctorMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.Doctor.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
+      setEditingDoctor(null);
+      showToast('Médico atualizado!');
+    },
+  });
+
   const deleteDoctorMutation = useMutation({
     mutationFn: (id) => base44.entities.Doctor.delete(id),
     onSuccess: () => {
@@ -82,7 +93,75 @@ export default function Doctors() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createDoctorMutation.mutate(newDoctor);
+    if (editingDoctor) {
+      updateDoctorMutation.mutate({ id: editingDoctor.id, data: editingDoctor });
+    } else {
+      createDoctorMutation.mutate(newDoctor);
+    }
+  };
+
+  const handleEdit = (doctor) => {
+    setEditingDoctor({
+      ...doctor,
+      pixKeyType: doctor.pixKeyType || 'CPF'
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingDoctor(null);
+  };
+
+  const handlePixUpload = async (e, isEditing = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsExtractingPix(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: "object",
+          properties: {
+            accountHolder: { 
+              type: "string", 
+              description: "Nome completo do titular da conta PIX como aparece no comprovativo"
+            },
+            pixKey: { 
+              type: "string", 
+              description: "Chave PIX (CPF, CNPJ, email, telefone ou código aleatório)"
+            },
+            pixKeyType: {
+              type: "string",
+              description: "Tipo de chave PIX: CPF, CNPJ, Email, Telefone ou Aleatória"
+            }
+          }
+        }
+      });
+
+      if (result.status === 'success' && result.output) {
+        const extractedData = {
+          pixAccountHolder: result.output.accountHolder || '',
+          pixKey: result.output.pixKey || '',
+          pixKeyType: result.output.pixKeyType || 'CPF'
+        };
+
+        if (isEditing) {
+          setEditingDoctor(prev => ({ ...prev, ...extractedData }));
+        } else {
+          setNewDoctor(prev => ({ ...prev, ...extractedData }));
+        }
+        showToast('Dados PIX extraídos com sucesso!');
+      } else {
+        showToast('Erro ao extrair dados do comprovativo', 'error');
+      }
+    } catch (error) {
+      showToast('Erro ao processar arquivo', 'error');
+    } finally {
+      setIsExtractingPix(false);
+      e.target.value = '';
+    }
   };
 
   const toggleSelectAll = () => {
@@ -157,47 +236,60 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
         <div className="bg-white dark:bg-slate-800 p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
           <h2 className="text-lg sm:text-xl font-black mb-4 sm:mb-6 flex items-center gap-2 dark:text-white">
             <UserPlus size={20} className="sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" /> 
-            <span className="text-base sm:text-xl">Cadastro de Médicos</span>
+            <span className="text-base sm:text-xl">{editingDoctor ? 'Editar Médico' : 'Cadastro de Médicos'}</span>
           </h2>
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <input 
               type="text" 
               placeholder="Nome completo" 
               required 
-              value={newDoctor.name} 
-              onChange={e => setNewDoctor({ ...newDoctor, name: e.target.value })} 
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
+              value={editingDoctor ? editingDoctor.name : newDoctor.name} 
+              onChange={e => editingDoctor ? setEditingDoctor({ ...editingDoctor, name: e.target.value }) : setNewDoctor({ ...newDoctor, name: e.target.value })} 
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
             />
             <select 
-              value={newDoctor.specialty} 
-              onChange={e => setNewDoctor({ ...newDoctor, specialty: e.target.value })} 
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base"
+              value={editingDoctor ? editingDoctor.specialty : newDoctor.specialty} 
+              onChange={e => editingDoctor ? setEditingDoctor({ ...editingDoctor, specialty: e.target.value }) : setNewDoctor({ ...newDoctor, specialty: e.target.value })} 
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base"
             >
               {specialties.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <input 
               type="tel" 
               placeholder="Telefone (opcional)" 
-              value={newDoctor.phone} 
-              onChange={e => setNewDoctor({ ...newDoctor, phone: e.target.value })} 
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
+              value={editingDoctor ? editingDoctor.phone : newDoctor.phone} 
+              onChange={e => editingDoctor ? setEditingDoctor({ ...editingDoctor, phone: e.target.value }) : setNewDoctor({ ...newDoctor, phone: e.target.value })} 
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
             />
             
             <div className="pt-3 border-t border-slate-200 dark:border-slate-600">
-              <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase mb-3">Dados PIX (Opcional)</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase">Dados PIX (Opcional)</p>
+                <label className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg cursor-pointer hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => handlePixUpload(e, !!editingDoctor)}
+                    disabled={isExtractingPix}
+                    className="hidden"
+                  />
+                  <Upload size={14} />
+                  <span className="text-[10px] font-bold">{isExtractingPix ? 'Extraindo...' : 'Importar PIX'}</span>
+                </label>
+              </div>
               
               <input 
                 type="text" 
                 placeholder="Nome do titular da conta (como aparece no PIX)" 
-                value={newDoctor.pixAccountHolder} 
-                onChange={e => setNewDoctor({ ...newDoctor, pixAccountHolder: e.target.value })} 
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base mb-3" 
+                value={editingDoctor ? editingDoctor.pixAccountHolder || '' : newDoctor.pixAccountHolder} 
+                onChange={e => editingDoctor ? setEditingDoctor({ ...editingDoctor, pixAccountHolder: e.target.value }) : setNewDoctor({ ...newDoctor, pixAccountHolder: e.target.value })} 
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base mb-3" 
               />
               
               <select 
-                value={newDoctor.pixKeyType} 
-                onChange={e => setNewDoctor({ ...newDoctor, pixKeyType: e.target.value })} 
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base mb-3"
+                value={editingDoctor ? editingDoctor.pixKeyType || 'CPF' : newDoctor.pixKeyType} 
+                onChange={e => editingDoctor ? setEditingDoctor({ ...editingDoctor, pixKeyType: e.target.value }) : setNewDoctor({ ...newDoctor, pixKeyType: e.target.value })} 
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base mb-3"
               >
                 <option value="CPF">CPF</option>
                 <option value="CNPJ">CNPJ</option>
@@ -209,18 +301,30 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
               <input 
                 type="text" 
                 placeholder="Chave PIX" 
-                value={newDoctor.pixKey} 
-                onChange={e => setNewDoctor({ ...newDoctor, pixKey: e.target.value })} 
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
+                value={editingDoctor ? editingDoctor.pixKey || '' : newDoctor.pixKey} 
+                onChange={e => editingDoctor ? setEditingDoctor({ ...editingDoctor, pixKey: e.target.value }) : setNewDoctor({ ...newDoctor, pixKey: e.target.value })} 
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
               />
             </div>
-            <button 
-              type="submit" 
-              disabled={createDoctorMutation.isPending}
-              className="w-full bg-blue-600 dark:bg-blue-500 text-white font-black py-2.5 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 dark:shadow-blue-900/30 disabled:opacity-50 text-sm sm:text-base"
-            >
-              <Save size={16} className="sm:w-[18px] sm:h-[18px]" /> Salvar
-            </button>
+            
+            <div className="flex gap-2">
+              {editingDoctor && (
+                <button 
+                  type="button"
+                  onClick={handleCancelEdit}
+                  className="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-black py-2.5 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-slate-300 dark:hover:bg-slate-600 transition-all text-sm sm:text-base"
+                >
+                  Cancelar
+                </button>
+              )}
+              <button 
+                type="submit" 
+                disabled={createDoctorMutation.isPending || updateDoctorMutation.isPending}
+                className="flex-1 bg-blue-600 dark:bg-blue-500 text-white font-black py-2.5 sm:py-3 rounded-xl sm:rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-100 dark:shadow-blue-900/30 disabled:opacity-50 text-sm sm:text-base"
+              >
+                <Save size={16} className="sm:w-[18px] sm:h-[18px]" /> {editingDoctor ? 'Atualizar' : 'Salvar'}
+              </button>
+            </div>
           </form>
         </div>
 
@@ -282,7 +386,10 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
                 onChange={() => toggleSelectDoctor(d.id)}
                 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 flex-shrink-0"
               />
-              <div className="flex-1 min-w-0">
+              <div 
+                className="flex-1 min-w-0 cursor-pointer" 
+                onClick={() => handleEdit(d)}
+              >
                 <p className="font-black text-slate-900 dark:text-white text-xs sm:text-sm leading-tight break-words">
                   {d.name} <span className="text-slate-500 dark:text-slate-400">|</span> {d.specialty} {d.phone && <><span className="text-slate-500 dark:text-slate-400">|</span> {d.phone}</>}
                 </p>
