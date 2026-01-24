@@ -129,7 +129,10 @@ Deno.serve(async (req) => {
         error: 'No shifts found for this doctor in the specified month',
         pixValue,
         payerName,
+        payerPixKey,
+        payerPixKeyType,
         matchedByPix: !!matchedDoctor,
+        matchMethod: matchedDoctor ? (payerPixKey ? 'pixKey' : 'accountHolder') : 'none',
         debug: {
           searchingFor: searchDoctorName,
           originalInput: doctorName,
