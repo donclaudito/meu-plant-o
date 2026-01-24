@@ -61,8 +61,23 @@ Deno.serve(async (req) => {
     const payerPixKey = pixData.payerPixKey;
     const payerPixKeyType = pixData.payerPixKeyType;
 
-    // Use the first day of the selected month/year for consistency
-    const depositDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    // Use the actual transaction date from PIX receipt
+    let depositDate;
+    if (pixData.date) {
+      const parts = pixData.date.split('/');
+      if (parts.length === 3) {
+        // DD/MM/YYYY format
+        depositDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      } else if (pixData.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // YYYY-MM-DD format
+        depositDate = pixData.date;
+      } else {
+        // Fallback to first day of month
+        depositDate = `${year}-${String(month).padStart(2, '0')}-01`;
+      }
+    } else {
+      depositDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    }
 
     // Try to match doctor by PIX key first (most precise), then by account holder name
     let matchedDoctor = null;
@@ -109,12 +124,9 @@ Deno.serve(async (req) => {
       const normalizedShiftName = s.doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
       const normalizedDoctorName = searchDoctorName.replace(/\s+/g, ' ').trim().toUpperCase();
       
-      // Extract first name (before first space) for comparison
-      const firstNameShift = normalizedShiftName.split(' ')[0];
-      const firstNameDoctor = normalizedDoctorName.split(' ')[0];
-      
-      // Match if first names are the same (handles "claudio", "Claudio M", " Claudio", etc.)
-      const nameMatch = firstNameShift === firstNameDoctor;
+      // More flexible matching: check if one name includes the other
+      const nameMatch = normalizedShiftName.includes(normalizedDoctorName) || 
+                        normalizedDoctorName.includes(normalizedShiftName);
       
       if (!nameMatch) return false;
       
