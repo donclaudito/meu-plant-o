@@ -57,14 +57,16 @@ Deno.serve(async (req) => {
 
     // Filter shifts by doctor, month and year
     const monthShifts = allShifts.filter(s => {
-      // Normalize both names: remove extra spaces, convert to uppercase
-      const normalizedShiftName = s.doctorName.trim().toUpperCase();
-      const normalizedDoctorName = doctorName.trim().toUpperCase();
+      // Normalize both names: remove extra spaces, convert to uppercase, remove leading spaces
+      const normalizedShiftName = s.doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
+      const normalizedDoctorName = doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
       
-      // Flexible match: either exact match OR one contains the other (for "claudio" vs "CLAUDIO M ORENSTEIN")
-      const nameMatch = normalizedShiftName === normalizedDoctorName ||
-                        normalizedShiftName.includes(normalizedDoctorName) ||
-                        normalizedDoctorName.includes(normalizedShiftName);
+      // Extract first name (before first space) for comparison
+      const firstNameShift = normalizedShiftName.split(' ')[0];
+      const firstNameDoctor = normalizedDoctorName.split(' ')[0];
+      
+      // Match if first names are the same (handles "claudio", "Claudio M", " Claudio", etc.)
+      const nameMatch = firstNameShift === firstNameDoctor;
       
       if (!nameMatch) return false;
       
@@ -78,7 +80,12 @@ Deno.serve(async (req) => {
       return Response.json({ 
         error: 'No shifts found for this doctor in the specified month',
         pixValue,
-        payerName
+        payerName,
+        debug: {
+          searchingFor: doctorName,
+          foundShiftsTotal: allShifts.length,
+          uniqueDoctors: [...new Set(allShifts.map(s => s.doctorName))]
+        }
       }, { status: 400 });
     }
 
