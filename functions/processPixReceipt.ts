@@ -45,8 +45,17 @@ Deno.serve(async (req) => {
 
     const pixData = extractResult.output;
     const pixValue = Number(pixData.value);
-    const pixDate = pixData.date;
+    let pixDate = pixData.date;
     const payerName = pixData.payerName || 'Não identificado';
+    
+    // Normalize date format to YYYY-MM-DD
+    if (pixDate.includes('/')) {
+      const parts = pixDate.split('/');
+      if (parts[0].length === 2) {
+        // DD/MM/YYYY format
+        pixDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+    }
 
     // Get all shifts for the user
     const allShifts = await base44.asServiceRole.entities.Shift.filter({
@@ -79,18 +88,18 @@ Deno.serve(async (req) => {
 
     // Create Deposit record
     const deposit = await base44.entities.Deposit.create({
-      date: pixDate.includes('-') ? pixDate : pixDate.split('/').reverse().join('-'),
+      date: pixDate,
       value: pixValue,
-      description: `Depósito PIX de ${payerName} para ${doctorName} (${month}/${year})`
+      description: `PIX recebido de ${payerName} - ${doctorName} (${month}/${year})`
     });
 
     // Create Discount record if there's a discount
     let discount = null;
     if (discountValue > 0) {
       discount = await base44.entities.Discount.create({
-        date: pixDate.includes('-') ? pixDate : pixDate.split('/').reverse().join('-'),
+        date: pixDate,
         type: 'Desconto PIX',
-        description: `Desconto calculado: ${doctorName} (${month}/${year}) - Pagador: ${payerName}`,
+        description: `Desconto: Bruto R$ ${grossTotal.toFixed(2)} - Líquido R$ ${pixValue.toFixed(2)}`,
         value: discountValue
       });
     }
