@@ -15,7 +15,7 @@ export default function Deposits() {
   const [selectedReferenceYear, setSelectedReferenceYear] = useState(new Date().getFullYear());
   const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('');
   const [newDeposit, setNewDeposit] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     description: '',
     value: 0
   });
@@ -70,7 +70,7 @@ export default function Deposits() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deposits'] });
       setShowForm(false);
-      setNewDeposit({ date: new Date().toISOString().split('T')[0], description: '', value: 0 });
+      setNewDeposit({ date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`, description: '', value: 0 });
     },
   });
 
@@ -180,7 +180,12 @@ export default function Deposits() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createDepositMutation.mutate(newDeposit);
+    // Convert YYYY-MM to YYYY-MM-01 for storage
+    const depositData = {
+      ...newDeposit,
+      date: `${newDeposit.date}-01`
+    };
+    createDepositMutation.mutate(depositData);
   };
 
   const handleFileUpload = async (e) => {
@@ -205,8 +210,11 @@ export default function Deposits() {
       });
 
       if (result.status === 'success' && result.output) {
+        // Extract year and month from the date
+        const extractedDate = result.output.date || new Date().toISOString().split('T')[0];
+        const [year, month] = extractedDate.split('-');
         setNewDeposit({
-          date: result.output.date || new Date().toISOString().split('T')[0],
+          date: `${year}-${month}`,
           value: result.output.value || 0,
           description: result.output.description || ''
         });
@@ -350,9 +358,9 @@ export default function Deposits() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data</label>
+                <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Mês e Ano</label>
                 <input
-                  type="date"
+                  type="month"
                   value={newDeposit.date}
                   onChange={(e) => setNewDeposit({...newDeposit, date: e.target.value})}
                   className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
@@ -525,7 +533,12 @@ export default function Deposits() {
               <div className="flex items-center gap-3">
                 <Calendar size={16} className="text-blue-600 dark:text-blue-400" />
                 <div>
-                  <span className="text-sm font-black text-slate-900 dark:text-white">{new Date(deposit.date + 'T00:00:00').toLocaleDateString('pt-PT')}</span>
+                  <span className="text-sm font-black text-slate-900 dark:text-white">
+                    {(() => {
+                      const [year, month] = deposit.date.split('-');
+                      return `${monthNames[parseInt(month) - 1]} ${year}`;
+                    })()}
+                  </span>
                   {deposit.description && <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{deposit.description}</p>}
                 </div>
               </div>
