@@ -58,13 +58,32 @@ Deno.serve(async (req) => {
     const pixData = extractResult.output;
     const pixValue = Number(pixData.value);
     const payerName = pixData.payerName || 'Não identificado';
+    const payerPixKey = pixData.payerPixKey;
+    const payerPixKeyType = pixData.payerPixKeyType;
 
     // Use the first day of the selected month/year for consistency
     const depositDate = `${year}-${String(month).padStart(2, '0')}-01`;
 
-    // Try to match doctor by PIX account holder name first
+    // Try to match doctor by PIX key first (most precise), then by account holder name
     let matchedDoctor = null;
-    if (payerName && payerName !== 'Não identificado') {
+    
+    // Priority 1: Match by PIX key + key type
+    if (payerPixKey && payerPixKeyType) {
+      const normalizedPayerKey = payerPixKey.replace(/\s+/g, '').trim().toUpperCase();
+      matchedDoctor = userDoctors.find(d => {
+        if (d.pixKey && d.pixKeyType) {
+          const normalizedDoctorKey = d.pixKey.replace(/\s+/g, '').trim().toUpperCase();
+          const normalizedDoctorKeyType = d.pixKeyType.toUpperCase();
+          const normalizedPayerKeyType = payerPixKeyType.toUpperCase();
+          return normalizedDoctorKey === normalizedPayerKey && 
+                 normalizedDoctorKeyType === normalizedPayerKeyType;
+        }
+        return false;
+      });
+    }
+    
+    // Priority 2: Match by PIX account holder name
+    if (!matchedDoctor && payerName && payerName !== 'Não identificado') {
       const normalizedPayerName = payerName.replace(/\s+/g, ' ').trim().toUpperCase();
       matchedDoctor = userDoctors.find(d => {
         if (d.pixAccountHolder) {
