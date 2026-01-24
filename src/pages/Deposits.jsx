@@ -46,6 +46,15 @@ export default function Deposits() {
     enabled: !!user,
   });
 
+  const { data: extraIncomes = [] } = useQuery({
+    queryKey: ['extraIncomes', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.ExtraIncome.list('-date');
+      return all.filter(i => i.created_by === user?.email);
+    },
+    enabled: !!user,
+  });
+
   const createDepositMutation = useMutation({
     mutationFn: (data) => base44.entities.Deposit.create(data),
     onSuccess: () => {
@@ -98,6 +107,33 @@ export default function Deposits() {
   const totalShiftsValue = useMemo(() => {
     return shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
   }, [shiftsFromReferenceMonth]);
+
+  const extraIncomesFromReferenceMonth = useMemo(() => {
+    return extraIncomes.filter(income => {
+      const [year, month] = income.date.split('-').map(Number);
+      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+    });
+  }, [extraIncomes, selectedReferenceMonth, selectedReferenceYear]);
+
+  const totalExtraIncome = useMemo(() => {
+    return extraIncomesFromReferenceMonth.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
+  }, [extraIncomesFromReferenceMonth]);
+
+  const shiftsByUnit = useMemo(() => {
+    const grouped = {};
+    shiftsFromReferenceMonth.forEach(shift => {
+      const unit = shift.unit || 'Sem unidade';
+      if (!grouped[unit]) {
+        grouped[unit] = { total: 0, count: 0 };
+      }
+      grouped[unit].total += Number(shift.value) || 0;
+      grouped[unit].count += 1;
+    });
+    return grouped;
+  }, [shiftsFromReferenceMonth]);
+
+  const totalExpected = totalShiftsValue + totalExtraIncome;
+  const difference = totalDeposits - totalExpected;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -299,7 +335,7 @@ export default function Deposits() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-[2.5rem] border-2 border-green-200 dark:border-green-800 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <TrendingUp className="text-green-600 dark:text-green-400" size={24} />
@@ -312,6 +348,32 @@ export default function Deposits() {
           </p>
           <p className="text-xs text-green-600 dark:text-green-400 font-bold">
             {shiftsFromReferenceMonth.length} plantão{shiftsFromReferenceMonth.length !== 1 ? 'ões' : ''} registado{shiftsFromReferenceMonth.length !== 1 ? 's' : ''}
+          </p>
+          {totalExtraIncome > 0 && (
+            <div className="mt-3 pt-3 border-t border-green-300 dark:border-green-700">
+              <p className="text-[9px] text-green-600 dark:text-green-400 font-bold uppercase tracking-wider">+ Outras Entradas</p>
+              <p className="text-lg font-black text-green-600 dark:text-green-300">
+                R$ {totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+              <p className="text-[8px] text-green-500 dark:text-green-400 mt-1">
+                {extraIncomesFromReferenceMonth.length} entrada{extraIncomesFromReferenceMonth.length !== 1 ? 's' : ''} (consultas, cirurgias, etc)
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-8 rounded-[2.5rem] border-2 border-purple-200 dark:border-purple-800 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <TrendingUp className="text-purple-600 dark:text-purple-400" size={24} />
+            <p className="text-[11px] font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">
+              Total Esperado
+            </p>
+          </div>
+          <p className="text-4xl font-black text-purple-700 dark:text-purple-300 mb-2">
+            R$ {totalExpected.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 font-bold">
+            Plantões + Outras Entradas
           </p>
         </div>
 
@@ -328,8 +390,62 @@ export default function Deposits() {
           <p className="text-xs text-blue-600 dark:text-blue-400 font-bold">
             {filteredDeposits.length} depósito{filteredDeposits.length !== 1 ? 's' : ''} registado{filteredDeposits.length !== 1 ? 's' : ''}
           </p>
+          <div className={`mt-3 pt-3 border-t ${difference >= 0 ? 'border-green-300 dark:border-green-700' : 'border-red-300 dark:border-red-700'}`}>
+            <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: difference >= 0 ? '#16a34a' : '#dc2626' }}>
+              Diferença
+            </p>
+            <p className={`text-2xl font-black ${difference >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {difference >= 0 ? '+' : ''} R$ {Math.abs(difference).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-[8px] mt-1" style={{ color: difference >= 0 ? '#16a34a' : '#dc2626' }}>
+              {difference >= 0 ? 'Depositado a mais' : 'Falta depositar'}
+            </p>
+          </div>
         </div>
       </div>
+
+      {Object.keys(shiftsByUnit).length > 0 && (
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Plantões por Unidade</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(shiftsByUnit)
+              .sort((a, b) => b[1].total - a[1].total)
+              .map(([unit, data]) => (
+                <div key={unit} className="bg-slate-50 dark:bg-slate-700/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-600">
+                  <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{unit}</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white mb-1">
+                    R$ {data.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                    {data.count} plantão{data.count !== 1 ? 'ões' : ''}
+                  </p>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {extraIncomesFromReferenceMonth.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Outras Entradas do Mês</h3>
+          <div className="space-y-2">
+            {extraIncomesFromReferenceMonth.map(income => (
+              <div key={income.id} className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800">
+                <div className="flex items-center gap-3">
+                  <div className="bg-green-600 dark:bg-green-500 p-2 rounded-lg">
+                    <TrendingUp size={14} className="text-white" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-slate-900 dark:text-white">{income.type}</span>
+                    {income.description && <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{income.description}</p>}
+                  </div>
+                </div>
+                <span className="font-black text-lg text-green-700 dark:text-green-300">R$ {income.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
         <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Lista de Depósitos</h3>
