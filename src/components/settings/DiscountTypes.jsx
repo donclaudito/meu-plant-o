@@ -72,14 +72,15 @@ export default function DiscountTypes({ user, showToast }) {
         {discountTypes.map((type, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors group"
+            className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
           >
-            <span className="font-bold text-slate-900">{type}</span>
+            <span className="font-bold text-slate-900 dark:text-white">{type}</span>
             <button
               onClick={() => handleRemoveType(type)}
-              className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded-xl transition-all"
+              disabled={updateTypesMutation.isPending}
+              className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all disabled:opacity-50"
             >
-              <X size={14} className="text-red-600" />
+              <X size={14} className="text-red-600 dark:text-red-400" />
             </button>
           </div>
         ))}
