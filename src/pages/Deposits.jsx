@@ -13,6 +13,7 @@ export default function Deposits() {
   const [showForm, setShowForm] = useState(false);
   const [selectedReferenceMonth, setSelectedReferenceMonth] = useState(new Date().getMonth());
   const [selectedReferenceYear, setSelectedReferenceYear] = useState(new Date().getFullYear());
+  const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('');
   const [newDeposit, setNewDeposit] = useState({
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -51,6 +52,15 @@ export default function Deposits() {
     queryFn: async () => {
       const all = await base44.entities.ExtraIncome.list('-date');
       return all.filter(i => i.created_by === user?.email);
+    },
+    enabled: !!user,
+  });
+
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctors', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list();
+      return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
   });
@@ -95,9 +105,16 @@ export default function Deposits() {
         paymentYear = refYear + 1;
       }
       
-      return month === paymentMonth && year === paymentYear;
+      const dateMatch = month === paymentMonth && year === paymentYear;
+      
+      if (selectedDoctorFilter && deposit.description) {
+        const doctorMatch = deposit.description.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        return dateMatch && doctorMatch;
+      }
+      
+      return dateMatch;
     });
-  }, [deposits, selectedReferenceMonth, selectedReferenceYear]);
+  }, [deposits, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalDeposits = useMemo(() => {
     return filteredDeposits.reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
@@ -106,9 +123,16 @@ export default function Deposits() {
   const shiftsFromReferenceMonth = useMemo(() => {
     return shifts.filter(s => {
       const [year, month] = s.date.split('-').map(Number);
-      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      
+      if (selectedDoctorFilter) {
+        const doctorMatch = s.doctorName.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        return dateMatch && doctorMatch;
+      }
+      
+      return dateMatch;
     });
-  }, [shifts, selectedReferenceMonth, selectedReferenceYear]);
+  }, [shifts, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalShiftsValue = useMemo(() => {
     return shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
@@ -117,9 +141,16 @@ export default function Deposits() {
   const extraIncomesFromReferenceMonth = useMemo(() => {
     return extraIncomes.filter(income => {
       const [year, month] = income.date.split('-').map(Number);
-      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      
+      if (selectedDoctorFilter && income.description) {
+        const doctorMatch = income.description.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        return dateMatch && doctorMatch;
+      }
+      
+      return dateMatch;
     });
-  }, [extraIncomes, selectedReferenceMonth, selectedReferenceYear]);
+  }, [extraIncomes, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalExtraIncome = useMemo(() => {
     return extraIncomesFromReferenceMonth.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
@@ -137,6 +168,12 @@ export default function Deposits() {
     });
     return grouped;
   }, [shiftsFromReferenceMonth]);
+
+  const doctorFilterDisplayName = useMemo(() => {
+    if (!selectedDoctorFilter) return '';
+    const doctor = doctors.find(d => d.name === selectedDoctorFilter);
+    return doctor ? doctor.name : selectedDoctorFilter;
+  }, [selectedDoctorFilter, doctors]);
 
   const totalExpected = totalShiftsValue + totalExtraIncome;
   const difference = totalDeposits - totalExpected;
@@ -213,7 +250,7 @@ export default function Deposits() {
 
       <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6">Filtros</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
               Mês de Referência
@@ -240,6 +277,21 @@ export default function Deposits() {
               <option value={2024}>2024</option>
               <option value={2025}>2025</option>
               <option value={2026}>2026</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
+              Médico
+            </label>
+            <select
+              value={selectedDoctorFilter}
+              onChange={(e) => setSelectedDoctorFilter(e.target.value)}
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+            >
+              <option value="">Todos os Médicos</option>
+              {doctors.map(doctor => (
+                <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -347,6 +399,7 @@ export default function Deposits() {
             <TrendingUp className="text-green-600 dark:text-green-400" size={28} />
             <p className="text-[11px] font-black text-green-700 dark:text-green-400 uppercase tracking-widest">
               Plantões de {monthNames[selectedReferenceMonth]} {selectedReferenceYear}
+              {selectedDoctorFilter && ` - ${doctorFilterDisplayName}`}
             </p>
           </div>
           <p className="text-3xl md:text-4xl font-black text-green-700 dark:text-green-300 mb-2">
@@ -463,6 +516,9 @@ export default function Deposits() {
 
       <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6">Lista de Depósitos</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+          Total de depósitos no sistema: {deposits.length} | Filtrados: {filteredDeposits.length}
+        </p>
         <div className="space-y-2">
           {filteredDeposits.map(deposit => (
             <div key={deposit.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-slate-100 dark:border-slate-600">
