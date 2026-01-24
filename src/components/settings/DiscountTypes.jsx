@@ -22,8 +22,8 @@ export default function DiscountTypes({ user, showToast }) {
       await base44.auth.updateMe({ discountTypes: types });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['user']);
-      showToast('Tipos de desconto atualizados!');
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      showToast?.('Tipos de desconto atualizados!');
     },
   });
 
