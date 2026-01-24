@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       return Response.json({ 
         error: 'No shifts found for this doctor in the specified month',
         pixValue,
-        pixDate
+        payerName
       }, { status: 400 });
     }
 
