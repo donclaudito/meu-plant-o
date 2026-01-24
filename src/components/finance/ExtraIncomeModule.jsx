@@ -9,7 +9,7 @@ const incomeTypes = ["Ambulatório", "Cirurgia", "Bónus", "Aposentadoria", "Out
 export default function ExtraIncomeModule({ currentMonth, currentYear, showToast }) {
   const [showForm, setShowForm] = useState(false);
   const [newIncome, setNewIncome] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     type: 'Ambulatório',
     description: '',
     value: 0
@@ -29,7 +29,7 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['extraIncomes'] });
       setShowForm(false);
-      setNewIncome({ date: new Date().toISOString().split('T')[0], type: 'Ambulatório', description: '', value: 0 });
+      setNewIncome({ date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`, type: 'Ambulatório', description: '', value: 0 });
       showToast('Receita adicionada!');
     },
   });
@@ -56,7 +56,12 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createIncomeMutation.mutate(newIncome);
+    // Convert YYYY-MM to YYYY-MM-01 for storage
+    const incomeData = {
+      ...newIncome,
+      date: `${newIncome.date}-01`
+    };
+    createIncomeMutation.mutate(incomeData);
   };
 
   const handleFileUpload = async (e) => {
@@ -86,8 +91,11 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
       });
 
       if (result.status === 'success' && result.output) {
+        // Extract year and month from the date
+        const extractedDate = result.output.date || new Date().toISOString().split('T')[0];
+        const [year, month] = extractedDate.split('-');
         setNewIncome({
-          date: result.output.date || new Date().toISOString().split('T')[0],
+          date: `${year}-${month}`,
           value: result.output.value || 0,
           type: result.output.type || 'Outro',
           description: result.output.description || ''
@@ -147,9 +155,9 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Data</label>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Mês e Ano</label>
               <input
-                type="date"
+                type="month"
                 value={newIncome.date}
                 onChange={(e) => setNewIncome({...newIncome, date: e.target.value})}
                 className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-green-600"
