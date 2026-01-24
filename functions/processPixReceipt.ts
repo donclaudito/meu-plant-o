@@ -82,8 +82,8 @@ Deno.serve(async (req) => {
         payerName,
         debug: {
           searchingFor: doctorName,
-          foundShiftsTotal: allShifts.length,
-          uniqueDoctors: [...new Set(allShifts.map(s => s.doctorName))]
+          foundShiftsTotal: userShifts.length,
+          uniqueDoctors: [...new Set(userShifts.map(s => s.doctorName))]
         }
       }, { status: 400 });
     }
