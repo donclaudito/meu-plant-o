@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Wallet, Trash2, Calendar, Upload, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
+import { Plus, Wallet, Trash2, Calendar, Upload, Sparkles, TrendingUp, ArrowRight, FileText } from 'lucide-react';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
+import PixImportModal from '@/components/finance/PixImportModal';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -13,6 +14,8 @@ export default function Deposits() {
   const [showForm, setShowForm] = useState(false);
   const [selectedReferenceMonth, setSelectedReferenceMonth] = useState(new Date().getMonth());
   const [selectedReferenceYear, setSelectedReferenceYear] = useState(new Date().getFullYear());
+  const [selectedDoctorFilter, setSelectedDoctorFilter] = useState('');
+  const [showPixImport, setShowPixImport] = useState(false);
   const [newDeposit, setNewDeposit] = useState({
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -51,6 +54,15 @@ export default function Deposits() {
     queryFn: async () => {
       const all = await base44.entities.ExtraIncome.list('-date');
       return all.filter(i => i.created_by === user?.email);
+    },
+    enabled: !!user,
+  });
+
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctors', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list();
+      return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
   });
@@ -97,9 +109,17 @@ export default function Deposits() {
         paymentYear = refYear + 1;
       }
       
-      return month === paymentMonth && year === paymentYear;
+      const dateMatch = month === paymentMonth && year === paymentYear;
+      
+      // Filtro por médico (verifica se a descrição contém o nome do médico)
+      if (selectedDoctorFilter && deposit.description) {
+        const doctorMatch = deposit.description.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        return dateMatch && doctorMatch;
+      }
+      
+      return dateMatch;
     });
-  }, [deposits, selectedReferenceMonth, selectedReferenceYear]);
+  }, [deposits, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalDeposits = useMemo(() => {
     return filteredDeposits.reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
@@ -204,18 +224,27 @@ export default function Deposits() {
         <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
           <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Depósitos Bancários
         </h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg"
-        >
-          <Plus size={14} />
-          {showForm ? 'Cancelar' : 'Adicionar'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowPixImport(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 dark:from-purple-500 dark:to-indigo-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:from-purple-700 hover:to-indigo-700 dark:hover:from-purple-600 dark:hover:to-indigo-600 transition-colors shadow-lg"
+          >
+            <FileText size={14} />
+            Importar PIX
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg"
+          >
+            <Plus size={14} />
+            {showForm ? 'Cancelar' : 'Adicionar'}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-        <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Filtrar por Mês de Referência dos Plantões</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <h3 className="text-lg font-black text-slate-900 dark:text-white mb-6">Filtros</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
             <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
               Mês de Referência
@@ -242,6 +271,21 @@ export default function Deposits() {
               <option value={2024}>2024</option>
               <option value={2025}>2025</option>
               <option value={2026}>2026</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
+              Médico
+            </label>
+            <select
+              value={selectedDoctorFilter}
+              onChange={(e) => setSelectedDoctorFilter(e.target.value)}
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+            >
+              <option value="">Todos os Médicos</option>
+              {doctors.map(doctor => (
+                <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -504,6 +548,14 @@ export default function Deposits() {
         }}
         onCancel={() => setDeleteConfirmation({ isOpen: false, id: '', name: '' })}
       />
-    </div>
-  );
-}
+
+      <PixImportModal
+        isOpen={showPixImport}
+        onClose={() => setShowPixImport(false)}
+        currentMonth={selectedReferenceMonth + 1}
+        currentYear={selectedReferenceYear}
+        preSelectedDoctor={selectedDoctorFilter}
+      />
+      </div>
+      );
+      }
