@@ -11,7 +11,14 @@ const specialties = [
 ];
 
 export default function Doctors() {
-  const [newDoctor, setNewDoctor] = useState({ name: '', specialty: 'CIRURGIA GERAL', phone: '' });
+  const [newDoctor, setNewDoctor] = useState({ 
+    name: '', 
+    specialty: 'CIRURGIA GERAL', 
+    phone: '',
+    pixAccountHolder: '',
+    pixKey: '',
+    pixKeyType: 'CPF'
+  });
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
   const [selectedDoctors, setSelectedDoctors] = useState([]);
@@ -36,7 +43,14 @@ export default function Doctors() {
     mutationFn: (data) => base44.entities.Doctor.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctors'] });
-      setNewDoctor({ name: '', specialty: 'CIRURGIA GERAL', phone: '' });
+      setNewDoctor({ 
+        name: '', 
+        specialty: 'CIRURGIA GERAL', 
+        phone: '',
+        pixAccountHolder: '',
+        pixKey: '',
+        pixKeyType: 'CPF'
+      });
       showToast('Médico cadastrado!');
     },
   });
@@ -168,6 +182,38 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
               onChange={e => setNewDoctor({ ...newDoctor, phone: e.target.value })} 
               className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
             />
+            
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-600">
+              <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase mb-3">Dados PIX (Opcional)</p>
+              
+              <input 
+                type="text" 
+                placeholder="Nome do titular da conta (como aparece no PIX)" 
+                value={newDoctor.pixAccountHolder} 
+                onChange={e => setNewDoctor({ ...newDoctor, pixAccountHolder: e.target.value })} 
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base mb-3" 
+              />
+              
+              <select 
+                value={newDoctor.pixKeyType} 
+                onChange={e => setNewDoctor({ ...newDoctor, pixKeyType: e.target.value })} 
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base mb-3"
+              >
+                <option value="CPF">CPF</option>
+                <option value="CNPJ">CNPJ</option>
+                <option value="Email">Email</option>
+                <option value="Telefone">Telefone</option>
+                <option value="Aleatória">Chave Aleatória</option>
+              </select>
+              
+              <input 
+                type="text" 
+                placeholder="Chave PIX" 
+                value={newDoctor.pixKey} 
+                onChange={e => setNewDoctor({ ...newDoctor, pixKey: e.target.value })} 
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-xl sm:rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm sm:text-base" 
+              />
+            </div>
             <button 
               type="submit" 
               disabled={createDoctorMutation.isPending}
@@ -240,6 +286,11 @@ Dra. Maria Costa,PEDIATRIA,+351 918 765 432`;
                 <p className="font-black text-slate-900 dark:text-white text-xs sm:text-sm leading-tight break-words">
                   {d.name} <span className="text-slate-500 dark:text-slate-400">|</span> {d.specialty} {d.phone && <><span className="text-slate-500 dark:text-slate-400">|</span> {d.phone}</>}
                 </p>
+                {d.pixAccountHolder && (
+                  <p className="text-[10px] text-blue-600 dark:text-blue-400 font-bold mt-1">
+                    PIX: {d.pixAccountHolder}
+                  </p>
+                )}
               </div>
               <button 
                 onClick={() => setDeleteConfirmation({ isOpen: true, id: d.id, name: d.name })} 

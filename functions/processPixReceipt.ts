@@ -12,6 +12,10 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { fileUrl, doctorName, month, year } = body;
 
+    // Fetch all doctors to match PIX data
+    const allDoctors = await base44.asServiceRole.entities.Doctor.list();
+    const userDoctors = allDoctors.filter(d => d.created_by === user.email);
+
     if (!fileUrl || !doctorName || !month || !year) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -46,9 +50,27 @@ Deno.serve(async (req) => {
     const pixData = extractResult.output;
     const pixValue = Number(pixData.value);
     const payerName = pixData.payerName || 'Não identificado';
-    
+
     // Use the first day of the selected month/year for consistency
     const depositDate = `${year}-${String(month).padStart(2, '0')}-01`;
+
+    // Try to match doctor by PIX account holder name first
+    let matchedDoctor = null;
+    if (payerName && payerName !== 'Não identificado') {
+      const normalizedPayerName = payerName.replace(/\s+/g, ' ').trim().toUpperCase();
+      matchedDoctor = userDoctors.find(d => {
+        if (d.pixAccountHolder) {
+          const normalizedPixHolder = d.pixAccountHolder.replace(/\s+/g, ' ').trim().toUpperCase();
+          return normalizedPixHolder === normalizedPayerName || 
+                 normalizedPixHolder.includes(normalizedPayerName) ||
+                 normalizedPayerName.includes(normalizedPixHolder);
+        }
+        return false;
+      });
+    }
+
+    // If no match by PIX holder, fall back to matching by doctor name
+    const searchDoctorName = matchedDoctor ? matchedDoctor.name : doctorName;
 
     // Get all shifts for the user (note: list() returns array directly)
     const allShiftsRaw = await base44.asServiceRole.entities.Shift.list();
@@ -58,7 +80,7 @@ Deno.serve(async (req) => {
     const monthShifts = userShifts.filter(s => {
       // Normalize both names: remove extra spaces, convert to uppercase, remove leading spaces
       const normalizedShiftName = s.doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
-      const normalizedDoctorName = doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
+      const normalizedDoctorName = searchDoctorName.replace(/\s+/g, ' ').trim().toUpperCase();
       
       // Extract first name (before first space) for comparison
       const firstNameShift = normalizedShiftName.split(' ')[0];
@@ -80,8 +102,10 @@ Deno.serve(async (req) => {
         error: 'No shifts found for this doctor in the specified month',
         pixValue,
         payerName,
+        matchedByPix: !!matchedDoctor,
         debug: {
-          searchingFor: doctorName,
+          searchingFor: searchDoctorName,
+          originalInput: doctorName,
           foundShiftsTotal: userShifts.length,
           uniqueDoctors: [...new Set(userShifts.map(s => s.doctorName))]
         }
@@ -119,6 +143,8 @@ Deno.serve(async (req) => {
       discountValue,
       netTotal: pixValue,
       payerName,
+      matchedByPix: !!matchedDoctor,
+      matchedDoctorName: searchDoctorName,
       shiftsCount: monthShifts.length,
       deposit,
       discount
