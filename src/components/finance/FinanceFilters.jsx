@@ -80,18 +80,18 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
         </select>
 
         <input
-          type="date"
+          type="month"
           value={filters.startDate}
-          onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-          placeholder="Data Início"
+          onChange={(e) => setFilters({ ...filters, startDate: e.target.value ? `${e.target.value}-01` : '' })}
+          placeholder="Mês Início"
           className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         />
 
         <input
-          type="date"
+          type="month"
           value={filters.endDate}
-          onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-          placeholder="Data Fim"
+          onChange={(e) => setFilters({ ...filters, endDate: e.target.value ? `${e.target.value}-31` : '' })}
+          placeholder="Mês Fim"
           className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         />
       </div>
