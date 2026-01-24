@@ -4,8 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Wallet, Trash2, Calendar, Upload, Sparkles } from 'lucide-react';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 
+const monthNames = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
 export default function DepositsModule({ currentMonth, currentYear, showToast }) {
   const [showForm, setShowForm] = useState(false);
+  const [selectedReferenceMonth, setSelectedReferenceMonth] = useState(null);
   const [newDeposit, setNewDeposit] = useState({
     date: new Date().toISOString().split('T')[0],
     description: '',
@@ -43,9 +49,27 @@ export default function DepositsModule({ currentMonth, currentYear, showToast })
   const filteredDeposits = useMemo(() => {
     return deposits.filter(deposit => {
       const [year, month] = deposit.date.split('-').map(Number);
+      
+      if (selectedReferenceMonth !== null) {
+        // Mês de referência dos plantões (ex: Dezembro)
+        const refMonth = selectedReferenceMonth;
+        const refYear = currentYear;
+        
+        // Mês de pagamento (mês seguinte ao de referência)
+        let paymentMonth = refMonth + 2; // +1 para o mês seguinte, +1 porque month já está em 1-12
+        let paymentYear = refYear;
+        
+        if (paymentMonth > 12) {
+          paymentMonth = 1;
+          paymentYear = refYear + 1;
+        }
+        
+        return month === paymentMonth && year === paymentYear;
+      }
+      
       return month === currentMonth + 1 && year === currentYear;
     });
-  }, [deposits, currentMonth, currentYear]);
+  }, [deposits, currentMonth, currentYear, selectedReferenceMonth]);
 
   const totalDeposits = useMemo(() => {
     return filteredDeposits.reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
@@ -180,8 +204,30 @@ export default function DepositsModule({ currentMonth, currentYear, showToast })
         </form>
       )}
 
+      <div className="mb-6">
+        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1 block mb-2">
+          Filtrar por Mês de Referência dos Plantões
+        </label>
+        <select
+          value={selectedReferenceMonth === null ? '' : selectedReferenceMonth}
+          onChange={(e) => setSelectedReferenceMonth(e.target.value === '' ? null : Number(e.target.value))}
+          className="w-full px-4 py-3 bg-white rounded-2xl font-bold border border-slate-300 focus:ring-2 focus:ring-blue-600"
+        >
+          <option value="">Mês Atual ({monthNames[currentMonth]} {currentYear})</option>
+          {monthNames.map((name, index) => (
+            <option key={index} value={index}>
+              {name} {currentYear} → Pago em {monthNames[(index + 1) % 12]} {index === 11 ? currentYear + 1 : currentYear}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-200 mb-6">
-        <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">Total Depositado</p>
+        <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
+          {selectedReferenceMonth !== null 
+            ? `Depósitos de ${monthNames[(selectedReferenceMonth + 1) % 12]} ${selectedReferenceMonth === 11 ? currentYear + 1 : currentYear} (Ref: ${monthNames[selectedReferenceMonth]})`
+            : 'Total Depositado'}
+        </p>
         <p className="text-4xl font-black text-blue-700">R$ {totalDeposits.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
       </div>
 
