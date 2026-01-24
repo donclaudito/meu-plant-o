@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { UserPlus, Save, Trash2, Download } from 'lucide-react';
+import { UserPlus, Save, Trash2, Download, Upload } from 'lucide-react';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 import ImportDoctors from '@/components/doctors/ImportDoctors';
