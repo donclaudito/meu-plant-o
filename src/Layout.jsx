@@ -104,6 +104,7 @@ export default function Layout({ children, currentPageName }) {
   const navItems = [
     { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
     { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
+    { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
     { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
     { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
     { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
