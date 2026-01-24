@@ -228,9 +228,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     }
 
     // Valores de referência das definições com proteção defensiva
+    const shift6hValue = Number(user?.shift6hValue) || 1000;
     const shift12hValue = Number(user?.shift12hValue) || 1800;
     const shift24hValue = Number(user?.shift24hValue) || 3000;
-    const calculatedHourlyRate = shift12hValue / 12;
+    const baseHourlyRate = Number(user?.hourlyRate) || 150;
     
     // Proteção contra valores inválidos nos plantões
     const validShifts = safeShifts.filter(shift => 
@@ -251,7 +252,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (shiftValue > 0) return acc + shiftValue;
         if (shiftHours === 24) return acc + shift24hValue;
         if (shiftHours === 12) return acc + shift12hValue;
-        return acc + (calculatedHourlyRate * shiftHours);
+        if (shiftHours === 6) return acc + shift6hValue;
+        return acc + (baseHourlyRate * shiftHours);
       } catch (error) {
         console.error('Erro ao calcular valor do plantão:', error);
         return acc;
@@ -299,8 +301,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           acc[type].value += shift24hValue;
         } else if (shiftHours === 12) {
           acc[type].value += shift12hValue;
+        } else if (shiftHours === 6) {
+          acc[type].value += shift6hValue;
         } else {
-          acc[type].value += calculatedHourlyRate * shiftHours;
+          acc[type].value += baseHourlyRate * shiftHours;
         }
         return acc;
       } catch (error) {
@@ -321,7 +325,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         const shiftValue = Number(shift.value) || 0;
         const key = `${hours}h`;
         if (!acc[key]) {
-          acc[key] = { count: 0, hours: 0, value: 0, avgValue: 0 };
+          acc[key] = { count: 0, hours: 0, value: 0 };
         }
         acc[key].count++;
         acc[key].hours += hours;
@@ -333,8 +337,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           acc[key].value += shift24hValue;
         } else if (hours === 12) {
           acc[key].value += shift12hValue;
+        } else if (hours === 6) {
+          acc[key].value += shift6hValue;
         } else {
-          acc[key].value += calculatedHourlyRate * hours;
+          acc[key].value += baseHourlyRate * hours;
         }
         return acc;
       } catch (error) {
@@ -342,12 +348,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         return acc;
       }
     }, {});
-    
-    // Calcular médias para cada duração
-    Object.keys(byDuration).forEach(key => {
-      byDuration[key].avgValue = byDuration[key].value / byDuration[key].count;
-      byDuration[key].valuePerHour = byDuration[key].hours > 0 ? byDuration[key].value / byDuration[key].hours : 0;
-    });
     
     return { 
       total: Number(totalByConfig) || 0,
@@ -414,7 +414,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     setIsRecalculating(true);
     try {
       const user = await base44.auth.me();
-      const hourlyRate = user.hourlyRate || 150;
+      const baseHourlyRate = user.hourlyRate || 150;
+      const shift6hValue = user.shift6hValue || 1000;
       const shift12hValue = user.shift12hValue || 1800;
       const shift24hValue = user.shift24hValue || 3000;
 
@@ -424,10 +425,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           newValue = shift24hValue;
         } else if (shift.hours === 12) {
           newValue = shift12hValue;
+        } else if (shift.hours === 6) {
+          newValue = shift6hValue;
         } else {
-          newValue = Math.round(hourlyRate * shift.hours);
+          newValue = Math.round(baseHourlyRate * shift.hours);
         }
-        
+
         return base44.entities.Shift.update(shift.id, { value: newValue });
       });
 
@@ -819,21 +822,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                   <p className="text-[10px] text-slate-500 font-bold">Quantidade</p>
                   <p className="text-2xl font-black text-slate-900">{data.count} plantões</p>
                 </div>
-                <div>
-                  <p className="text-[10px] text-slate-500 font-bold">Valor Médio</p>
-                  <p className="text-lg font-black text-green-600">
-                    R$ {data.avgValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-500 font-bold">Valor/Hora</p>
-                  <p className="text-lg font-black text-blue-600">
-                    R$ {data.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
-                  </p>
-                </div>
                 <div className="pt-3 border-t border-purple-200">
                   <p className="text-[10px] text-slate-500 font-bold">Total Faturado</p>
-                  <p className="text-xl font-black text-purple-600">
+                  <p className="text-3xl font-black text-purple-600">
                     R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
