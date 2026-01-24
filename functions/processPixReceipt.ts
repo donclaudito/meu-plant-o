@@ -37,6 +37,14 @@ Deno.serve(async (req) => {
           payerName: {
             type: "string",
             description: "Nome completo de quem enviou o PIX (pagador)"
+          },
+          payerPixKey: {
+            type: "string",
+            description: "Chave PIX do pagador (CPF, CNPJ, email, telefone ou aleatória)"
+          },
+          payerPixKeyType: {
+            type: "string",
+            description: "Tipo de chave PIX: CPF, CNPJ, Email, Telefone ou Aleatória"
           }
         },
         required: ["value", "date"]
