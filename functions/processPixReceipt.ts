@@ -57,7 +57,15 @@ Deno.serve(async (req) => {
 
     // Filter shifts by doctor, month and year
     const monthShifts = allShifts.filter(s => {
-      if (s.doctorName.toUpperCase() !== doctorName.toUpperCase()) return false;
+      // Normalize both names: remove extra spaces, convert to uppercase
+      const normalizedShiftName = s.doctorName.trim().toUpperCase();
+      const normalizedDoctorName = doctorName.trim().toUpperCase();
+      
+      // Check if shift doctor name contains the search name or vice versa
+      const nameMatch = normalizedShiftName.includes(normalizedDoctorName.split(' ')[0]) || 
+                        normalizedDoctorName.includes(normalizedShiftName.split(' ')[0]);
+      
+      if (!nameMatch) return false;
       
       const [year_str, month_str] = s.date.split('-');
       const shiftYear = parseInt(year_str);
