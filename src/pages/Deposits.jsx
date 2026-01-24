@@ -128,9 +128,17 @@ export default function Deposits() {
   const shiftsFromReferenceMonth = useMemo(() => {
     return shifts.filter(s => {
       const [year, month] = s.date.split('-').map(Number);
-      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      
+      // Filtro por médico
+      if (selectedDoctorFilter) {
+        const doctorMatch = s.doctorName.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        return dateMatch && doctorMatch;
+      }
+      
+      return dateMatch;
     });
-  }, [shifts, selectedReferenceMonth, selectedReferenceYear]);
+  }, [shifts, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalShiftsValue = useMemo(() => {
     return shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
@@ -139,9 +147,17 @@ export default function Deposits() {
   const extraIncomesFromReferenceMonth = useMemo(() => {
     return extraIncomes.filter(income => {
       const [year, month] = income.date.split('-').map(Number);
-      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      
+      // Filtro por médico (se a receita tiver descrição com nome do médico)
+      if (selectedDoctorFilter && income.description) {
+        const doctorMatch = income.description.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        return dateMatch && doctorMatch;
+      }
+      
+      return dateMatch;
     });
-  }, [extraIncomes, selectedReferenceMonth, selectedReferenceYear]);
+  }, [extraIncomes, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalExtraIncome = useMemo(() => {
     return extraIncomesFromReferenceMonth.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
@@ -159,6 +175,12 @@ export default function Deposits() {
     });
     return grouped;
   }, [shiftsFromReferenceMonth]);
+
+  const doctorFilterDisplayName = useMemo(() => {
+    if (!selectedDoctorFilter) return '';
+    const doctor = doctors.find(d => d.name === selectedDoctorFilter);
+    return doctor ? doctor.name : selectedDoctorFilter;
+  }, [selectedDoctorFilter, doctors]);
 
   const totalExpected = totalShiftsValue + totalExtraIncome;
   const difference = totalDeposits - totalExpected;
@@ -393,6 +415,7 @@ export default function Deposits() {
             <TrendingUp className="text-green-600 dark:text-green-400" size={24} />
             <p className="text-[11px] font-black text-green-700 dark:text-green-400 uppercase tracking-widest">
               Plantões de {monthNames[selectedReferenceMonth]} {selectedReferenceYear}
+              {selectedDoctorFilter && ` - ${doctorFilterDisplayName}`}
             </p>
           </div>
           <p className="text-4xl font-black text-green-700 dark:text-green-300 mb-2">
