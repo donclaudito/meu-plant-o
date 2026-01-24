@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const userShifts = allShifts.filter(s => s.created_by === user.email);
 
     // Filter shifts by doctor, month and year
-    const monthShifts = allShifts.filter(s => {
+    const monthShifts = userShifts.filter(s => {
       // Normalize both names: remove extra spaces, convert to uppercase, remove leading spaces
       const normalizedShiftName = s.doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
       const normalizedDoctorName = doctorName.replace(/\s+/g, ' ').trim().toUpperCase();
