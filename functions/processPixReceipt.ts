@@ -51,9 +51,8 @@ Deno.serve(async (req) => {
     const depositDate = `${year}-${String(month).padStart(2, '0')}-01`;
 
     // Get all shifts for the user
-    const allShifts = await base44.asServiceRole.entities.Shift.filter({
-      created_by: user.email
-    });
+    const allShifts = await base44.asServiceRole.entities.Shift.list();
+    const userShifts = allShifts.filter(s => s.created_by === user.email);
 
     // Filter shifts by doctor, month and year
     const monthShifts = allShifts.filter(s => {
