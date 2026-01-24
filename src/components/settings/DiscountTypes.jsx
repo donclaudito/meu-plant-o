@@ -56,13 +56,14 @@ export default function DiscountTypes({ user, showToast }) {
             value={newType}
             onChange={(e) => setNewType(e.target.value)}
             placeholder="Ex: Seguro de Saúde"
-            className="flex-1 px-4 py-3 bg-slate-100 rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
+            className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase hover:bg-red-700 transition-colors flex items-center gap-2"
+            disabled={updateTypesMutation.isPending}
+            className="px-6 py-3 bg-red-600 dark:bg-red-500 text-white rounded-2xl font-black text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50"
           >
-            <Plus size={16} /> Adicionar
+            <Plus size={16} /> {updateTypesMutation.isPending ? 'A guardar...' : 'Adicionar'}
           </button>
         </div>
       </form>
