@@ -55,7 +55,7 @@ export default function DiscountTypes({ user, showToast }) {
             type="text"
             value={newType}
             onChange={(e) => setNewType(e.target.value)}
-            placeholder="Ex: Seguro de Saúde"
+            placeholder="Novo tipo de desconto"
             className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
           />
           <button
@@ -84,13 +84,7 @@ export default function DiscountTypes({ user, showToast }) {
             </button>
           </div>
         ))}
-      </div>
-
-      {discountTypes.length === 0 && (
-        <p className="text-center text-slate-400 py-8 text-sm">
-          Nenhum tipo de desconto configurado
-        </p>
-      )}
-    </div>
-  );
-}
+        </div>
+        </div>
+        );
+        }
