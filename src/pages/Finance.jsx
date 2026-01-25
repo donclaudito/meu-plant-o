@@ -781,7 +781,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <h3 className="text-xl font-black mb-6 flex items-center gap-2">
           <Calculator className="text-purple-600" /> Análise por Duração de Plantão
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {Object.entries(stats.byDuration).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).map(([duration, data]) => (
             <div key={duration} className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl border border-purple-100">
               <p className="text-xs font-black text-purple-600 uppercase tracking-wider mb-3">Plantões de {duration}</p>
@@ -793,7 +793,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                 <div className="pt-3 border-t border-purple-200">
                   <p className="text-[10px] text-slate-500 font-bold">Total Faturado</p>
                   <p className="text-3xl font-black text-purple-600">
-                    € {data.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
+                    R$ {data.value.toLocaleString('pt-BR')}
                   </p>
                 </div>
               </div>
