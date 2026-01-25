@@ -5,6 +5,7 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import PricingSettings from '@/components/settings/PricingSettings';
 import RecurringRules from '@/components/settings/RecurringRules';
 import DiscountsModule from '@/components/finance/DiscountsModule';
+import DiscountTypes from '@/components/settings/DiscountTypes';
 import Toast from '@/components/common/Toast';
 
 export default function Settings({ currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear() }) {
@@ -40,6 +41,8 @@ export default function Settings({ currentMonth = new Date().getMonth(), current
       </div>
 
       <PricingSettings user={user} showToast={showToast} />
+      
+      <DiscountTypes user={user} showToast={showToast} />
       
       <DiscountsModule 
         currentMonth={currentMonth} 
