@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FileText, Download, Printer, TrendingUp } from 'lucide-react';
 import ReportFilters from '@/components/reports/ReportFilters';
 import ReportStats from '@/components/reports/ReportStats';
@@ -14,6 +14,7 @@ export default function Reports() {
     specialty: '',
     type: ''
   });
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -47,6 +48,24 @@ export default function Reports() {
     enabled: !!user,
   });
 
+  const { data: discounts = [] } = useQuery({
+    queryKey: ['discounts', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Discount.list('-date');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
+  });
+
+  const { data: extraIncomes = [] } = useQuery({
+    queryKey: ['extraIncomes', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.ExtraIncome.list('-date');
+      return all.filter(i => i.created_by === user?.email);
+    },
+    enabled: !!user,
+  });
+
   const filteredShifts = useMemo(() => {
     return shifts.filter(shift => {
       if (filters.month) {
@@ -64,26 +83,113 @@ export default function Reports() {
     });
   }, [shifts, filters]);
 
-  const stats = useMemo(() => {
-    const total = filteredShifts.reduce((sum, s) => sum + s.value, 0);
-    const hours = filteredShifts.reduce((sum, s) => sum + s.hours, 0);
-    const paid = filteredShifts.filter(s => s.paid).reduce((sum, s) => sum + s.value, 0);
-    const pending = total - paid;
-    const avgValue = filteredShifts.length > 0 ? total / filteredShifts.length : 0;
-    const hourlyRate = hours > 0 ? total / hours : 0;
-    
-    const count12h = filteredShifts.filter(s => s.type === '12h Dia' || s.type === '12h Noite').length;
-    const count6h = filteredShifts.filter(s => s.type === '6h Dia' || s.type === '6h Noite').length;
+  const filteredExtraIncomes = useMemo(() => {
+    return extraIncomes.filter(income => {
+      if (filters.month) {
+        const [filterYear, filterMonth] = filters.month.split('-').map(Number);
+        const incomeDate = new Date(income.date + 'T00:00:00');
+        if (incomeDate.getFullYear() !== filterYear || (incomeDate.getMonth() + 1) !== filterMonth) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [extraIncomes, filters]);
 
-    const byType = filteredShifts.reduce((acc, s) => {
-      if (!acc[s.type]) acc[s.type] = { count: 0, total: 0, hours: 0 };
-      acc[s.type].count++;
-      acc[s.type].total += s.value;
-      acc[s.type].hours += s.hours;
+  const globalDiscounts = useMemo(() => {
+    return discounts.filter(d => {
+      if (filters.month) {
+        const [filterYear, filterMonth] = filters.month.split('-').map(Number);
+        const discountDate = new Date(d.date + 'T00:00:00');
+        if (discountDate.getFullYear() !== filterYear || (discountDate.getMonth() + 1) !== filterMonth) {
+          return false;
+        }
+      }
+      return !d.type || d.type === '';
+    });
+  }, [discounts, filters]);
+
+  const stats = useMemo(() => {
+    const safeShifts = filteredShifts || [];
+    const safeExtraIncome = filteredExtraIncomes.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
+
+    const monthlyShiftsTotal = safeShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    const safeDiscounts = globalDiscounts.reduce((acc, d) => {
+      const isPercentage = d.isPercentage === true;
+      if (isPercentage) {
+        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+      }
+      return acc + (Number(d.value) || 0);
+    }, 0);
+
+    const shift6hValue = Number(user?.shift6hValue) || 1000;
+    const shift12hValue = Number(user?.shift12hValue) || 1800;
+    const shift24hValue = Number(user?.shift24hValue) || 3000;
+    const baseHourlyRate = Number(user?.hourlyRate) || 150;
+
+    const validShifts = safeShifts.filter(
+      (shift) => shift && typeof shift.hours === "number" && shift.hours > 0
+    );
+
+    const hours = validShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
+
+    const totalByConfig = validShifts.reduce((acc, shift) => {
+      const shiftHours = Number(shift.hours) || 0;
+      const shiftValue = Number(shift.value) || 0;
+
+      if (shiftValue > 0) return acc + shiftValue;
+      if (shiftHours === 24) return acc + shift24hValue;
+      if (shiftHours === 12) return acc + shift12hValue;
+      if (shiftHours === 6) return acc + shift6hValue;
+      return acc + baseHourlyRate * shiftHours;
+    }, 0);
+
+    const paid = validShifts.filter((s) => s.paid).reduce((acc, shift) => {
+      const shiftValue = Number(shift.value) || 0;
+      return acc + shiftValue;
+    }, 0);
+
+    const grossTotal = Number(totalByConfig) + Number(safeExtraIncome);
+    const netTotal = Math.max(0, Number(grossTotal) - Number(safeDiscounts));
+    const pending = Math.max(0, Number(totalByConfig) - Number(paid));
+    const valuePerHour = hours > 0 ? Number(netTotal) / Number(hours) : 0;
+    const avgValue = filteredShifts.length > 0 ? totalByConfig / filteredShifts.length : 0;
+    const hourlyRate = valuePerHour;
+    
+    const count12h = validShifts.filter(
+      (s) => s.type === "12h Dia" || s.type === "12h Noite"
+    ).length;
+    const count6h = validShifts.filter(
+      (s) => s.type === "6h Dia" || s.type === "6h Noite"
+    ).length;
+
+    const byType = validShifts.reduce((acc, shift) => {
+      let type = shift.type || "Outro";
+      if (type === "12h Dia" || type === "12h Noite") {
+        type = "12h";
+      }
+      if (!acc[type]) {
+        acc[type] = { count: 0, hours: 0, total: 0 };
+      }
+      acc[type].count++;
+      const shiftHours = Number(shift.hours) || 0;
+      const shiftValue = Number(shift.value) || 0;
+      acc[type].hours += shiftHours;
+      if (shiftValue > 0) {
+        acc[type].total += shiftValue;
+      } else if (shiftHours === 24) {
+        acc[type].total += shift24hValue;
+      } else if (shiftHours === 12) {
+        acc[type].total += shift12hValue;
+      } else if (shiftHours === 6) {
+        acc[type].total += shift6hValue;
+      } else {
+        acc[type].total += baseHourlyRate * shiftHours;
+      }
       return acc;
     }, {});
 
-    const byUnit = filteredShifts.reduce((acc, s) => {
+    const byUnit = validShifts.reduce((acc, s) => {
       if (!acc[s.unit]) acc[s.unit] = { count: 0, total: 0, hours: 0 };
       acc[s.unit].count++;
       acc[s.unit].total += s.value;
@@ -91,15 +197,16 @@ export default function Reports() {
       return acc;
     }, {});
 
-    const byDoctor = filteredShifts.reduce((acc, s) => {
-      if (!acc[s.doctorName]) acc[s.doctorName] = { 
-        count: 0, 
-        total: 0, 
-        hours: 0, 
-        paid: 0, 
-        pending: 0,
-        specialty: s.specialty 
-      };
+    const byDoctor = validShifts.reduce((acc, s) => {
+      if (!acc[s.doctorName])
+        acc[s.doctorName] = {
+          count: 0,
+          total: 0,
+          hours: 0,
+          paid: 0,
+          pending: 0,
+          specialty: s.specialty,
+        };
       acc[s.doctorName].count++;
       acc[s.doctorName].total += s.value;
       acc[s.doctorName].hours += s.hours;
@@ -109,7 +216,11 @@ export default function Reports() {
     }, {});
 
     return {
-      total,
+      total: totalByConfig,
+      grossTotal,
+      totalExtraIncome: safeExtraIncome,
+      netTotal,
+      totalDiscounts: safeDiscounts,
       hours,
       paid,
       pending,
@@ -120,9 +231,9 @@ export default function Reports() {
       count6h,
       byType,
       byUnit,
-      byDoctor
+      byDoctor,
     };
-  }, [filteredShifts]);
+  }, [filteredShifts, filteredExtraIncomes, globalDiscounts, user]);
 
   const exportToCSV = () => {
     const header = 'Data,Hospital,Médico,Especialidade,Tipo,Horas,Valor (R$),Pago\n';
