@@ -44,6 +44,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPixModal, setShowPixModal] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' or 'paid'
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -760,7 +761,19 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
 
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-8 rounded-[2.5rem] border-2 border-green-200 dark:border-green-800 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-green-700 dark:text-green-400 uppercase tracking-[0.2em]">Líquido Total</p>
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] font-black text-green-700 dark:text-green-400 uppercase tracking-[0.2em]">Líquido Total</p>
+            <button
+              onClick={() => setPaymentStatus(paymentStatus === 'paid' ? 'pending' : 'paid')}
+              className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase transition-all ${
+                paymentStatus === 'paid' 
+                  ? 'bg-green-600 dark:bg-green-500 text-white shadow-md' 
+                  : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-2 border-amber-300 dark:border-amber-700'
+              }`}
+            >
+              {paymentStatus === 'paid' ? '✓ Pago' : '⏳ Pendente'}
+            </button>
+          </div>
           <div className="mt-4 flex items-baseline gap-2">
             <span className="text-green-400 font-bold text-xl">€</span>
             <p className="text-4xl font-black text-green-700 dark:text-green-300 tracking-tight">{safeStats.netTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
