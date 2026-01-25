@@ -10,7 +10,8 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
     date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     type: '',
     description: '',
-    value: 0
+    value: 0,
+    isPercentage: false
   });
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
 
@@ -30,7 +31,8 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
         date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
         type: '',
         description: '',
-        value: 0
+        value: 0,
+        isPercentage: false
       });
     },
   });
@@ -43,12 +45,31 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
     },
   });
 
+  const { data: shifts = [] } = useQuery({
+    queryKey: ['shifts'],
+    queryFn: () => base44.entities.Shift.list('-date'),
+  });
+
   const filteredDiscounts = discounts.filter(d => {
     const date = new Date(d.date);
     return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
   });
 
-  const totalDiscounts = filteredDiscounts.reduce((acc, d) => acc + (Number(d.value) || 0), 0);
+  // Calcular total de plantões do mês
+  const monthlyShiftsTotal = shifts
+    .filter(s => {
+      const date = new Date(s.date);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    })
+    .reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+
+  // Calcular descontos aplicados (porcentagem convertida em valor)
+  const totalDiscounts = filteredDiscounts.reduce((acc, d) => {
+    if (d.isPercentage) {
+      return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+    }
+    return acc + (Number(d.value) || 0);
+  }, 0);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -129,17 +150,33 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
               className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Valor (R$)</label>
-            <input
-              type="number"
-              required
-              value={newDiscount.value}
-              onChange={e => setNewDiscount({ ...newDiscount, value: Number(e.target.value) })}
-              className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
-              min="0"
-              step="0.01"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Desconto</label>
+              <select
+                value={newDiscount.isPercentage ? 'percentage' : 'fixed'}
+                onChange={e => setNewDiscount({ ...newDiscount, isPercentage: e.target.value === 'percentage' })}
+                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
+              >
+                <option value="fixed">Valor Fixo (R$)</option>
+                <option value="percentage">Porcentagem (%)</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                {newDiscount.isPercentage ? 'Porcentagem (%)' : 'Valor (R$)'}
+              </label>
+              <input
+                type="number"
+                required
+                value={newDiscount.value}
+                onChange={e => setNewDiscount({ ...newDiscount, value: Number(e.target.value) })}
+                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
+                min="0"
+                step="0.01"
+                max={newDiscount.isPercentage ? 100 : undefined}
+              />
+            </div>
           </div>
           <div className="flex gap-2">
             <button
@@ -156,7 +193,8 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
                   date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
                   type: '',
                   description: '',
-                  value: 0
+                  value: 0,
+                  isPercentage: false
                 });
               }}
               className="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-colors"
@@ -187,7 +225,11 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
               </div>
               <div className="flex items-center gap-3">
                 <p className="font-black text-lg text-red-600">
-                  -R$ {discount.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {discount.isPercentage ? (
+                    <>-{discount.value}% <span className="text-sm opacity-70">(R$ {(monthlyShiftsTotal * discount.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})</span></>
+                  ) : (
+                    <>-R$ {discount.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
+                  )}
                 </p>
                 <button
                   onClick={() => setDeleteConfirmation({ isOpen: true, id: discount.id, name: discount.description })}
