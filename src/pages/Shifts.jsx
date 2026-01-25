@@ -205,10 +205,10 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         <div className="bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 text-white p-4 rounded-2xl mb-6 shadow-lg dark:shadow-red-900/30 animate-pulse">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
-            <div>
-              <p className="font-black text-sm uppercase tracking-wide">Hoje você está de plantão!</p>
+            <div className="flex-1">
+              <p className="font-black text-sm uppercase tracking-wide">Hoje está de plantão!</p>
               <p className="text-xs opacity-90 mt-1">
-                {todayShifts.map((s, i) => (
+                Médicos de serviço: {todayShifts.map((s, i) => (
                   <span key={s.id}>
                     <strong>{s.doctorName}</strong> em {s.unit} ({s.type})
                     {i < todayShifts.length - 1 ? ' • ' : ''}
@@ -220,14 +220,19 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
         </div>
       ) : (
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 text-white p-4 rounded-2xl mb-6 shadow-lg dark:shadow-blue-900/30">
-          <p className="font-black text-sm uppercase tracking-wide">
-            {filterDoctor !== 'TODOS' ? `${filterDoctor} está de folga hoje.` : 'Hoje é dia de descanso. Aproveite a sua folga!'}
-          </p>
-          {nextShift && filterDoctor !== 'TODOS' && (
-            <p className="text-xs opacity-90 mt-2">
-              Próximo plantão: {new Date(nextShift.date + 'T00:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' })} • {nextShift.unit} ({nextShift.type})
-            </p>
-          )}
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 bg-white rounded-full"></div>
+            <div className="flex-1">
+              <p className="font-black text-sm uppercase tracking-wide">
+                {filterDoctor !== 'TODOS' ? `${filterDoctor} está de folga hoje.` : 'Hoje está de folga!'}
+              </p>
+              {nextShift && (
+                <p className="text-xs opacity-90 mt-2">
+                  Próximo plantão: {new Date(nextShift.date + 'T00:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' })} • <strong>{nextShift.doctorName}</strong> em {nextShift.unit} ({nextShift.type})
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
