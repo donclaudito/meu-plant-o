@@ -323,12 +323,24 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       byType[key].valuePerHour = byType[key].hours > 0 ? byType[key].value / byType[key].hours : 0;
     });
     
-    // Breakdown por duração (6h, 12h, 24h)
+    // Breakdown por duração (apenas 12h e 6h)
     const byDuration = validShifts.reduce((acc, shift) => {
       try {
         const hours = Number(shift.hours) || 0;
         const shiftValue = Number(shift.value) || 0;
-        const key = `${hours}h`;
+        
+        // Consolidar apenas 12h e 6h
+        let key;
+        if (hours === 12 || hours === 24) {
+          // 24h conta como 12h (já que é o dobro)
+          key = '12h';
+        } else if (hours === 6) {
+          key = '6h';
+        } else {
+          // Outros tipos não são incluídos
+          return acc;
+        }
+        
         if (!acc[key]) {
           acc[key] = { count: 0, hours: 0, value: 0 };
         }
