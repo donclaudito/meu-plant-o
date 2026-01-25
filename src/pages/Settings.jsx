@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Settings as SettingsIcon } from 'lucide-react';
 import PricingSettings from '@/components/settings/PricingSettings';
 import RecurringRules from '@/components/settings/RecurringRules';
-import DiscountTypes from '@/components/settings/DiscountTypes';
 import Toast from '@/components/common/Toast';
 
 export default function Settings() {
@@ -40,8 +39,6 @@ export default function Settings() {
       </div>
 
       <PricingSettings user={user} showToast={showToast} />
-      
-      <DiscountTypes user={user} showToast={showToast} />
       
       <RecurringRules doctors={doctors} hospitals={hospitals} showToast={showToast} />
     </div>
