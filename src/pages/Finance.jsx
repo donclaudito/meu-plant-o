@@ -805,29 +805,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <FinanceCharts stats={stats} monthlyData={monthlyData} />
 
-      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-        <h3 className="text-xl font-black mb-6">Breakdown por Tipo de Plantão</h3>
-        <div className="space-y-4">
-          {Object.entries(stats.byType).map(([type, data]) => (
-            <div key={type} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
-              <div>
-                <p className="font-black text-slate-900">{type}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {data.count} plantão{data.count !== 1 ? 'es' : ''} • {data.hours}h totais
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-black text-lg text-slate-900">
-                  € {data.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-                </p>
-                <p className="text-xs text-slate-500">
-                  € {data.valuePerHour.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}/h
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       <ExtraIncomeModule 
         currentMonth={currentMonth}
