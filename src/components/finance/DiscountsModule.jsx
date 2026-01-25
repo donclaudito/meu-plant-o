@@ -65,7 +65,8 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
 
   // Calcular descontos aplicados (porcentagem convertida em valor)
   const totalDiscounts = filteredDiscounts.reduce((acc, d) => {
-    if (d.isPercentage) {
+    const isPercentage = d.isPercentage === true;
+    if (isPercentage) {
       return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
     }
     return acc + (Number(d.value) || 0);
@@ -225,7 +226,7 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
               </div>
               <div className="flex items-center gap-3">
                 <p className="font-black text-lg text-red-600">
-                  {discount.isPercentage ? (
+                  {discount.isPercentage === true ? (
                     <>-{discount.value}% <span className="text-sm opacity-70">(R$ {(monthlyShiftsTotal * discount.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})</span></>
                   ) : (
                     <>-R$ {discount.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
