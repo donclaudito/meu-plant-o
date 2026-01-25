@@ -802,16 +802,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           )}
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-purple-500 dark:text-purple-400 uppercase tracking-[0.2em]">Carga Horária</p>
-          <div className="mt-4 flex items-baseline gap-2">
-            <p className="text-5xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{safeStats.hours}</p>
-            <span className="text-purple-400 font-black text-2xl uppercase">H</span>
-          </div>
-          <div className="mt-6 flex items-center gap-2 text-purple-600 dark:text-purple-400 text-[10px] font-black uppercase">
-            <PieChart size={14}/> Total de horas trabalhadas
-          </div>
-        </div>
+
       </div>
 
       <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
