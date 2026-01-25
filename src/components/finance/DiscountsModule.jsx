@@ -7,13 +7,11 @@ import { createPageUrl } from '@/utils';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 
-export default function DiscountsModule({ currentMonth, currentYear, discountTypes = [] }) {
+export default function DiscountsModule({ currentMonth, currentYear }) {
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [newDiscount, setNewDiscount] = useState({
-    date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
-    type: '',
     description: '',
     value: 0,
     isPercentage: false
@@ -33,16 +31,11 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
       queryClient.invalidateQueries({ queryKey: ['discounts'] });
       setIsFormOpen(false);
       setNewDiscount({
-        date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
-        type: '',
         description: '',
         value: 0,
         isPercentage: false
       });
-      setMessage({ text: 'Desconto registado com sucesso!', type: 'success' });
-      setTimeout(() => {
-        navigate(createPageUrl('Settings'));
-      }, 1500);
+      setMessage({ text: 'Desconto global registado com sucesso!', type: 'success' });
     },
   });
 
@@ -59,10 +52,8 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
     queryFn: () => base44.entities.Shift.list('-date'),
   });
 
-  const filteredDiscounts = discounts.filter(d => {
-    const date = new Date(d.date);
-    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-  });
+  // Descontos globais (sem data específica ou com type vazio)
+  const globalDiscounts = discounts.filter(d => !d.type || d.type === '');
 
   // Calcular total de plantões do mês
   const monthlyShiftsTotal = shifts
@@ -73,7 +64,7 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
     .reduce((acc, s) => acc + (Number(s.value) || 0), 0);
 
   // Calcular descontos aplicados (porcentagem convertida em valor)
-  const totalDiscounts = filteredDiscounts.reduce((acc, d) => {
+  const totalDiscounts = globalDiscounts.reduce((acc, d) => {
     const isPercentage = d.isPercentage === true;
     if (isPercentage) {
       return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
@@ -81,100 +72,99 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
     return acc + (Number(d.value) || 0);
   }, 0);
 
+  const netTotal = monthlyShiftsTotal - totalDiscounts;
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Convert YYYY-MM to YYYY-MM-01 for storage
     const discountData = {
       ...newDiscount,
-      date: `${newDiscount.date}-01`
+      date: new Date().toISOString().split('T')[0],
+      type: '' // Desconto global sem tipo específico
     };
     createDiscountMutation.mutate(discountData);
   };
 
   return (
-    <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
       <Toast message={message?.text} type={message?.type} />
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-black flex items-center gap-2">
-          <MinusCircle className="text-red-600" /> Descontos
+      <div className="mb-6">
+        <h3 className="text-xl font-black flex items-center gap-2 mb-4 dark:text-white">
+          <MinusCircle className="text-red-600 dark:text-red-500" /> Descontos Globais
         </h3>
-        <div className="text-right">
-          <p className="text-[10px] text-slate-400 font-bold uppercase">Total Descontado</p>
-          <p className="text-2xl font-black text-red-600">
-            R$ {totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-          </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          Descontos aplicados automaticamente a todos os plantões do mês
+        </p>
+      </div>
+
+      {/* Resumo Financeiro */}
+      <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-6 rounded-2xl mb-6 space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Total Bruto (Plantões):</span>
+          <span className="text-xl font-black text-slate-900 dark:text-white">
+            R$ {monthlyShiftsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </span>
         </div>
+        
+        {globalDiscounts.length > 0 && (
+          <>
+            <div className="border-t border-slate-300 dark:border-slate-600 pt-3 space-y-2">
+              {globalDiscounts.map((d) => (
+                <div key={d.id} className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 dark:text-slate-400">- {d.description}:</span>
+                  <span className="font-bold text-red-600 dark:text-red-400">
+                    {d.isPercentage === true ? (
+                      <>-{d.value}% (R$ {(monthlyShiftsTotal * d.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})</>
+                    ) : (
+                      <>-R$ {d.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t-2 border-slate-400 dark:border-slate-500 pt-3 flex justify-between items-center">
+              <span className="text-base font-black text-slate-700 dark:text-slate-200 uppercase">Valor Líquido Total:</span>
+              <span className="text-2xl font-black text-green-600 dark:text-green-400">
+                R$ {netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
       {!isFormOpen ? (
         <button
           onClick={() => setIsFormOpen(true)}
-          className="w-full py-4 bg-red-50 text-red-600 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-red-100 transition-colors flex items-center justify-center gap-2 border-2 border-dashed border-red-200"
+          className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl font-black text-xs uppercase tracking-wider hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors flex items-center justify-center gap-2 border-2 border-dashed border-red-200 dark:border-red-700"
         >
-          <Plus size={16} /> Registar Desconto
+          <Plus size={16} /> Adicionar Desconto Global
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-red-50 rounded-2xl border border-red-100">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mês e Ano</label>
-              <input
-                type="month"
-                required
-                value={newDiscount.date}
-                onChange={e => setNewDiscount({ ...newDiscount, date: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
-              <select
-                required
-                value={newDiscount.type}
-                onChange={e => setNewDiscount({ ...newDiscount, type: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
-              >
-                <option value="">Selecione...</option>
-                {discountTypes.length > 0 ? (
-                  discountTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))
-                ) : (
-                  <>
-                    <option value="IRS">IRS</option>
-                    <option value="Segurança Social">Segurança Social</option>
-                    <option value="Ordem dos Médicos">Ordem dos Médicos</option>
-                    <option value="Outro">Outro</option>
-                  </>
-                )}
-              </select>
-            </div>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-800">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descrição</label>
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
             <input
               type="text"
               required
               value={newDiscount.description}
               onChange={e => setNewDiscount({ ...newDiscount, description: e.target.value })}
-              placeholder="Ex: IRS Novembro 2024"
-              className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
+              placeholder="Ex: Impostos, Sky, Despesas contábeis"
+              className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Desconto</label>
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Desconto</label>
               <select
                 value={newDiscount.isPercentage ? 'percentage' : 'fixed'}
                 onChange={e => setNewDiscount({ ...newDiscount, isPercentage: e.target.value === 'percentage' })}
-                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
+                className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
               >
                 <option value="fixed">Valor Fixo (R$)</option>
                 <option value="percentage">Porcentagem (%)</option>
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
                 {newDiscount.isPercentage ? 'Porcentagem (%)' : 'Valor (R$)'}
               </label>
               <input
@@ -182,7 +172,7 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
                 required
                 value={newDiscount.value}
                 onChange={e => setNewDiscount({ ...newDiscount, value: Number(e.target.value) })}
-                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600"
+                className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
                 min="0"
                 step="0.01"
                 max={newDiscount.isPercentage ? 100 : undefined}
@@ -192,23 +182,22 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
           <div className="flex gap-2">
             <button
               type="submit"
-              className="flex-1 py-3 bg-red-600 text-white rounded-2xl font-black text-xs uppercase hover:bg-red-700 transition-colors"
+              disabled={createDiscountMutation.isPending}
+              className="flex-1 py-3 bg-red-600 dark:bg-red-500 text-white rounded-2xl font-black text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors disabled:opacity-50"
             >
-              Guardar
+              {createDiscountMutation.isPending ? 'A guardar...' : 'Guardar'}
             </button>
             <button
               type="button"
               onClick={() => {
                 setIsFormOpen(false);
                 setNewDiscount({
-                  date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
-                  type: '',
                   description: '',
                   value: 0,
                   isPercentage: false
                 });
               }}
-              className="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 transition-colors"
+              className="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-2xl font-black text-xs uppercase hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
             >
               Cancelar
             </button>
@@ -216,37 +205,38 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
         </form>
       )}
 
-      {filteredDiscounts.length > 0 && (
+      {globalDiscounts.length > 0 && (
         <div className="mt-6 space-y-2">
-          {filteredDiscounts.map(discount => (
+          <h4 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase mb-3">Descontos Registados</h4>
+          {globalDiscounts.map(discount => (
             <div
               key={discount.id}
-              className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors group"
+              className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                  <MinusCircle size={18} className="text-red-600" />
+                <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
+                  <MinusCircle size={18} className="text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <p className="font-black text-slate-900">{discount.description}</p>
-                  <p className="text-xs text-slate-500 flex items-center gap-2 mt-1">
-                    <CalendarIcon size={12} /> {new Date(discount.date).toLocaleDateString('pt-BR')} • {discount.type}
+                  <p className="font-black text-slate-900 dark:text-white">{discount.description}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Desconto global aplicado a todos os plantões
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <p className="font-black text-lg text-red-600">
+                <p className="font-black text-lg text-red-600 dark:text-red-400">
                   {discount.isPercentage === true ? (
-                    <>-{discount.value}% <span className="text-sm opacity-70">(R$ {(monthlyShiftsTotal * discount.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})</span></>
+                    <>{discount.value}%</>
                   ) : (
-                    <>-R$ {discount.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
+                    <>R$ {discount.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
                   )}
                 </p>
                 <button
                   onClick={() => setDeleteConfirmation({ isOpen: true, id: discount.id, name: discount.description })}
-                  className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-50 rounded-xl transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all"
                 >
-                  <Trash2 size={16} className="text-red-600" />
+                  <Trash2 size={16} className="text-red-600 dark:text-red-400" />
                 </button>
               </div>
             </div>
