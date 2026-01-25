@@ -8,8 +8,7 @@ import DoctorPerformance from '@/components/reports/DoctorPerformance';
 
 export default function Reports() {
   const [filters, setFilters] = useState({
-    startDate: '',
-    endDate: '',
+    month: '',
     doctorName: '',
     unit: '',
     specialty: '',
@@ -50,8 +49,13 @@ export default function Reports() {
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(shift => {
-      if (filters.startDate && shift.date < filters.startDate) return false;
-      if (filters.endDate && shift.date > filters.endDate) return false;
+      if (filters.month) {
+        const [filterYear, filterMonth] = filters.month.split('-').map(Number);
+        const shiftDate = new Date(shift.date + 'T00:00:00');
+        if (shiftDate.getFullYear() !== filterYear || (shiftDate.getMonth() + 1) !== filterMonth) {
+          return false;
+        }
+      }
       if (filters.doctorName && shift.doctorName !== filters.doctorName) return false;
       if (filters.unit && shift.unit !== filters.unit) return false;
       if (filters.specialty && shift.specialty !== filters.specialty) return false;
@@ -67,6 +71,9 @@ export default function Reports() {
     const pending = total - paid;
     const avgValue = filteredShifts.length > 0 ? total / filteredShifts.length : 0;
     const hourlyRate = hours > 0 ? total / hours : 0;
+    
+    const count12h = filteredShifts.filter(s => s.type === '12h Dia' || s.type === '12h Noite').length;
+    const count6h = filteredShifts.filter(s => s.type === '6h Dia' || s.type === '6h Noite').length;
 
     const byType = filteredShifts.reduce((acc, s) => {
       if (!acc[s.type]) acc[s.type] = { count: 0, total: 0, hours: 0 };
@@ -109,6 +116,8 @@ export default function Reports() {
       avgValue,
       hourlyRate,
       count: filteredShifts.length,
+      count12h,
+      count6h,
       byType,
       byUnit,
       byDoctor
@@ -173,16 +182,20 @@ export default function Reports() {
             <div class="stat-value">R$ ${stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
           </div>
           <div class="stat-card">
+            <div class="stat-label">Plantões 12h</div>
+            <div class="stat-value">${stats.count12h}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Plantões 6h</div>
+            <div class="stat-value">${stats.count6h}</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-label">Valores Pagos</div>
             <div class="stat-value">R$ ${stats.paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Valores Pendentes</div>
             <div class="stat-value">R$ ${stats.pending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Valor/Hora</div>
-            <div class="stat-value">R$ ${stats.hourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
           </div>
         </div>
 
