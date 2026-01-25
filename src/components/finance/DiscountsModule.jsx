@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MinusCircle, Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
@@ -7,17 +7,29 @@ import { createPageUrl } from '@/utils';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 
+const monthNames = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
 export default function DiscountsModule({ currentMonth, currentYear }) {
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState('TODOS');
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [newDiscount, setNewDiscount] = useState({
     description: '',
     value: 0,
     isPercentage: false
   });
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
+
+  useEffect(() => {
+    setSelectedMonth(currentMonth);
+    setSelectedYear(currentYear);
+  }, [currentMonth, currentYear]);
 
   const queryClient = useQueryClient();
 
@@ -64,9 +76,9 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
   // Calcular total de plantões do mês (com filtro de médico)
   const monthlyShiftsTotal = shifts
     .filter(s => {
-      const date = new Date(s.date);
-      const isInMonth = date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-      const matchesDoctor = selectedDoctor === 'TODOS' || s.doctorName === selectedDoctor;
+      const shiftDate = new Date(s.date + 'T00:00:00');
+      const isInMonth = shiftDate.getMonth() === selectedMonth && shiftDate.getFullYear() === selectedYear;
+      const matchesDoctor = selectedDoctor === 'TODOS' || (s.doctorName && s.doctorName.trim().toUpperCase() === selectedDoctor.trim().toUpperCase());
       return isInMonth && matchesDoctor;
     })
     .reduce((acc, s) => acc + (Number(s.value) || 0), 0);
@@ -100,31 +112,64 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
           <MinusCircle className="text-red-600 dark:text-red-500" /> Descontos Globais
         </h3>
         <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-          Descontos aplicados automaticamente a todos os plantões do mês
+          Descontos aplicados automaticamente a todos os plantões do mês e ano selecionados.
         </p>
         
-        {/* Filtro por Médico */}
-        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl">
-          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
-            Filtrar por Médico
-          </label>
-          <select
-            value={selectedDoctor}
-            onChange={(e) => setSelectedDoctor(e.target.value)}
-            className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
-          >
-            <option value="TODOS">Todos os Médicos</option>
-            {doctors.map(doctor => (
-              <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Filtro por Mês */}
+          <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
+              Mês
+            </label>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              className="w-full px-4 py-3 bg-white text-slate-900 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+            >
+              {monthNames.map((month, index) => (
+                <option key={month} value={index}>{month}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtro por Ano */}
+          <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
+              Ano
+            </label>
+            <input
+              type="number"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              className="w-full px-4 py-3 bg-white text-slate-900 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+              min="2000"
+              max="2100"
+            />
+          </div>
+
+          {/* Filtro por Médico */}
+          <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
+              Filtrar por Médico
+            </label>
+            <select
+              value={selectedDoctor}
+              onChange={(e) => setSelectedDoctor(e.target.value)}
+              className="w-full px-4 py-3 bg-white text-slate-900 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+            >
+              <option value="TODOS">Todos os Médicos</option>
+              {doctors.map(doctor => (
+                <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Resumo Financeiro */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-6 rounded-2xl mb-6 space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Total Bruto (Plantões):</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-white">Total Bruto (Plantões):</span>
           <span className="text-xl font-black text-slate-900 dark:text-white">
             R$ {monthlyShiftsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </span>
