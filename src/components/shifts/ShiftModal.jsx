@@ -234,7 +234,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                   required 
                   value={newShift.doctorName} 
                   onChange={e => setNewShift({ ...newShift, doctorName: e.target.value })} 
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
                 >
                   <option value="" className="text-slate-500">Selecione o médico...</option>
                   {doctorsBySpecialty && doctorsBySpecialty.length > 0 ? (
@@ -303,7 +303,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                   required 
                   value={newShift.unit} 
                   onChange={e => setNewShift({ ...newShift, unit: e.target.value })} 
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
                 >
                   <option value="" className="text-slate-500">Selecione o hospital...</option>
                   {hospitals && hospitals.length > 0 ? (
