@@ -11,6 +11,7 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
   const [message, setMessage] = useState(null);
   const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState('TODOS');
   const [newDiscount, setNewDiscount] = useState({
     description: '',
     value: 0,
@@ -52,14 +53,21 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     queryFn: () => base44.entities.Shift.list('-date'),
   });
 
+  const { data: doctors = [] } = useQuery({
+    queryKey: ['doctors'],
+    queryFn: () => base44.entities.Doctor.list('name'),
+  });
+
   // Descontos globais (sem data específica ou com type vazio)
   const globalDiscounts = discounts.filter(d => !d.type || d.type === '');
 
-  // Calcular total de plantões do mês
+  // Calcular total de plantões do mês (com filtro de médico)
   const monthlyShiftsTotal = shifts
     .filter(s => {
       const date = new Date(s.date);
-      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+      const isInMonth = date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+      const matchesDoctor = selectedDoctor === 'TODOS' || s.doctorName === selectedDoctor;
+      return isInMonth && matchesDoctor;
     })
     .reduce((acc, s) => acc + (Number(s.value) || 0), 0);
 
@@ -91,15 +99,32 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
         <h3 className="text-xl font-black flex items-center gap-2 mb-4 dark:text-white">
           <MinusCircle className="text-red-600 dark:text-red-500" /> Descontos Globais
         </h3>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
           Descontos aplicados automaticamente a todos os plantões do mês
         </p>
+        
+        {/* Filtro por Médico */}
+        <div className="bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl">
+          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 block mb-2">
+            Filtrar por Médico
+          </label>
+          <select
+            value={selectedDoctor}
+            onChange={(e) => setSelectedDoctor(e.target.value)}
+            className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+          >
+            <option value="TODOS">Todos os Médicos</option>
+            {doctors.map(doctor => (
+              <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Resumo Financeiro */}
       <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 p-6 rounded-2xl mb-6 space-y-3">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Total Bruto (Plantões):</span>
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">Total Bruto (Plantões):</span>
           <span className="text-xl font-black text-slate-900 dark:text-white">
             R$ {monthlyShiftsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </span>

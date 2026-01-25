@@ -147,18 +147,24 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     },
   });
 
+  // Descontos globais (sem tipo específico)
+  const globalDiscounts = useMemo(() => {
+    return discounts.filter(d => !d.type || d.type === '');
+  }, [discounts]);
+
   const totalDiscounts = useMemo(() => {
-    return discounts
-      .filter(d => {
-        if (filters.startDate && d.date < filters.startDate) return false;
-        if (filters.endDate && d.date > filters.endDate) return false;
-        if (!filters.startDate && !filters.endDate) {
-          if (!isDateInActiveMonth(d.date, currentMonth, currentYear)) return false;
-        }
-        return true;
-      })
-      .reduce((acc, d) => acc + (Number(d.value) || 0), 0);
-  }, [discounts, currentMonth, currentYear, filters]);
+    // Primeiro, calcular o total bruto de plantões para aplicar percentagens
+    const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    
+    // Aplicar descontos globais (fixos e percentuais)
+    return globalDiscounts.reduce((acc, d) => {
+      const isPercentage = d.isPercentage === true;
+      if (isPercentage) {
+        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+      }
+      return acc + (Number(d.value) || 0);
+    }, 0);
+  }, [globalDiscounts, filteredShifts]);
 
   const totalExtraIncome = useMemo(() => {
     return extraIncomes
