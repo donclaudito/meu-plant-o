@@ -800,23 +800,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             </div>
           ))}
         </div>
-        <div className="bg-purple-600 p-6 rounded-2xl text-white flex items-center justify-between">
-          <div>
-            <p className="text-xs font-black uppercase tracking-wider opacity-80 mb-2">Valor Médio Geral por Hora</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">€</span>
-              <p className="text-5xl font-black tracking-tight">
-                {stats.valuePerHour.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-              <span className="text-2xl font-black">/h</span>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-bold opacity-80">Baseado em</p>
-            <p className="text-2xl font-black">{stats.hours}h</p>
-            <p className="text-xs font-bold opacity-80 mt-1">{stats.count} plantões</p>
-          </div>
-        </div>
+
       </div>
 
       <FinanceCharts stats={stats} monthlyData={monthlyData} />
