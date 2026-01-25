@@ -139,7 +139,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 required 
                 value={newShift.date} 
                 onChange={e => setNewShift({ ...newShift, date: e.target.value })} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
               />
             </div>
             <div className="space-y-1">
@@ -158,7 +158,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 required 
                 value={newShift.value} 
                 onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
               />
               {calculateSuggestedValue() !== newShift.value && (
                 <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
@@ -173,9 +173,9 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               <select 
                 value={newShift.specialty} 
                 onChange={e => setNewShift({ ...newShift, specialty: e.target.value, doctorName: '' })} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
               >
-                {specialties.map(s => <option key={s} value={s}>{s}</option>)}
+                {specialties.map(s => <option key={s} value={s} className="text-slate-900 dark:text-white">{s}</option>)}
               </select>
             </div>
             <div className="space-y-1">
@@ -183,13 +183,13 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               <select 
                 value={newShift.type} 
                 onChange={e => handleTypeChange(e.target.value)} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
               >
-                <option value="12h Dia">12h Dia</option>
-                <option value="12h Noite">12h Noite</option>
-                <option value="24h">24h</option>
-                <option value="6h Dia">6h Dia</option>
-                <option value="6h Noite">6h Noite</option>
+                <option value="12h Dia" className="text-slate-900 dark:text-white">12h Dia</option>
+                <option value="12h Noite" className="text-slate-900 dark:text-white">12h Noite</option>
+                <option value="24h" className="text-slate-900 dark:text-white">24h</option>
+                <option value="6h Dia" className="text-slate-900 dark:text-white">6h Dia</option>
+                <option value="6h Noite" className="text-slate-900 dark:text-white">6h Noite</option>
               </select>
             </div>
           </div>
@@ -211,7 +211,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                   value={quickDoctorName}
                   onChange={e => setQuickDoctorName(e.target.value)}
                   placeholder="Nome do médico"
-                  className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+                  className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
                 />
                 <button
                   type="button"
@@ -236,13 +236,13 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                   onChange={e => setNewShift({ ...newShift, doctorName: e.target.value })} 
                   className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
                 >
-                  <option value="">Selecione o médico...</option>
+                  <option value="" className="text-slate-500">Selecione o médico...</option>
                   {doctorsBySpecialty && doctorsBySpecialty.length > 0 ? (
                     doctorsBySpecialty.map(d => (
-                      <option key={d.id} value={d.name}>{d.name}</option>
+                      <option key={d.id} value={d.name} className="text-slate-900 dark:text-white">{d.name}</option>
                     ))
                   ) : (
-                    <option disabled>Nenhum médico desta especialidade</option>
+                    <option disabled className="text-slate-400">Nenhum médico desta especialidade</option>
                   )}
                 </select>
                 {(!doctorsBySpecialty || doctorsBySpecialty.length === 0) && (
@@ -271,7 +271,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                   value={quickHospitalData.name}
                   onChange={e => setQuickHospitalData({ ...quickHospitalData, name: e.target.value })}
                   placeholder="Nome do hospital"
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
                 />
                 <div className="flex gap-2">
                   <input
@@ -279,7 +279,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                     value={quickHospitalData.city}
                     onChange={e => setQuickHospitalData({ ...quickHospitalData, city: e.target.value })}
                     placeholder="Cidade (opcional)"
-                    className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
+                    className="flex-1 px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm"
                   />
                   <button
                     type="button"
@@ -305,13 +305,13 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                   onChange={e => setNewShift({ ...newShift, unit: e.target.value })} 
                   className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
                 >
-                  <option value="">Selecione o hospital...</option>
+                  <option value="" className="text-slate-500">Selecione o hospital...</option>
                   {hospitals && hospitals.length > 0 ? (
                     hospitals.map(h => (
-                      <option key={h.id} value={h.name}>{h.name}</option>
+                      <option key={h.id} value={h.name} className="text-slate-900 dark:text-white">{h.name}</option>
                     ))
                   ) : (
-                    <option disabled>Nenhum hospital cadastrado</option>
+                    <option disabled className="text-slate-400">Nenhum hospital cadastrado</option>
                   )}
                 </select>
                 {(!hospitals || hospitals.length === 0) && (
