@@ -4,9 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Settings as SettingsIcon } from 'lucide-react';
 import PricingSettings from '@/components/settings/PricingSettings';
 import RecurringRules from '@/components/settings/RecurringRules';
+import DiscountsModule from '@/components/finance/DiscountsModule';
 import Toast from '@/components/common/Toast';
 
-export default function Settings() {
+export default function Settings({ currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear() }) {
   const [message, setMessage] = useState(null);
 
   const { data: user } = useQuery({
@@ -39,6 +40,12 @@ export default function Settings() {
       </div>
 
       <PricingSettings user={user} showToast={showToast} />
+      
+      <DiscountsModule 
+        currentMonth={currentMonth} 
+        currentYear={currentYear}
+        discountTypes={user?.discountTypes || []}
+      />
       
       <RecurringRules doctors={doctors} hospitals={hospitals} showToast={showToast} />
     </div>

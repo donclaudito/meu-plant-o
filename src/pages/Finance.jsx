@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins, FileSpreadsheet, ArrowDown, ArrowUp, Sparkles } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
 import FinanceCharts from '@/components/finance/FinanceCharts';
-import DiscountsModule from '@/components/finance/DiscountsModule';
 import ExtraIncomeModule from '@/components/finance/ExtraIncomeModule';
 import DepositsModule from '@/components/finance/DepositsModule';
 import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
@@ -877,18 +876,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <DiscountsModule 
-          currentMonth={currentMonth} 
-          currentYear={currentYear}
-          discountTypes={user?.discountTypes || []}
-        />
-        <ExtraIncomeModule 
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          showToast={(msg) => {}}
-        />
-      </div>
+      <ExtraIncomeModule 
+        currentMonth={currentMonth}
+        currentYear={currentYear}
+        showToast={(msg) => {}}
+      />
 
       <DepositsModule 
         currentMonth={currentMonth}
