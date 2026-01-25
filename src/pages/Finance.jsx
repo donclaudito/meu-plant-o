@@ -8,6 +8,7 @@ import ExtraIncomeModule from '@/components/finance/ExtraIncomeModule';
 import DepositsModule from '@/components/finance/DepositsModule';
 import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
 import PixImportModal from '@/components/finance/PixImportModal';
+import PaymentReceipt from '@/components/finance/PaymentReceipt';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -844,6 +845,15 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         }}
       />
 
+      <PaymentReceipt
+        stats={safeStats}
+        globalDiscounts={globalDiscounts}
+        filteredShifts={filteredShifts}
+        extraIncomes={extraIncomes}
+        currentMonth={currentMonth}
+        currentYear={currentYear}
+        user={user}
+      />
 
     </div>
   );
