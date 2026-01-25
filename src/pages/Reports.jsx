@@ -5,6 +5,9 @@ import { FileText, Download, Printer, TrendingUp } from 'lucide-react';
 import ReportFilters from '@/components/reports/ReportFilters';
 import ReportStats from '@/components/reports/ReportStats';
 import DoctorPerformance from '@/components/reports/DoctorPerformance';
+import CustomReportBuilder from '@/components/reports/CustomReportBuilder';
+import ComparativeCharts from '@/components/reports/ComparativeCharts';
+import KPIDashboard from '@/components/reports/KPIDashboard';
 
 export default function Reports() {
   const [filters, setFilters] = useState({
@@ -427,6 +430,21 @@ export default function Reports() {
       />
 
       <ReportStats stats={stats} />
+
+      <KPIDashboard stats={stats} shifts={shifts} />
+
+      <ComparativeCharts 
+        shifts={shifts} 
+        extraIncomes={extraIncomes} 
+        discounts={discounts} 
+      />
+
+      <CustomReportBuilder 
+        stats={stats} 
+        shifts={filteredShifts}
+        doctors={doctors}
+        hospitals={hospitals}
+      />
 
       <DoctorPerformance stats={stats} />
 
