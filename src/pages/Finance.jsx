@@ -758,16 +758,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
-          <p className="text-[11px] font-black text-green-500 dark:text-green-400 uppercase tracking-[0.2em]">Valor Liquidado</p>
-          <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-200 font-bold text-xl">€</span>
-            <p className="text-5xl font-black text-green-600 dark:text-green-400 tracking-tight">{safeStats.paid.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
-          </div>
-          <div className="mt-6 flex items-center gap-2 text-green-600 dark:text-green-400 text-[10px] font-black uppercase">
-            <CheckCircle size={14}/> Valores confirmados
-          </div>
-        </div>
+
 
 
 
