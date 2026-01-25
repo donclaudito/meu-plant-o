@@ -10,8 +10,7 @@ const shiftTypes = ["12h Dia", "12h Noite", "24h", "6h Dia", "6h Noite"];
 export default function ReportFilters({ filters, setFilters, doctors, hospitals }) {
   const clearFilters = () => {
     setFilters({
-      startDate: '',
-      endDate: '',
+      month: '',
       doctorName: '',
       unit: '',
       specialty: '',
@@ -42,25 +41,13 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         <div className="space-y-1">
           <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
-            Data Inicial
+            Mês
           </label>
           <input
-            type="date"
-            value={filters.startDate}
-            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
-            Data Final
-          </label>
-          <input
-            type="date"
-            value={filters.endDate}
-            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
+            type="month"
+            value={filters.month}
+            onChange={(e) => setFilters({ ...filters, month: e.target.value })}
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-lg sm:rounded-xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-xs sm:text-sm"
           />
         </div>
 
