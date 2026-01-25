@@ -131,7 +131,7 @@ export default function ReportStats({ stats }) {
                     fontWeight: 'bold',
                     fontSize: '11px'
                   }}
-                  formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
+                  formatter={(value) => `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`}
                 />
                 <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -160,7 +160,7 @@ export default function ReportStats({ stats }) {
                     fontWeight: 'bold',
                     fontSize: '11px'
                   }}
-                  formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
+                  formatter={(value) => `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`}
                 />
                 <Bar dataKey="value" fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
