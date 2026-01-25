@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MinusCircle, Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
+import Toast from '@/components/common/Toast';
 
 export default function DiscountsModule({ currentMonth, currentYear, discountTypes = [] }) {
+  const [message, setMessage] = useState(null);
+  const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [newDiscount, setNewDiscount] = useState({
     date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
@@ -34,6 +39,10 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
         value: 0,
         isPercentage: false
       });
+      setMessage({ text: 'Desconto registado com sucesso!', type: 'success' });
+      setTimeout(() => {
+        navigate(createPageUrl('Settings'));
+      }, 1500);
     },
   });
 
@@ -84,6 +93,7 @@ export default function DiscountsModule({ currentMonth, currentYear, discountTyp
 
   return (
     <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+      <Toast message={message?.text} type={message?.type} />
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-black flex items-center gap-2">
           <MinusCircle className="text-red-600" /> Descontos
