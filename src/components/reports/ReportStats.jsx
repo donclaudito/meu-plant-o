@@ -30,6 +30,22 @@ export default function ReportStats({ stats }) {
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <Calendar size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">12h</p>
+          </div>
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.count12h || 0}</p>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+            <Calendar size={14} className="sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
+            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">6h</p>
+          </div>
+          <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">{stats.count6h || 0}</p>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
             <Clock size={14} className="sm:w-4 sm:h-4 text-purple-600 dark:text-purple-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Horas</p>
           </div>
@@ -41,7 +57,7 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Total</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.total.toLocaleString('pt-BR')}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.total.toLocaleString('pt-PT')}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -49,7 +65,7 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pago</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.paid.toLocaleString('pt-BR')}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.paid.toLocaleString('pt-PT')}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -57,15 +73,15 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pendente</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.pending.toLocaleString('pt-BR')}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.pending.toLocaleString('pt-PT')}</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm col-span-2 md:col-span-1">
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
             <TrendingUp size={14} className="sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Valor/Hora</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.hourlyRate.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.hourlyRate.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -89,7 +105,7 @@ export default function ReportStats({ stats }) {
                     fontWeight: 'bold',
                     fontSize: '11px'
                   }}
-                  formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
+                  formatter={(value) => `€ ${value.toLocaleString('pt-PT')}`}
                 />
                 <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -118,7 +134,7 @@ export default function ReportStats({ stats }) {
                     fontWeight: 'bold',
                     fontSize: '11px'
                   }}
-                  formatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
+                  formatter={(value) => `€ ${value.toLocaleString('pt-PT')}`}
                 />
                 <Bar dataKey="value" fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
