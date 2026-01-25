@@ -542,19 +542,19 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           <div class="summary-grid">
             <div class="summary-card">
               <div class="summary-label">Faturamento Bruto</div>
-              <div class="summary-value">R$ ${stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div class="summary-value">€ ${stats.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
             </div>
             <div class="summary-card">
               <div class="summary-label">Receitas Extras</div>
-              <div class="summary-value">R$ ${stats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div class="summary-value">€ ${stats.totalExtraIncome.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
             </div>
             <div class="summary-card">
               <div class="summary-label">Total Bruto</div>
-              <div class="summary-value">R$ ${stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div class="summary-value">€ ${stats.grossTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
             </div>
             <div class="summary-card">
               <div class="summary-label">Descontos</div>
-              <div class="summary-value">R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div class="summary-value">€ ${stats.totalDiscounts.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
             </div>
           </div>
 
@@ -562,12 +562,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           <div class="payment-summary">
             <div class="payment-card paid-card">
               <div class="summary-label" style="color: #166534;">Valor Liquidado</div>
-              <div style="font-size: 28px; font-weight: bold; color: #16a34a; margin-top: 8px;">R$ ${stats.paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div style="font-size: 28px; font-weight: bold; color: #16a34a; margin-top: 8px;">€ ${stats.paid.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
               <div style="font-size: 12px; color: #166534; margin-top: 5px;">${filteredShifts.filter(s => s.paid).length} plantões pagos</div>
             </div>
             <div class="payment-card pending-card">
               <div class="summary-label" style="color: #92400e;">Valor Pendente</div>
-              <div style="font-size: 28px; font-weight: bold; color: #d97706; margin-top: 8px;">R$ ${stats.pending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</div>
+              <div style="font-size: 28px; font-weight: bold; color: #d97706; margin-top: 8px;">€ ${stats.pending.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</div>
               <div style="font-size: 12px; color: #92400e; margin-top: 5px;">${filteredShifts.filter(s => !s.paid).length} plantões pendentes</div>
             </div>
           </div>
@@ -589,8 +589,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                   <td><strong>${type}</strong></td>
                   <td>${data.count}</td>
                   <td>${data.hours}h</td>
-                  <td>R$ ${data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                  <td>R$ ${(data.value / data.hours).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td>€ ${data.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
+                  <td>€ ${(data.value / data.hours).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -617,7 +617,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                   <td>${s.doctorName.toUpperCase()}</td>
                   <td>${s.type}</td>
                   <td>${s.hours}h</td>
-                  <td>R$ ${s.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td>€ ${s.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</td>
                   <td>${s.paid ? '✓ Pago' : '⏳ Pendente'}</td>
                 </tr>
               `).join('')}
@@ -830,7 +830,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                 <div className="pt-3 border-t border-purple-200">
                   <p className="text-[10px] text-slate-500 font-bold">Total Faturado</p>
                   <p className="text-3xl font-black text-purple-600">
-                    R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    € {data.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -841,9 +841,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           <div>
             <p className="text-xs font-black uppercase tracking-wider opacity-80 mb-2">Valor Médio Geral por Hora</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">R$</span>
+              <span className="text-3xl font-bold">€</span>
               <p className="text-5xl font-black tracking-tight">
-                {stats.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {stats.valuePerHour.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
               <span className="text-2xl font-black">/h</span>
             </div>
@@ -871,10 +871,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
               </div>
               <div className="text-right">
                 <p className="font-black text-lg text-slate-900">
-                  R$ {data.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  € {data.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
                 </p>
                 <p className="text-xs text-slate-500">
-                  R$ {data.valuePerHour.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/h
+                  € {data.valuePerHour.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}/h
                 </p>
               </div>
             </div>
