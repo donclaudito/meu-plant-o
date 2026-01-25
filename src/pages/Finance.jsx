@@ -813,11 +813,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         showToast={(msg) => {}}
       />
 
-      <DepositsModule 
-        currentMonth={currentMonth}
-        currentYear={currentYear}
-        showToast={(msg) => {}}
-      />
+
 
       <ManualPaymentModal 
         isOpen={showPaymentModal}
