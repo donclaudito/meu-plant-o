@@ -30,16 +30,13 @@ export default function ImportDoctors({ showToast }) {
 
       // Extract data from file
       const jsonSchema = {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            name: { type: "string" },
-            specialty: { type: "string" },
-            phone: { type: "string" }
-          },
-          required: ["name", "specialty"]
-        }
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          specialty: { type: "string" },
+          phone: { type: "string" }
+        },
+        required: ["name", "specialty"]
       };
 
       const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
