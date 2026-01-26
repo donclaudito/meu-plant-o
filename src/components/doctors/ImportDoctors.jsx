@@ -19,74 +19,58 @@ export default function ImportDoctors({ showToast }) {
     },
   });
 
-  const parseCSV = (text) => {
-    const lines = text.split('\n').filter(line => line.trim());
-    if (lines.length < 2) return [];
-
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    const nameIndex = headers.indexOf('name');
-    const specialtyIndex = headers.indexOf('specialty');
-    const phoneIndex = headers.indexOf('phone');
-
-    if (nameIndex === -1 || specialtyIndex === -1) {
-      throw new Error('CSV deve ter colunas "name" e "specialty"');
-    }
-
-    const doctors = [];
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim());
-      if (values[nameIndex] && values[specialtyIndex]) {
-        doctors.push({
-          name: values[nameIndex],
-          specialty: values[specialtyIndex],
-          phone: phoneIndex !== -1 ? (values[phoneIndex] || '') : ''
-        });
-      }
-    }
-
-    return doctors;
-  };
-
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setImportResult({ success: false, error: 'Por favor, selecione um ficheiro CSV' });
-      return;
-    }
-
     setIsUploading(true);
     try {
-      const text = await file.text();
-      const parsedDoctors = parseCSV(text);
+      // Upload file
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      if (parsedDoctors.length === 0) {
-        setImportResult({ success: false, error: 'Nenhum médico encontrado no ficheiro' });
-        return;
-      }
-
-      // Map specialties to match enum
-      const specialtyMap = {
-        'cirurgia geral': 'CIRURGIA GERAL',
-        'cirurgia': 'CIRURGIA GERAL',
-        'clinica medica': 'CLÍNICA MÉDICA',
-        'clínica médica': 'CLÍNICA MÉDICA',
-        'clinica': 'CLÍNICA MÉDICA',
-        'pediatria': 'PEDIATRIA',
-        'ginecologia': 'GINECOLOGIA',
-        'ortopedia': 'ORTOPEDIA',
-        'anestesia': 'ANESTESIA',
-        'anestesiologia': 'ANESTESIA'
+      // Extract data from file
+      const jsonSchema = {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            specialty: { type: "string" },
+            phone: { type: "string" }
+          },
+          required: ["name", "specialty"]
+        }
       };
 
-      const doctors = parsedDoctors.map(d => ({
-        name: d.name,
-        specialty: specialtyMap[d.specialty?.toLowerCase()] || d.specialty || 'OUTRA',
-        phone: d.phone || ''
-      }));
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: jsonSchema
+      });
 
-      createDoctorsMutation.mutate(doctors);
+      if (result.status === 'success' && result.output) {
+        // Map specialties to match enum
+        const specialtyMap = {
+          'cirurgia geral': 'CIRURGIA GERAL',
+          'cirurgia': 'CIRURGIA GERAL',
+          'clinica medica': 'CLÍNICA MÉDICA',
+          'clinica': 'CLÍNICA MÉDICA',
+          'pediatria': 'PEDIATRIA',
+          'ginecologia': 'GINECOLOGIA',
+          'ortopedia': 'ORTOPEDIA',
+          'anestesia': 'ANESTESIA',
+          'anestesiologia': 'ANESTESIA'
+        };
+
+        const doctors = result.output.map(d => ({
+          name: d.name,
+          specialty: specialtyMap[d.specialty?.toLowerCase()] || 'OUTRA',
+          phone: d.phone || ''
+        }));
+
+        createDoctorsMutation.mutate(doctors);
+      } else {
+        setImportResult({ success: false, error: result.details || 'Erro ao processar ficheiro' });
+      }
     } catch (error) {
       setImportResult({ success: false, error: error.message });
     } finally {
@@ -108,7 +92,7 @@ export default function ImportDoctors({ showToast }) {
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept=".csv"
+            accept=".csv,.xlsx,.xls,image/*,.pdf"
             className="hidden"
           />
           <button
@@ -120,34 +104,19 @@ export default function ImportDoctors({ showToast }) {
             {isUploading ? 'A processar...' : 'Selecionar Ficheiro'}
           </button>
           <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            Apenas ficheiros CSV
+            CSV, Excel, imagem ou PDF
           </p>
 
           <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-green-200 dark:border-green-800">
-            <div className="flex items-start gap-2 mb-3">
+            <div className="flex items-start gap-2">
               <FileSpreadsheet className="text-green-600 dark:text-green-400 flex-shrink-0" size={16} />
               <div>
-                <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 mb-1">💡 Formato correto do CSV:</p>
-                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-700 p-2 rounded">
-                  name,specialty,phone<br/>
-                  Dr. João Silva,CIRURGIA GERAL,912345678<br/>
-                  Dra. Maria Santos,PEDIATRIA,913456789
+                <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 mb-1">💡 Dica:</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400">
+                  Use o botão <span className="font-bold text-green-600 dark:text-green-400">"Modelo"</span> na lista abaixo para descarregar exemplo.
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => {
-                const csvContent = 'name,specialty,phone\nDr. João Silva,CIRURGIA GERAL,912345678\nDra. Maria Santos,PEDIATRIA,913456789\nDr. Pedro Costa,CLÍNICA MÉDICA,914567890';
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'modelo_medicos.csv';
-                link.click();
-              }}
-              className="w-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-bold py-2 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-all text-xs"
-            >
-              📥 Descarregar Modelo CSV
-            </button>
           </div>
         </>
       )}

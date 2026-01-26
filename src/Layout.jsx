@@ -101,7 +101,7 @@ export default function Layout({ children, currentPageName }) {
     setCurrentYear(newYear);
   };
 
-  const allNavItems = [
+  const navItems = [
     { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
     { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
     { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
@@ -110,10 +110,6 @@ export default function Layout({ children, currentPageName }) {
     { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
     { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
   ];
-
-  const navItems = user?.email === 'testeclauorenstein@gmail.com'
-    ? [{ page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon }]
-    : allNavItems;
 
   const childWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
@@ -222,16 +218,14 @@ export default function Layout({ children, currentPageName }) {
             </Link>
           );
         })}
-        {user?.email !== 'testeclauorenstein@gmail.com' && (
-          <button
-            onClick={handleUninstall}
-            className="flex flex-col items-center p-3 rounded-2xl transition-all text-red-500 dark:text-red-400"
-            title="Desinstalar"
-          >
-            <Trash2 size={22} />
-            <span className="text-[8px] font-black mt-1 uppercase">DESINST</span>
-          </button>
-        )}
+        <button
+          onClick={handleUninstall}
+          className="flex flex-col items-center p-3 rounded-2xl transition-all text-red-500 dark:text-red-400"
+          title="Desinstalar"
+        >
+          <Trash2 size={22} />
+          <span className="text-[8px] font-black mt-1 uppercase">DESINST</span>
+        </button>
       </div>
     </div>
   );

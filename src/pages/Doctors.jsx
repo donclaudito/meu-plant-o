@@ -33,9 +33,10 @@ export default function Doctors() {
   });
 
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors'],
+    queryKey: ['doctors', user?.email],
     queryFn: async () => {
-      return await base44.entities.Doctor.list('name');
+      const all = await base44.entities.Doctor.list('name');
+      return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
   });

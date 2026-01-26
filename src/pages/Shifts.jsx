@@ -37,20 +37,29 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   });
 
   const { data: shifts = [] } = useQuery({
-    queryKey: ['shifts'],
-    queryFn: () => base44.entities.Shift.list('-date'),
+    queryKey: ['shifts', user?.email],
+    queryFn: async () => {
+      const allShifts = await base44.entities.Shift.list('-date');
+      return allShifts.filter(s => s.created_by === user?.email);
+    },
     enabled: !!user,
   });
 
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors'],
-    queryFn: () => base44.entities.Doctor.list('name'),
+    queryKey: ['doctors', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list('name');
+      return all.filter(d => d.created_by === user?.email);
+    },
     enabled: !!user,
   });
 
   const { data: hospitals = [] } = useQuery({
-    queryKey: ['hospitals'],
-    queryFn: () => base44.entities.Hospital.list('name'),
+    queryKey: ['hospitals', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Hospital.list('name');
+      return all.filter(h => h.created_by === user?.email);
+    },
     enabled: !!user,
   });
 
