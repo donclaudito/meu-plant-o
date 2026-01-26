@@ -178,10 +178,10 @@ export default function Doctors() {
     );
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (selectedDoctors.length === 0) return;
-    if (confirm(`Eliminar ${selectedDoctors.length} médico(s) selecionado(s)?`)) {
-      deleteDoctorsMutation.mutate(selectedDoctors);
+    if (window.confirm(`Tem a certeza que deseja eliminar ${selectedDoctors.length} médico(s) selecionado(s)?`)) {
+      await deleteDoctorsMutation.mutateAsync(selectedDoctors);
     }
   };
 
