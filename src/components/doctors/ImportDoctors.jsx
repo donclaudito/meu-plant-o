@@ -19,60 +19,74 @@ export default function ImportDoctors({ showToast }) {
     },
   });
 
+  const parseCSV = (text) => {
+    const lines = text.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const nameIndex = headers.indexOf('name');
+    const specialtyIndex = headers.indexOf('specialty');
+    const phoneIndex = headers.indexOf('phone');
+
+    if (nameIndex === -1 || specialtyIndex === -1) {
+      throw new Error('CSV deve ter colunas "name" e "specialty"');
+    }
+
+    const doctors = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim());
+      if (values[nameIndex] && values[specialtyIndex]) {
+        doctors.push({
+          name: values[nameIndex],
+          specialty: values[specialtyIndex],
+          phone: phoneIndex !== -1 ? (values[phoneIndex] || '') : ''
+        });
+      }
+    }
+
+    return doctors;
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setImportResult({ success: false, error: 'Por favor, selecione um ficheiro CSV' });
+      return;
+    }
+
     setIsUploading(true);
     try {
-      // Upload file
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const text = await file.text();
+      const parsedDoctors = parseCSV(text);
 
-      // Extract data from file - Schema for a SINGLE doctor object
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            name: { type: "string" },
-            specialty: { type: "string" },
-            phone: { type: "string" }
-          },
-          required: ["name", "specialty"]
-        }
-      });
-
-      if (result.status === 'success' && result.output) {
-        // Map specialties to match enum
-        const specialtyMap = {
-          'cirurgia geral': 'CIRURGIA GERAL',
-          'cirurgia': 'CIRURGIA GERAL',
-          'clinica medica': 'CLÍNICA MÉDICA',
-          'clinica': 'CLÍNICA MÉDICA',
-          'pediatria': 'PEDIATRIA',
-          'ginecologia': 'GINECOLOGIA',
-          'ortopedia': 'ORTOPEDIA',
-          'anestesia': 'ANESTESIA',
-          'anestesiologia': 'ANESTESIA'
-        };
-
-        // Result.output is now an array of doctor objects
-        const doctors = Array.isArray(result.output) 
-          ? result.output.map(d => ({
-              name: d.name,
-              specialty: specialtyMap[d.specialty?.toLowerCase()] || 'OUTRA',
-              phone: d.phone || ''
-            }))
-          : [{
-              name: result.output.name,
-              specialty: specialtyMap[result.output.specialty?.toLowerCase()] || 'OUTRA',
-              phone: result.output.phone || ''
-            }];
-
-        createDoctorsMutation.mutate(doctors);
-      } else {
-        setImportResult({ success: false, error: result.details || 'Erro ao processar ficheiro' });
+      if (parsedDoctors.length === 0) {
+        setImportResult({ success: false, error: 'Nenhum médico encontrado no ficheiro' });
+        return;
       }
+
+      // Map specialties to match enum
+      const specialtyMap = {
+        'cirurgia geral': 'CIRURGIA GERAL',
+        'cirurgia': 'CIRURGIA GERAL',
+        'clinica medica': 'CLÍNICA MÉDICA',
+        'clínica médica': 'CLÍNICA MÉDICA',
+        'clinica': 'CLÍNICA MÉDICA',
+        'pediatria': 'PEDIATRIA',
+        'ginecologia': 'GINECOLOGIA',
+        'ortopedia': 'ORTOPEDIA',
+        'anestesia': 'ANESTESIA',
+        'anestesiologia': 'ANESTESIA'
+      };
+
+      const doctors = parsedDoctors.map(d => ({
+        name: d.name,
+        specialty: specialtyMap[d.specialty?.toLowerCase()] || d.specialty || 'OUTRA',
+        phone: d.phone || ''
+      }));
+
+      createDoctorsMutation.mutate(doctors);
     } catch (error) {
       setImportResult({ success: false, error: error.message });
     } finally {
