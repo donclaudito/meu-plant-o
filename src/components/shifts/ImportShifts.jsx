@@ -116,7 +116,13 @@ Ignore linhas vazias ou de cabeçalho duplicadas.`;
         setImportResult({ success: false, error: 'Nenhum dado encontrado no ficheiro' });
       }
     } catch (error) {
-      setImportResult({ success: false, error: error.message || 'Erro ao processar ficheiro' });
+      console.error('❌ ERRO COMPLETO:', error);
+      console.error('❌ Stack:', error.stack);
+      console.error('❌ Response:', error.response);
+      setImportResult({ 
+        success: false, 
+        error: error.response?.data?.error || error.message || 'Erro ao processar ficheiro' 
+      });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
