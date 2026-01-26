@@ -93,12 +93,19 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids) => {
-      await Promise.all(ids.map(id => base44.entities.Shift.delete(id)));
+      const results = await Promise.allSettled(ids.map(id => base44.entities.Shift.delete(id)));
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+      return { successful, failed, total: ids.length };
     },
-    onSuccess: (_, ids) => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
       setSelectedShifts([]);
-      showToast(`${ids.length} plantões removidos!`);
+      if (result.failed > 0) {
+        showToast(`${result.successful} plantões removidos (${result.failed} já não existiam)`);
+      } else {
+        showToast(`${result.successful} plantões removidos!`);
+      }
     },
   });
 
