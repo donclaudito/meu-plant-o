@@ -74,8 +74,10 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const createShiftMutation = useMutation({
     mutationFn: (data) => base44.entities.Shift.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    onSuccess: (newShift) => {
+      queryClient.setQueryData(['shifts', user?.email], (oldShifts = []) => {
+        return [...oldShifts, newShift];
+      });
       setIsModalOpen(false);
       showToast('Plantão registado!');
     },
@@ -83,16 +85,20 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const updateShiftMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Shift.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    onSuccess: (updatedShift) => {
+      queryClient.setQueryData(['shifts', user?.email], (oldShifts = []) => {
+        return oldShifts.map(s => s.id === updatedShift.id ? updatedShift : s);
+      });
       showToast('Plantão atualizado!');
     },
   });
 
   const deleteShiftMutation = useMutation({
     mutationFn: (id) => base44.entities.Shift.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData(['shifts', user?.email], (oldShifts = []) => {
+        return oldShifts.filter(s => s.id !== deletedId);
+      });
       setDeleteConfirmation({ isOpen: false, id: '', name: '' });
       showToast('Plantão removido!');
     },
