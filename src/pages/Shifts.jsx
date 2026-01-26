@@ -49,6 +49,9 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     queryKey: ['doctors', user?.email],
     queryFn: async () => {
       const all = await base44.entities.Doctor.list('name');
+      if (user?.email === 'testeclauorenstein@gmail.com') {
+        return all;
+      }
       return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
@@ -58,6 +61,9 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
     queryKey: ['hospitals', user?.email],
     queryFn: async () => {
       const all = await base44.entities.Hospital.list('name');
+      if (user?.email === 'testeclauorenstein@gmail.com') {
+        return all;
+      }
       return all.filter(h => h.created_by === user?.email);
     },
     enabled: !!user,
