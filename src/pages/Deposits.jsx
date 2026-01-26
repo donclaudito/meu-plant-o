@@ -131,11 +131,15 @@ export default function Deposits() {
 
   const shiftsFromReferenceMonth = useMemo(() => {
     return shifts.filter(s => {
+      if (!s || !s.date) return false;
+      
       const [year, month] = s.date.split('-').map(Number);
       const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
       
       if (selectedDoctorFilter) {
-        const doctorMatch = s.doctorName.toLowerCase().includes(selectedDoctorFilter.toLowerCase());
+        const normalizedFilterDoctor = selectedDoctorFilter.trim().toUpperCase();
+        const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
+        const doctorMatch = normalizedDoctorName === normalizedFilterDoctor;
         return dateMatch && doctorMatch;
       }
       
@@ -144,7 +148,10 @@ export default function Deposits() {
   }, [shifts, selectedReferenceMonth, selectedReferenceYear, selectedDoctorFilter]);
 
   const totalShiftsValue = useMemo(() => {
-    return shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    const validShifts = shiftsFromReferenceMonth.filter(s => 
+      s && typeof s.value === 'number' && s.value > 0
+    );
+    return validShifts.reduce((acc, s) => acc + Number(s.value), 0);
   }, [shiftsFromReferenceMonth]);
 
   const extraIncomesFromReferenceMonth = useMemo(() => {
