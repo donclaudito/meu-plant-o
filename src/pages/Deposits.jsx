@@ -170,21 +170,29 @@ export default function Deposits() {
   }, [discounts]);
 
   const totalDiscounts = useMemo(() => {
-    const monthlyShiftsTotal = shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    // Usar o total de plantões (não filtrados por médico) para calcular descontos percentuais
+    const allMonthShifts = shifts.filter(s => {
+      const [year, month] = s.date.split('-').map(Number);
+      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+    });
     
-    return globalDiscounts
-      .filter(d => {
-        const [year, month] = d.date.split('-').map(Number);
-        return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
-      })
-      .reduce((acc, d) => {
-        const isPercentage = d.isPercentage === true;
-        if (isPercentage) {
-          return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
-        }
-        return acc + (Number(d.value) || 0);
-      }, 0);
-  }, [globalDiscounts, shiftsFromReferenceMonth, selectedReferenceMonth, selectedReferenceYear]);
+    const monthlyShiftsTotal = allMonthShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    
+    // Filtrar descontos do mês de referência
+    const monthlyDiscounts = globalDiscounts.filter(d => {
+      const [year, month] = d.date.split('-').map(Number);
+      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+    });
+    
+    // Calcular total de descontos
+    return monthlyDiscounts.reduce((acc, d) => {
+      const isPercentage = d.isPercentage === true;
+      if (isPercentage) {
+        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+      }
+      return acc + (Number(d.value) || 0);
+    }, 0);
+  }, [globalDiscounts, shifts, selectedReferenceMonth, selectedReferenceYear]);
 
   const shiftsByUnit = useMemo(() => {
     const grouped = {};
