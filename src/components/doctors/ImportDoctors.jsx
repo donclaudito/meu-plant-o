@@ -23,56 +23,78 @@ export default function ImportDoctors({ showToast }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    setIsUploading(true);
-    try {
-      // Upload file
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    // Validar tipo de arquivo
+    if (!file.name.endsWith('.csv')) {
+      setImportResult({ success: false, error: 'Por favor, selecione apenas arquivos CSV' });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
 
-      // Extract data from file
-      const jsonSchema = {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            name: { type: "string" },
-            specialty: { type: "string" },
-            phone: { type: "string" }
-          },
-          required: ["name", "specialty"]
-        }
+    setIsUploading(true);
+    setImportResult(null);
+
+    try {
+      // Ler CSV diretamente
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        setImportResult({ success: false, error: 'Arquivo CSV vazio ou inválido' });
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+
+      // Processar cabeçalhos
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const nameIndex = headers.findIndex(h => h === 'name' || h === 'nome');
+      const specialtyIndex = headers.findIndex(h => h === 'specialty' || h === 'especialidade');
+      const phoneIndex = headers.findIndex(h => h === 'phone' || h === 'telefone');
+
+      if (nameIndex === -1 || specialtyIndex === -1) {
+        setImportResult({ success: false, error: 'CSV deve conter colunas "name" e "specialty"' });
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+
+      // Map specialties
+      const specialtyMap = {
+        'cirurgia geral': 'CIRURGIA GERAL',
+        'cirurgia': 'CIRURGIA GERAL',
+        'clinica medica': 'CLÍNICA MÉDICA',
+        'clínica médica': 'CLÍNICA MÉDICA',
+        'clinica': 'CLÍNICA MÉDICA',
+        'pediatria': 'PEDIATRIA',
+        'ginecologia': 'GINECOLOGIA',
+        'ortopedia': 'ORTOPEDIA',
+        'anestesia': 'ANESTESIA',
+        'anestesiologia': 'ANESTESIA'
       };
 
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: jsonSchema
-      });
-
-      if (result.status === 'success' && result.output) {
-        // Map specialties to match enum
-        const specialtyMap = {
-          'cirurgia geral': 'CIRURGIA GERAL',
-          'cirurgia': 'CIRURGIA GERAL',
-          'clinica medica': 'CLÍNICA MÉDICA',
-          'clinica': 'CLÍNICA MÉDICA',
-          'pediatria': 'PEDIATRIA',
-          'ginecologia': 'GINECOLOGIA',
-          'ortopedia': 'ORTOPEDIA',
-          'anestesia': 'ANESTESIA',
-          'anestesiologia': 'ANESTESIA'
-        };
-
-        const doctors = result.output.map(d => ({
-          name: d.name,
-          specialty: specialtyMap[d.specialty?.toLowerCase()] || 'OUTRA',
-          phone: d.phone || ''
-        }));
-
-        createDoctorsMutation.mutate(doctors);
-      } else {
-        setImportResult({ success: false, error: result.details || 'Erro ao processar ficheiro' });
+      // Processar dados
+      const doctors = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values[nameIndex] && values[specialtyIndex]) {
+          doctors.push({
+            name: values[nameIndex],
+            specialty: specialtyMap[values[specialtyIndex]?.toLowerCase()] || values[specialtyIndex] || 'OUTRA',
+            phone: phoneIndex !== -1 ? (values[phoneIndex] || '') : ''
+          });
+        }
       }
+
+      if (doctors.length === 0) {
+        setImportResult({ success: false, error: 'Nenhum médico válido encontrado no CSV' });
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+
+      createDoctorsMutation.mutate(doctors);
     } catch (error) {
-      setImportResult({ success: false, error: error.message });
+      setImportResult({ success: false, error: error.message || 'Erro ao processar arquivo' });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -92,7 +114,7 @@ export default function ImportDoctors({ showToast }) {
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept=".csv,.xlsx,.xls,image/*,.pdf"
+            accept=".csv"
             className="hidden"
           />
           <button
@@ -104,7 +126,7 @@ export default function ImportDoctors({ showToast }) {
             {isUploading ? 'A processar...' : 'Selecionar Ficheiro'}
           </button>
           <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            CSV, Excel, imagem ou PDF
+            Apenas arquivos CSV
           </p>
 
           <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-green-200 dark:border-green-800">
