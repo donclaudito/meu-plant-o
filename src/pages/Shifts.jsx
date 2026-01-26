@@ -37,47 +37,27 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   });
 
   const { data: shifts = [] } = useQuery({
-    queryKey: ['shifts', user?.email],
-    queryFn: async () => {
-      const allShifts = await base44.entities.Shift.list('-date');
-      if (user?.email === 'testeclauorenstein@gmail.com') {
-        return allShifts;
-      }
-      return allShifts.filter(s => s.created_by === user?.email);
-    },
+    queryKey: ['shifts'],
+    queryFn: () => base44.entities.Shift.list('-date'),
     enabled: !!user,
   });
 
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors', user?.email],
-    queryFn: async () => {
-      const all = await base44.entities.Doctor.list('name');
-      if (user?.email === 'testeclauorenstein@gmail.com') {
-        return all;
-      }
-      return all.filter(d => d.created_by === user?.email);
-    },
+    queryKey: ['doctors'],
+    queryFn: () => base44.entities.Doctor.list('name'),
     enabled: !!user,
   });
 
   const { data: hospitals = [] } = useQuery({
-    queryKey: ['hospitals', user?.email],
-    queryFn: async () => {
-      const all = await base44.entities.Hospital.list('name');
-      if (user?.email === 'testeclauorenstein@gmail.com') {
-        return all;
-      }
-      return all.filter(h => h.created_by === user?.email);
-    },
+    queryKey: ['hospitals'],
+    queryFn: () => base44.entities.Hospital.list('name'),
     enabled: !!user,
   });
 
   const createShiftMutation = useMutation({
     mutationFn: (data) => base44.entities.Shift.create(data),
-    onSuccess: (newShift) => {
-      queryClient.setQueryData(['shifts', user?.email], (oldShifts = []) => {
-        return [...oldShifts, newShift];
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] });
       setIsModalOpen(false);
       showToast('Plantão registado!');
     },
@@ -85,20 +65,16 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const updateShiftMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Shift.update(id, data),
-    onSuccess: (updatedShift) => {
-      queryClient.setQueryData(['shifts', user?.email], (oldShifts = []) => {
-        return oldShifts.map(s => s.id === updatedShift.id ? updatedShift : s);
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] });
       showToast('Plantão atualizado!');
     },
   });
 
   const deleteShiftMutation = useMutation({
     mutationFn: (id) => base44.entities.Shift.delete(id),
-    onSuccess: (_, deletedId) => {
-      queryClient.setQueryData(['shifts', user?.email], (oldShifts = []) => {
-        return oldShifts.filter(s => s.id !== deletedId);
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] });
       setDeleteConfirmation({ isOpen: false, id: '', name: '' });
       showToast('Plantão removido!');
     },
