@@ -108,7 +108,7 @@ export default function ImportDoctors({ showToast }) {
             type="file"
             ref={fileInputRef}
             onChange={handleFileUpload}
-            accept=".csv,.xlsx,.xls,image/*,.pdf"
+            accept=".csv"
             className="hidden"
           />
           <button
