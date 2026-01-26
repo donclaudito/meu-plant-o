@@ -35,11 +35,7 @@ export default function Doctors() {
   const { data: doctors = [] } = useQuery({
     queryKey: ['doctors', user?.email],
     queryFn: async () => {
-      const all = await base44.entities.Doctor.list('name');
-      if (user?.email === 'testeclauorenstein@gmail.com') {
-        return all;
-      }
-      return all.filter(d => d.created_by === user?.email);
+      return await base44.entities.Doctor.list('name');
     },
     enabled: !!user,
   });
