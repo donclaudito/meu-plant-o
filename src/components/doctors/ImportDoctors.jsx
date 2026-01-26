@@ -120,7 +120,7 @@ export default function ImportDoctors({ showToast }) {
             {isUploading ? 'A processar...' : 'Selecionar Ficheiro'}
           </button>
           <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            CSV, Excel, imagem ou PDF
+            Apenas ficheiros CSV
           </p>
 
           <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-green-200 dark:border-green-800">
