@@ -28,20 +28,18 @@ export default function ImportDoctors({ showToast }) {
       // Upload file
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Extract data from file
-      const jsonSchema = {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          specialty: { type: "string" },
-          phone: { type: "string" }
-        },
-        required: ["name", "specialty"]
-      };
-
+      // Extract data from file - Schema for a SINGLE doctor object
       const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
-        json_schema: jsonSchema
+        json_schema: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            specialty: { type: "string" },
+            phone: { type: "string" }
+          },
+          required: ["name", "specialty"]
+        }
       });
 
       if (result.status === 'success' && result.output) {
