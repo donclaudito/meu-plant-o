@@ -42,42 +42,66 @@ export default function ImportShifts({ showToast }) {
 
     setIsUploading(true);
     try {
+      // Upload file
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      const jsonSchema = {
-        type: "array",
-        items: {
+      // Fetch file content
+      const response = await fetch(file_url);
+      const fileContent = await response.text();
+
+      // Use AI to extract data flexibly
+      const prompt = `Analise o seguinte conteúdo CSV e extraia os dados de plantões médicos.
+      
+CSV:
+${fileContent}
+
+Converta TODOS os dados para o seguinte formato JSON. Seja flexível com:
+- Diferentes nomes de colunas (data/date, hospital/unit/unidade, medico/doctor/doctorName, etc)
+- Diferentes formatos de data (converta tudo para YYYY-MM-DD)
+- Valores com símbolos (R$, €, etc - remova e converta para número)
+- Status de pagamento (pago/paid/sim/yes/true = true, caso contrário false)
+- Especialidades devem ser uma destas: CIRURGIA GERAL, CLÍNICA MÉDICA, PEDIATRIA, GINECOLOGIA, ORTOPEDIA, ANESTESIA, OUTRA
+- Tipo deve ser: 12h Dia, 12h Noite, 24h, 6h Dia ou 6h Noite
+
+Ignore linhas vazias ou de cabeçalho duplicadas.`;
+
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt,
+        response_json_schema: {
           type: "object",
           properties: {
-            date: { type: "string", description: "Data no formato YYYY-MM-DD" },
-            unit: { type: "string", description: "Nome do hospital/unidade" },
-            doctorName: { type: "string", description: "Nome do médico" },
-            specialty: { type: "string", description: "Especialidade" },
-            type: { type: "string", description: "Tipo: 12h Dia, 12h Noite, 24h, 6h Dia, 6h Noite" },
-            value: { type: "number", description: "Valor em euros" },
-            hours: { type: "number", description: "Horas trabalhadas" },
-            paid: { type: "boolean", description: "Se foi pago (true/false)" }
-          },
-          required: ["date", "unit", "doctorName", "specialty", "type", "value", "hours"]
+            shifts: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  date: { type: "string" },
+                  unit: { type: "string" },
+                  doctorName: { type: "string" },
+                  specialty: { type: "string" },
+                  type: { type: "string" },
+                  value: { type: "number" },
+                  hours: { type: "number" },
+                  paid: { type: "boolean" }
+                },
+                required: ["date", "unit", "doctorName", "specialty", "type", "value", "hours"]
+              }
+            }
+          }
         }
-      };
-
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: jsonSchema
       });
 
-      if (result.status === 'success' && result.output) {
-        const shifts = result.output.map(shift => ({
+      if (result.shifts && result.shifts.length > 0) {
+        const shifts = result.shifts.map(shift => ({
           ...shift,
           paid: shift.paid || false
         }));
         createShiftsMutation.mutate(shifts);
       } else {
-        setImportResult({ success: false, error: result.details || 'Erro ao processar ficheiro' });
+        setImportResult({ success: false, error: 'Nenhum dado encontrado no ficheiro' });
       }
     } catch (error) {
-      setImportResult({ success: false, error: error.message });
+      setImportResult({ success: false, error: error.message || 'Erro ao processar ficheiro' });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
