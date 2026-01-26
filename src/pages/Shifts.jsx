@@ -29,6 +29,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
   const [isSyncingSheets, setIsSyncingSheets] = useState(false);
+  const [selectedShifts, setSelectedShifts] = useState([]);
 
   const queryClient = useQueryClient();
 
@@ -87,6 +88,17 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
       setDeleteConfirmation({ isOpen: false, id: '', name: '' });
       showToast('Plantão removido!');
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map(id => base44.entities.Shift.delete(id)));
+    },
+    onSuccess: (_, ids) => {
+      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+      setSelectedShifts([]);
+      showToast(`${ids.length} plantões removidos!`);
     },
   });
 
@@ -159,6 +171,27 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const handleUpdateShiftDate = (id, newDate) => {
     updateShiftMutation.mutate({ id, data: { date: newDate } });
+  };
+
+  const toggleSelectShift = (id) => {
+    setSelectedShifts(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedShifts.length === filteredShifts.length) {
+      setSelectedShifts([]);
+    } else {
+      setSelectedShifts(filteredShifts.map(s => s.id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedShifts.length === 0) return;
+    if (confirm(`Tem certeza que deseja eliminar ${selectedShifts.length} plantões selecionados?`)) {
+      bulkDeleteMutation.mutate(selectedShifts);
+    }
   };
 
   if (!user) {
@@ -260,12 +293,20 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex gap-2 items-center flex-wrap">
-          <button
-            onClick={exportToCSV}
-            className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-md"
-          >
-            <Download size={16} /> CSV
-          </button>
+            {selectedShifts.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 bg-red-600 dark:bg-red-500 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors shadow-md"
+              >
+                <X size={16} /> Eliminar {selectedShifts.length}
+              </button>
+            )}
+            <button
+              onClick={exportToCSV}
+              className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-md"
+            >
+              <Download size={16} /> CSV
+            </button>
           
           <button
             onClick={syncToGoogleSheets}
@@ -367,12 +408,18 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
           onDayClick={handleDayClick}
           onDeleteShift={handleDeleteShift}
           onUpdateShiftDate={handleUpdateShiftDate}
+          selectedShifts={selectedShifts}
+          onToggleSelect={toggleSelectShift}
+          onToggleSelectAll={toggleSelectAll}
         />
       ) : (
         <ListView 
           shifts={filteredShifts}
           onTogglePaid={handleTogglePaid}
           onDeleteShift={handleDeleteShift}
+          selectedShifts={selectedShifts}
+          onToggleSelect={toggleSelectShift}
+          onToggleSelectAll={toggleSelectAll}
         />
       )}
       

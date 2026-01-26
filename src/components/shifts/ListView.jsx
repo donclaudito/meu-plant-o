@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 
-export default function ListView({ shifts, onTogglePaid, onDeleteShift }) {
+export default function ListView({ shifts, onTogglePaid, onDeleteShift, selectedShifts = [], onToggleSelect, onToggleSelectAll }) {
   return (
     <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden mb-8">
       <table className="w-full text-left">
