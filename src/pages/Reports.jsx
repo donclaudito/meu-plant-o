@@ -71,14 +71,22 @@ export default function Reports() {
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(shift => {
+      if (!shift || !shift.date) return false;
+      
       if (filters.month) {
         const [filterYear, filterMonth] = filters.month.split('-').map(Number);
-        const shiftDate = new Date(shift.date + 'T00:00:00');
-        if (shiftDate.getFullYear() !== filterYear || (shiftDate.getMonth() + 1) !== filterMonth) {
+        const [year, month] = shift.date.split('-').map(Number);
+        if (year !== filterYear || month !== filterMonth) {
           return false;
         }
       }
-      if (filters.doctorName && shift.doctorName !== filters.doctorName) return false;
+      
+      if (filters.doctorName) {
+        const normalizedFilterDoctor = filters.doctorName.trim().toUpperCase();
+        const normalizedDoctorName = (shift.doctorName || '').trim().toUpperCase();
+        if (normalizedDoctorName !== normalizedFilterDoctor) return false;
+      }
+      
       if (filters.unit && shift.unit !== filters.unit) return false;
       if (filters.specialty && shift.specialty !== filters.specialty) return false;
       if (filters.type && shift.type !== filters.type) return false;
@@ -88,10 +96,12 @@ export default function Reports() {
 
   const filteredExtraIncomes = useMemo(() => {
     return extraIncomes.filter(income => {
+      if (!income || !income.date) return false;
+      
       if (filters.month) {
         const [filterYear, filterMonth] = filters.month.split('-').map(Number);
-        const incomeDate = new Date(income.date + 'T00:00:00');
-        if (incomeDate.getFullYear() !== filterYear || (incomeDate.getMonth() + 1) !== filterMonth) {
+        const [year, month] = income.date.split('-').map(Number);
+        if (year !== filterYear || month !== filterMonth) {
           return false;
         }
       }
@@ -101,10 +111,12 @@ export default function Reports() {
 
   const globalDiscounts = useMemo(() => {
     return discounts.filter(d => {
+      if (!d || !d.date) return false;
+      
       if (filters.month) {
         const [filterYear, filterMonth] = filters.month.split('-').map(Number);
-        const discountDate = new Date(d.date + 'T00:00:00');
-        if (discountDate.getFullYear() !== filterYear || (discountDate.getMonth() + 1) !== filterMonth) {
+        const [year, month] = d.date.split('-').map(Number);
+        if (year !== filterYear || month !== filterMonth) {
           return false;
         }
       }
@@ -116,7 +128,12 @@ export default function Reports() {
     const safeShifts = filteredShifts || [];
     const safeExtraIncome = filteredExtraIncomes.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
 
-    const monthlyShiftsTotal = safeShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    // Validar plantões e calcular total
+    const validShifts = safeShifts.filter(
+      (shift) => shift && typeof shift.hours === "number" && shift.hours > 0
+    );
+    
+    const monthlyShiftsTotal = validShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
     const safeDiscounts = globalDiscounts.reduce((acc, d) => {
       const isPercentage = d.isPercentage === true;
       if (isPercentage) {
@@ -129,10 +146,6 @@ export default function Reports() {
     const shift12hValue = Number(user?.shift12hValue) || 1800;
     const shift24hValue = Number(user?.shift24hValue) || 3000;
     const baseHourlyRate = Number(user?.hourlyRate) || 150;
-
-    const validShifts = safeShifts.filter(
-      (shift) => shift && typeof shift.hours === "number" && shift.hours > 0
-    );
 
     const hours = validShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
 
