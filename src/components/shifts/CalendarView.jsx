@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Clock, Euro, Trash2, GripVertical, Info } from 'lucide-react';
 
-export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift, onUpdateShiftDate }) {
+export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift, onUpdateShiftDate, selectedShifts = [], onToggleSelect }) {
   const today = new Date();
   const [draggedShift, setDraggedShift] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -131,10 +131,11 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                           <div 
                             className={`text-[9px] p-2 rounded-xl font-bold shadow-sm transition-all hover:scale-105 cursor-move flex items-start gap-1 flex-1 ${
                               getDoctorColor(s.doctorName)
-                            } ${s.paid ? 'ring-2 ring-green-500/40' : ''} ${draggedShift?.id === s.id ? 'opacity-40' : ''}`}
+                            } ${s.paid ? 'ring-2 ring-green-500/40' : ''} ${draggedShift?.id === s.id ? 'opacity-40' : ''} ${selectedShifts.includes(s.id) ? 'ring-2 ring-blue-600' : ''}`}
                             draggable
                             onDragStart={(e) => handleDragStart(e, s)}
                             onDragEnd={handleDragEnd}
+                            onClick={(e) => { e.stopPropagation(); onToggleSelect(s.id); }}
                           >
                             <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5 hidden md:block" />
                             <div className="flex-1 min-w-0">

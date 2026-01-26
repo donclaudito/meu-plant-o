@@ -7,6 +7,14 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift, selected
       <table className="w-full text-left">
         <thead>
           <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+            <th className="px-3 py-4">
+              <input
+                type="checkbox"
+                checked={selectedShifts.length === shifts.length && shifts.length > 0}
+                onChange={onToggleSelectAll}
+                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+            </th>
             <th className="px-6 py-4">Data</th>
             <th className="px-6 py-4">Unidade / Médico</th>
             <th className="px-6 py-4 text-right">Valor</th>
@@ -17,6 +25,14 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift, selected
         <tbody className="divide-y divide-slate-50">
           {shifts.map(s => (
             <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
+              <td className="px-3 py-5">
+                <input
+                  type="checkbox"
+                  checked={selectedShifts.includes(s.id)}
+                  onChange={() => onToggleSelect(s.id)}
+                  className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+              </td>
               <td className="px-6 py-5 font-black text-slate-700">
                 {new Date(s.date).toLocaleDateString('pt-PT')}
               </td>
@@ -53,7 +69,7 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift, selected
           ))}
           {shifts.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-6 py-12 text-center text-slate-400 font-medium">
+              <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-medium">
                 Nenhum plantão registado para este período
               </td>
             </tr>
