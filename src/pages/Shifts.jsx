@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Calendar as CalendarIcon, Filter, List, X, FileSpreadsheet, Upload } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, Filter, List, X, FileSpreadsheet, Download } from 'lucide-react';
 import CalendarView from '@/components/shifts/CalendarView';
 import ListView from '@/components/shifts/ListView';
 import ShiftModal from '@/components/shifts/ShiftModal';
@@ -28,7 +28,7 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const [selectedDate, setSelectedDate] = useState(null);
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncingSheets, setIsSyncingSheets] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -199,28 +199,23 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   };
 
   const syncToGoogleSheets = async () => {
-    if (filteredShifts.length === 0) {
-      showToast('Nenhum plantão para sincronizar', 'error');
-      return;
-    }
-
-    setIsSyncing(true);
+    setIsSyncingSheets(true);
     try {
-      const response = await base44.functions.invoke('syncToGoogleSheets', {
-        month: currentMonth + 1,
+      const { data } = await base44.functions.invoke('syncShiftsToSheets', {
+        month: currentMonth,
         year: currentYear
       });
-
-      if (response.data.success) {
-        showToast(`${response.data.shiftCount} plantões sincronizados!`);
-        window.open(response.data.url, '_blank');
+      
+      if (data.success) {
+        showToast(`${data.shiftsCount} plantões sincronizados!`);
+        window.open(data.spreadsheetUrl, '_blank');
       } else {
-        showToast(response.data.error || 'Erro ao sincronizar', 'error');
+        showToast(data.error || 'Erro ao sincronizar', 'error');
       }
     } catch (error) {
       showToast(error.message || 'Erro ao sincronizar', 'error');
     } finally {
-      setIsSyncing(false);
+      setIsSyncingSheets(false);
     }
   };
 
@@ -269,15 +264,16 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
             onClick={exportToCSV}
             className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-md"
           >
-            <FileSpreadsheet size={16} /> CSV
+            <Download size={16} /> CSV
           </button>
           
           <button
             onClick={syncToGoogleSheets}
-            disabled={isSyncing}
+            disabled={isSyncingSheets}
             className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Upload size={16} /> {isSyncing ? 'SINCRONIZANDO...' : 'GOOGLE SHEETS'}
+            <FileSpreadsheet size={16} /> 
+            {isSyncingSheets ? 'Sincronizando...' : 'Google Sheets'}
           </button>
           
           <div className="flex gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 w-fit">
