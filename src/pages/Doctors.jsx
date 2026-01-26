@@ -33,7 +33,7 @@ export default function Doctors() {
   });
 
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors', user?.email],
+    queryKey: ['doctors'],
     queryFn: async () => {
       return await base44.entities.Doctor.list('name');
     },
