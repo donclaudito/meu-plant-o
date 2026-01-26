@@ -110,15 +110,30 @@ export default function ImportDoctors({ showToast }) {
           </p>
 
           <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-green-200 dark:border-green-800">
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2 mb-3">
               <FileSpreadsheet className="text-green-600 dark:text-green-400 flex-shrink-0" size={16} />
               <div>
-                <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 mb-1">💡 Dica:</p>
-                <p className="text-[9px] text-slate-500 dark:text-slate-400">
-                  Use o botão <span className="font-bold text-green-600 dark:text-green-400">"Modelo"</span> na lista abaixo para descarregar exemplo.
+                <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 mb-1">💡 Formato correto do CSV:</p>
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-700 p-2 rounded">
+                  name,specialty,phone<br/>
+                  Dr. João Silva,CIRURGIA GERAL,912345678<br/>
+                  Dra. Maria Santos,PEDIATRIA,913456789
                 </p>
               </div>
             </div>
+            <button
+              onClick={() => {
+                const csvContent = 'name,specialty,phone\nDr. João Silva,CIRURGIA GERAL,912345678\nDra. Maria Santos,PEDIATRIA,913456789\nDr. Pedro Costa,CLÍNICA MÉDICA,914567890';
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'modelo_medicos.csv';
+                link.click();
+              }}
+              className="w-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-bold py-2 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-all text-xs"
+            >
+              📥 Descarregar Modelo CSV
+            </button>
           </div>
         </>
       )}
