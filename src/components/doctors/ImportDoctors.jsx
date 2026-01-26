@@ -56,11 +56,18 @@ export default function ImportDoctors({ showToast }) {
           'anestesiologia': 'ANESTESIA'
         };
 
-        const doctors = result.output.map(d => ({
-          name: d.name,
-          specialty: specialtyMap[d.specialty?.toLowerCase()] || 'OUTRA',
-          phone: d.phone || ''
-        }));
+        // Result.output is now an array of doctor objects
+        const doctors = Array.isArray(result.output) 
+          ? result.output.map(d => ({
+              name: d.name,
+              specialty: specialtyMap[d.specialty?.toLowerCase()] || 'OUTRA',
+              phone: d.phone || ''
+            }))
+          : [{
+              name: result.output.name,
+              specialty: specialtyMap[result.output.specialty?.toLowerCase()] || 'OUTRA',
+              phone: result.output.phone || ''
+            }];
 
         createDoctorsMutation.mutate(doctors);
       } else {
