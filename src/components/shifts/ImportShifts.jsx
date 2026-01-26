@@ -1,11 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle, AlertCircle, Download, Link as LinkIcon } from 'lucide-react';
 
 export default function ImportShifts({ showToast }) {
   const [isUploading, setIsUploading] = useState(false);
   const [importResult, setImportResult] = useState(null);
+  const [importMode, setImportMode] = useState('file'); // 'file' or 'sheets'
+  const [spreadsheetUrl, setSpreadsheetUrl] = useState('');
+  const [isImportingSheets, setIsImportingSheets] = useState(false);
   const fileInputRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -81,6 +84,42 @@ export default function ImportShifts({ showToast }) {
     }
   };
 
+  const handleGoogleSheetsImport = async () => {
+    if (!spreadsheetUrl.trim()) {
+      setImportResult({ success: false, error: 'Por favor, insira a URL da planilha' });
+      return;
+    }
+
+    // Extract spreadsheet ID from URL
+    const match = spreadsheetUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) {
+      setImportResult({ success: false, error: 'URL inválida. Use o link completo do Google Sheets' });
+      return;
+    }
+
+    const spreadsheetId = match[1];
+    setIsImportingSheets(true);
+    setImportResult(null);
+
+    try {
+      const { data } = await base44.functions.invoke('importFromGoogleSheets', { spreadsheetId });
+      
+      if (data.success) {
+        setImportResult({ success: true, count: data.count });
+        showToast(`${data.count} plantões importados!`);
+        queryClient.invalidateQueries({ queryKey: ['shifts'] });
+        setSpreadsheetUrl('');
+        setTimeout(() => setImportResult(null), 5000);
+      } else {
+        setImportResult({ success: false, error: data.error || 'Erro ao importar' });
+      }
+    } catch (error) {
+      setImportResult({ success: false, error: error.message || 'Erro ao importar' });
+    } finally {
+      setIsImportingSheets(false);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-2xl border border-blue-200 dark:border-blue-800 shadow-sm">
       <div className="flex items-center justify-between mb-4">
@@ -100,24 +139,74 @@ export default function ImportShifts({ showToast }) {
 
       {!importResult && (
         <>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept=".csv,.xlsx,.xls,image/*,.pdf"
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white font-black py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-          >
-            <FileSpreadsheet size={18} />
-            {isUploading ? 'A processar...' : 'Selecionar Ficheiro'}
-          </button>
-          <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
-            CSV, Excel, imagem ou PDF
-          </p>
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setImportMode('file')}
+              className={`flex-1 py-2 px-4 rounded-xl font-bold text-xs transition-all ${
+                importMode === 'file'
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md'
+                  : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+              }`}
+            >
+              📄 Ficheiro
+            </button>
+            <button
+              onClick={() => setImportMode('sheets')}
+              className={`flex-1 py-2 px-4 rounded-xl font-bold text-xs transition-all ${
+                importMode === 'sheets'
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md'
+                  : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600'
+              }`}
+            >
+              📊 Google Sheets
+            </button>
+          </div>
+
+          {importMode === 'file' ? (
+            <>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".csv,.xlsx,.xls,image/*,.pdf"
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white font-black py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                <FileSpreadsheet size={18} />
+                {isUploading ? 'A processar...' : 'Selecionar Ficheiro'}
+              </button>
+              <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                CSV, Excel, imagem ou PDF
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={spreadsheetUrl}
+                  onChange={(e) => setSpreadsheetUrl(e.target.value)}
+                  placeholder="Cole o link do Google Sheets aqui..."
+                  className="w-full px-4 py-3 rounded-xl border-2 border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 font-medium text-sm"
+                />
+                <button
+                  onClick={handleGoogleSheetsImport}
+                  disabled={isImportingSheets || !spreadsheetUrl.trim()}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white font-black py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 dark:hover:from-blue-600 dark:hover:to-indigo-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-blue-900/50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  <LinkIcon size={18} />
+                  {isImportingSheets ? 'A importar...' : 'Importar do Google Sheets'}
+                </button>
+              </div>
+              <p className="text-[10px] text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                Cole a URL completa da planilha do Google Sheets
+              </p>
+            </>
+          )}
 
           <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-2">
@@ -125,7 +214,9 @@ export default function ImportShifts({ showToast }) {
               <div>
                 <p className="text-[10px] font-black text-slate-700 dark:text-slate-300 mb-1">💡 Dica:</p>
                 <p className="text-[9px] text-slate-500 dark:text-slate-400">
-                  Clique em <span className="font-bold text-blue-600 dark:text-blue-400">"Modelo"</span> para descarregar o exemplo.
+                  {importMode === 'file' 
+                    ? 'Clique em "Modelo" para descarregar o exemplo.'
+                    : 'A planilha deve ter colunas: Data, Hospital, Médico, Especialidade, Tipo, Horas, Valor, Status'}
                 </p>
               </div>
             </div>
