@@ -177,16 +177,12 @@ export default function Deposits() {
   }, [discounts]);
 
   const totalDiscounts = useMemo(() => {
-    // Usar o total de plantões (não filtrados por médico) para calcular descontos percentuais
-    const allMonthShifts = shifts.filter(s => {
-      const [year, month] = s.date.split('-').map(Number);
-      return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
-    });
-    
-    const monthlyShiftsTotal = allMonthShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    // Usar os plantões filtrados (incluindo filtro de médico) para calcular descontos
+    const monthlyShiftsTotal = shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
     
     // Filtrar descontos do mês de referência
     const monthlyDiscounts = globalDiscounts.filter(d => {
+      if (!d || !d.date) return false;
       const [year, month] = d.date.split('-').map(Number);
       return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
     });
@@ -199,7 +195,7 @@ export default function Deposits() {
       }
       return acc + (Number(d.value) || 0);
     }, 0);
-  }, [globalDiscounts, shifts, selectedReferenceMonth, selectedReferenceYear]);
+  }, [globalDiscounts, shiftsFromReferenceMonth, selectedReferenceMonth, selectedReferenceYear]);
 
   const shiftsByUnit = useMemo(() => {
     const grouped = {};
