@@ -14,13 +14,21 @@ export default function ImportShifts({ showToast }) {
 
   const createShiftsMutation = useMutation({
     mutationFn: async (shifts) => {
-      return await base44.entities.Shift.bulkCreate(shifts);
+      console.log('💾 Criando plantões no banco:', shifts);
+      const result = await base44.entities.Shift.bulkCreate(shifts);
+      console.log('✅ Plantões criados:', result);
+      return result;
     },
     onSuccess: (data) => {
+      console.log('🎉 Sucesso! Plantões criados:', data);
       queryClient.invalidateQueries({ queryKey: ['shifts'] });
       setImportResult({ success: true, count: data.length });
       showToast(`${data.length} plantões importados com sucesso!`);
       setTimeout(() => setImportResult(null), 5000);
+    },
+    onError: (error) => {
+      console.error('❌ Erro ao criar plantões:', error);
+      setImportResult({ success: false, error: error.message || 'Erro ao criar plantões' });
     },
   });
 
@@ -65,6 +73,8 @@ Converta TODOS os dados para o seguinte formato JSON. Seja flexível com:
 
 Ignore linhas vazias ou de cabeçalho duplicadas.`;
 
+      console.log('📄 Conteúdo do ficheiro:', fileContent.substring(0, 500));
+
       const result = await base44.integrations.Core.InvokeLLM({
         prompt,
         response_json_schema: {
@@ -91,13 +101,18 @@ Ignore linhas vazias ou de cabeçalho duplicadas.`;
         }
       });
 
+      console.log('🤖 Resposta da AI:', result);
+
       if (result.shifts && result.shifts.length > 0) {
+        console.log('✅ Plantões extraídos:', result.shifts);
         const shifts = result.shifts.map(shift => ({
           ...shift,
           paid: shift.paid || false
         }));
+        console.log('📤 Enviando para criação:', shifts);
         createShiftsMutation.mutate(shifts);
       } else {
+        console.warn('⚠️ Nenhum plantão encontrado no resultado:', result);
         setImportResult({ success: false, error: 'Nenhum dado encontrado no ficheiro' });
       }
     } catch (error) {
