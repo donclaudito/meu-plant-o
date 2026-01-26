@@ -102,19 +102,23 @@ export default function ImportShifts({ showToast }) {
     setImportResult(null);
 
     try {
-      const { data } = await base44.functions.invoke('importFromGoogleSheets', { spreadsheetId });
+      const response = await base44.functions.invoke('importFromGoogleSheets', { spreadsheetId });
       
-      if (data.success) {
-        setImportResult({ success: true, count: data.count });
-        showToast(`${data.count} plantões importados!`);
+      if (response.data.success) {
+        setImportResult({ success: true, count: response.data.count, errors: response.data.errors });
+        showToast(`${response.data.count} plantões importados!`);
         queryClient.invalidateQueries({ queryKey: ['shifts'] });
         setSpreadsheetUrl('');
         setTimeout(() => setImportResult(null), 5000);
       } else {
-        setImportResult({ success: false, error: data.error || 'Erro ao importar' });
+        setImportResult({ success: false, error: response.data.error || 'Erro ao importar' });
       }
     } catch (error) {
-      setImportResult({ success: false, error: error.message || 'Erro ao importar' });
+      console.error('Import error:', error);
+      setImportResult({ 
+        success: false, 
+        error: error.response?.data?.error || error.message || 'Erro ao importar. Verifique se a planilha está compartilhada publicamente ou com sua conta Google.' 
+      });
     } finally {
       setIsImportingSheets(false);
     }
@@ -233,21 +237,34 @@ export default function ImportShifts({ showToast }) {
           {importResult.success ? (
             <>
               <CheckCircle className="text-green-600 dark:text-green-400" size={32} />
-              <div>
+              <div className="flex-1">
                 <p className="font-black text-green-700 dark:text-green-300 text-lg">
                   {importResult.count} plantões importados!
                 </p>
                 <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                   Os dados foram adicionados com sucesso
                 </p>
+                {importResult.errors && importResult.errors.length > 0 && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-yellow-600 dark:text-yellow-400 cursor-pointer">
+                      ⚠️ {importResult.errors.length} linhas com avisos
+                    </summary>
+                    <ul className="text-[10px] text-yellow-600 dark:text-yellow-400 mt-1 ml-4 list-disc">
+                      {importResult.errors.slice(0, 5).map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                      {importResult.errors.length > 5 && <li>... e mais {importResult.errors.length - 5}</li>}
+                    </ul>
+                  </details>
+                )}
               </div>
             </>
           ) : (
             <>
               <AlertCircle className="text-red-600 dark:text-red-400" size={32} />
-              <div>
+              <div className="flex-1">
                 <p className="font-black text-red-700 dark:text-red-300">Erro na importação</p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{importResult.error}</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1 whitespace-pre-wrap">{importResult.error}</p>
               </div>
             </>
           )}
