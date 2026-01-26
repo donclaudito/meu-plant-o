@@ -242,7 +242,7 @@ export default function Reports() {
       pending,
       avgValue,
       hourlyRate,
-      count: filteredShifts.length,
+      count: validShifts.length,
       count12h,
       count6h,
       byType,
