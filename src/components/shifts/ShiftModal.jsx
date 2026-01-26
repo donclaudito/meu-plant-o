@@ -9,6 +9,7 @@ const specialties = [
 
 export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals, initialDate }) {
   const queryClient = useQueryClient();
+  const [user, setUser] = useState(null);
   const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift12hValue: 1800, shift24hValue: 3000 });
   const [newShift, setNewShift] = useState({
     date: initialDate || new Date().toISOString().split('T')[0],
@@ -28,11 +29,12 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
   useEffect(() => {
     const loadUserSettings = async () => {
       try {
-        const user = await base44.auth.me();
+        const currentUser = await base44.auth.me();
+        setUser(currentUser);
         const settings = {
-          shift6hValue: user.shift6hValue || 900,
-          shift12hValue: user.shift12hValue || 1800,
-          shift24hValue: user.shift24hValue || 3000
+          shift6hValue: currentUser.shift6hValue || 900,
+          shift12hValue: currentUser.shift12hValue || 1800,
+          shift24hValue: currentUser.shift24hValue || 3000
         };
         setUserSettings(settings);
         setNewShift(prev => ({ ...prev, value: settings.shift12hValue }));
@@ -142,30 +144,35 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                <span>Valor (R$)</span>
-                <button
-                  type="button"
-                  onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
-                >
-                  <Calculator size={10} /> Auto
-                </button>
-              </label>
-              <input 
-                type="number" 
-                required 
-                value={newShift.value} 
-                onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
-              />
-              {calculateSuggestedValue() !== newShift.value && (
-                <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
-                  Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
-                </p>
-              )}
-            </div>
+            {user?.email !== 'testeclauorenstein@gmail.com' && (
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                  <span>Valor (R$)</span>
+                  <button
+                    type="button"
+                    onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
+                  >
+                    <Calculator size={10} /> Auto
+                  </button>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-bold">R$</span>
+                  <input 
+                    type="number" 
+                    required 
+                    value={newShift.value} 
+                    onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
+                    className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+                  />
+                </div>
+                {calculateSuggestedValue() !== newShift.value && (
+                  <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
+                    Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
