@@ -65,6 +65,15 @@ export default function Deposits() {
     enabled: !!user,
   });
 
+  const { data: discounts = [] } = useQuery({
+    queryKey: ['discounts', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Discount.list('-date');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
+  });
+
   const createDepositMutation = useMutation({
     mutationFn: (data) => base44.entities.Deposit.create(data),
     onSuccess: () => {
@@ -156,6 +165,27 @@ export default function Deposits() {
     return extraIncomesFromReferenceMonth.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
   }, [extraIncomesFromReferenceMonth]);
 
+  const globalDiscounts = useMemo(() => {
+    return discounts.filter(d => !d.type || d.type === '');
+  }, [discounts]);
+
+  const totalDiscounts = useMemo(() => {
+    const monthlyShiftsTotal = shiftsFromReferenceMonth.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    
+    return globalDiscounts
+      .filter(d => {
+        const [year, month] = d.date.split('-').map(Number);
+        return month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
+      })
+      .reduce((acc, d) => {
+        const isPercentage = d.isPercentage === true;
+        if (isPercentage) {
+          return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+        }
+        return acc + (Number(d.value) || 0);
+      }, 0);
+  }, [globalDiscounts, shiftsFromReferenceMonth, selectedReferenceMonth, selectedReferenceYear]);
+
   const shiftsByUnit = useMemo(() => {
     const grouped = {};
     shiftsFromReferenceMonth.forEach(shift => {
@@ -175,7 +205,8 @@ export default function Deposits() {
     return doctor ? doctor.name : selectedDoctorFilter;
   }, [selectedDoctorFilter, doctors]);
 
-  const totalExpected = totalShiftsValue + totalExtraIncome;
+  const grossTotal = totalShiftsValue + totalExtraIncome;
+  const totalExpected = Math.max(0, grossTotal - totalDiscounts);
   const difference = totalDeposits - totalExpected;
 
   const handleSubmit = (e) => {
@@ -433,15 +464,23 @@ export default function Deposits() {
           <div className="flex items-center gap-3 mb-4">
             <TrendingUp className="text-purple-600 dark:text-purple-400" size={28} />
             <p className="text-[11px] font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">
-              Total Esperado
+              Total Líquido Esperado
             </p>
           </div>
           <p className="text-3xl md:text-4xl font-black text-purple-700 dark:text-purple-300 mb-2">
             R$ {totalExpected.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
           <p className="text-xs text-purple-600 dark:text-purple-400 font-bold">
-            Plantões + Outras Entradas
+            Plantões + Extras - Descontos
           </p>
+          {totalDiscounts > 0 && (
+            <div className="mt-3 pt-3 border-t border-purple-300 dark:border-purple-700">
+              <p className="text-[9px] text-purple-600 dark:text-purple-400 font-bold uppercase tracking-wider">Descontos Aplicados</p>
+              <p className="text-lg font-black text-red-600 dark:text-red-400">
+                - R$ {totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 md:p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm">
