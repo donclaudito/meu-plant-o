@@ -16,7 +16,8 @@ import {
         LogOut,
         User,
         Trash2,
-        FileText
+        FileText,
+        Shield
       } from 'lucide-react';
 
 const monthNames = [
@@ -108,6 +109,7 @@ export default function Layout({ children, currentPageName }) {
     { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
     { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
     { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
+    { page: 'Permissions', label: 'PERMISSÕES', icon: Shield },
     { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
   ];
 
