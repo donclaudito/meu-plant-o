@@ -10,10 +10,10 @@ import DoctorPDFExport from '@/components/reports/DoctorPDFExport';
 export default function Reports() {
   const [filters, setFilters] = useState({
     month: '',
-    doctorName: '',
-    unit: '',
-    specialty: '',
-    type: ''
+    doctorName: 'TODOS',
+    unit: 'TODOS',
+    specialty: 'TODAS',
+    type: 'TODOS'
   });
 
   const { data: user } = useQuery({
@@ -78,15 +78,15 @@ export default function Reports() {
         }
       }
       
-      if (filters.doctorName) {
-        const normalizedFilterDoctor = filters.doctorName.trim().toUpperCase();
-        const normalizedDoctorName = (shift.doctorName || '').trim().toUpperCase();
+      if (filters.doctorName && filters.doctorName !== 'TODOS') {
+        const normalizedFilterDoctor = filters.doctorName.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const normalizedDoctorName = (shift.doctorName || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         if (normalizedDoctorName !== normalizedFilterDoctor) return false;
       }
       
-      if (filters.unit && shift.unit !== filters.unit) return false;
-      if (filters.specialty && shift.specialty !== filters.specialty) return false;
-      if (filters.type && shift.type !== filters.type) return false;
+      if (filters.unit && filters.unit !== 'TODOS' && shift.unit !== filters.unit) return false;
+      if (filters.specialty && filters.specialty !== 'TODAS' && shift.specialty !== filters.specialty) return false;
+      if (filters.type && filters.type !== 'TODOS' && shift.type !== filters.type) return false;
       return true;
     });
   }, [shifts, filters]);

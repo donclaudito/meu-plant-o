@@ -12,10 +12,10 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
   const clearFilters = () => {
     setFilters({
       month: '',
-      doctorName: '',
-      unit: '',
-      specialty: '',
-      type: ''
+      doctorName: 'TODOS',
+      unit: 'TODOS',
+      specialty: 'TODAS',
+      type: 'TODOS'
     });
   };
 
@@ -58,10 +58,19 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
             onChange={(e) => setFilters({...filters, doctorName: e.target.value})}
             className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
           >
-            <option value="">Todos</option>
-            {doctors.map(d => (
-              <option key={d.id} value={d.name}>{d.name}</option>
-            ))}
+            <option value="TODOS">Todos</option>
+            {Array.from(new Set(doctors.map(d => d.name.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''))))
+              .sort()
+              .map(normalizedName => {
+                const originalDoctor = doctors.find(d => 
+                  d.name.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === normalizedName
+                );
+                return (
+                  <option key={normalizedName} value={normalizedName}>
+                    {originalDoctor?.name || normalizedName}
+                  </option>
+                );
+              })}
           </select>
         </div>
 
@@ -74,7 +83,7 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
             onChange={(e) => setFilters({...filters, unit: e.target.value})}
             className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
           >
-            <option value="">Todos</option>
+            <option value="TODOS">Todos</option>
             {hospitals.map(h => (
               <option key={h.id} value={h.name}>{h.name}</option>
             ))}
@@ -90,7 +99,7 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
             onChange={(e) => setFilters({...filters, specialty: e.target.value})}
             className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
           >
-            <option value="">Todas</option>
+            <option value="TODAS">Todas</option>
             {specialties.map(s => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -106,7 +115,7 @@ export default function ReportFilters({ filters, setFilters, doctors, hospitals 
             onChange={(e) => setFilters({...filters, type: e.target.value})}
             className="w-full px-4 py-3 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl font-bold border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
           >
-            <option value="">Todos</option>
+            <option value="TODOS">Todos</option>
             <option value="12h Dia">12h Dia</option>
             <option value="12h Noite">12h Noite</option>
             <option value="24h">24h</option>
