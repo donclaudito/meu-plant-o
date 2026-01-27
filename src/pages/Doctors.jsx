@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserPlus, Save, Trash2, Download, Upload } from 'lucide-react';
@@ -11,6 +11,17 @@ const specialties = [
 ];
 
 export default function Doctors() {
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  useEffect(() => {
+    if (user?.role === 'shift_editor') {
+      window.location.href = '/shifts';
+    }
+  }, [user]);
+
   const [newDoctor, setNewDoctor] = useState({ 
     name: '', 
     specialty: 'CIRURGIA GERAL', 
@@ -26,11 +37,6 @@ export default function Doctors() {
   const [isExtractingPix, setIsExtractingPix] = useState(false);
 
   const queryClient = useQueryClient();
-
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
 
   const { data: doctors = [] } = useQuery({
     queryKey: ['doctors', user?.email],
