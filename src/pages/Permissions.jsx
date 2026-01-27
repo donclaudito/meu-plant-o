@@ -65,25 +65,32 @@ export default function Permissions() {
   const togglePermission = async (userId, userEmail, pageName, permType) => {
     const currentPerm = userPermissions[userId][pageName];
 
-    if (!currentPerm) {
-      // Criar nova permissão
-      await createPermissionMutation.mutateAsync({
-        userId,
-        userEmail,
-        pageName,
-        canView: permType === 'canView',
-        canEdit: permType === 'canEdit',
-        canDelete: permType === 'canDelete',
-      });
-    } else {
-      // Atualizar permissão existente
-      await updatePermissionMutation.mutateAsync({
-        id: currentPerm.id,
-        data: {
-          ...currentPerm,
-          [permType]: !currentPerm[permType],
-        },
-      });
+    try {
+      if (!currentPerm) {
+        // Criar nova permissão
+        await createPermissionMutation.mutateAsync({
+          userId,
+          userEmail,
+          pageName,
+          canView: permType === 'canView',
+          canEdit: permType === 'canEdit',
+          canDelete: permType === 'canDelete',
+        });
+      } else {
+        // Atualizar permissão existente
+        await updatePermissionMutation.mutateAsync({
+          id: currentPerm.id,
+          data: {
+            ...currentPerm,
+            [permType]: !currentPerm[permType],
+          },
+        });
+      }
+      setToast({ message: 'Permissão atualizada!', type: 'success' });
+      setTimeout(() => setToast(null), 2000);
+    } catch (error) {
+      setToast({ message: 'Erro ao atualizar permissão', type: 'error' });
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
