@@ -143,6 +143,26 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters, di
                 </p>
 
                 <div className="space-y-3">
+                  <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg">
+                    <span className="text-xs text-blue-700 dark:text-blue-400 flex items-center gap-1 font-black">
+                      💵 Receita Bruta
+                    </span>
+                    <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                      R$ {doctor.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                    </span>
+                  </div>
+
+                  {doctor.totalDiscounts > 0 && (
+                    <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 p-2 rounded-lg">
+                      <span className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1 font-black">
+                        ⚠️ Descontos
+                      </span>
+                      <span className="text-sm font-black text-red-600 dark:text-red-400">
+                        R$ {doctor.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-2 rounded-lg">
                     <span className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1 font-black">
                       💰 Líquido
