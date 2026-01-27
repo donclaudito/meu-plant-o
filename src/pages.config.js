@@ -5,6 +5,7 @@ import Hospitals from './pages/Hospitals';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Shifts from './pages/Shifts';
+import UserProfile from './pages/UserProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +17,7 @@ export const PAGES = {
     "Reports": Reports,
     "Settings": Settings,
     "Shifts": Shifts,
+    "UserProfile": UserProfile,
 }
 
 export const pagesConfig = {
