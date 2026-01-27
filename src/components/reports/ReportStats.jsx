@@ -57,7 +57,7 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Plantões</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -65,7 +65,7 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pago</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.paid.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.paid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -73,7 +73,7 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Pendente</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.pending.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.pending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
         </div>
 
@@ -83,7 +83,7 @@ export default function ReportStats({ stats }) {
             <TrendingUp size={14} className="sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase">Bruto Total</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-blue-700 dark:text-blue-300">€ {stats.grossTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-blue-700 dark:text-blue-300">R$ {stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -91,7 +91,7 @@ export default function ReportStats({ stats }) {
             <TrendingUp size={14} className="sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Receitas Extras</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.totalExtraIncome.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -99,7 +99,7 @@ export default function ReportStats({ stats }) {
             <DollarSign size={14} className="sm:w-4 sm:h-4 text-red-600 dark:text-red-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Descontos</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">€ {stats.totalDiscounts.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-slate-900 dark:text-white">R$ {stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
 
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border-2 border-green-200 dark:border-green-800 shadow-sm">
@@ -107,7 +107,7 @@ export default function ReportStats({ stats }) {
             <TrendingUp size={14} className="sm:w-4 sm:h-4 text-green-600 dark:text-green-400" />
             <p className="text-[9px] sm:text-[10px] font-black text-green-600 dark:text-green-400 uppercase">Líquido Total</p>
           </div>
-          <p className="text-lg sm:text-xl md:text-2xl font-black text-green-700 dark:text-green-300">€ {stats.netTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+          <p className="text-lg sm:text-xl md:text-2xl font-black text-green-700 dark:text-green-300">R$ {stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
         </div>
         </div>
 
@@ -131,7 +131,7 @@ export default function ReportStats({ stats }) {
                     fontWeight: 'bold',
                     fontSize: '11px'
                   }}
-                  formatter={(value) => `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`}
+                  formatter={(value) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                 />
                 <Bar dataKey="value" fill="#3b82f6" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -160,7 +160,7 @@ export default function ReportStats({ stats }) {
                     fontWeight: 'bold',
                     fontSize: '11px'
                   }}
-                  formatter={(value) => `€ ${value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`}
+                  formatter={(value) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
                 />
                 <Bar dataKey="value" fill="#10b981" radius={[6, 6, 0, 0]} />
               </BarChart>
