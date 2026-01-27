@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { TrendingUp, Clock, DollarSign, Award, Activity } from 'lucide-react';
 
-export default function DoctorKPIComparison({ shifts, doctors, user }) {
+export default function DoctorKPIComparison({ shifts, doctors, user, filters }) {
   const doctorStats = useMemo(() => {
     const stats = {};
     
@@ -10,10 +10,27 @@ export default function DoctorKPIComparison({ shifts, doctors, user }) {
     const shift24hValue = Number(user?.shift24hValue) || 3000;
     const baseHourlyRate = Number(user?.hourlyRate) || 150;
 
+    // Criar lista de nomes normalizados de médicos cadastrados
+    const registeredDoctors = new Set(
+      doctors.map(d => d.name.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+    );
+
     shifts.forEach(shift => {
       if (!shift || !shift.doctorName) return;
       
-      const name = shift.doctorName;
+      // Normalizar nome do médico do plantão
+      const normalizedShiftDoctor = shift.doctorName.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      
+      // Verificar se o médico está cadastrado
+      if (!registeredDoctors.has(normalizedShiftDoctor)) return;
+      
+      // Aplicar filtro de médico se selecionado
+      if (filters?.doctorName && filters.doctorName !== 'TODOS') {
+        const normalizedFilterDoctor = filters.doctorName.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (normalizedShiftDoctor !== normalizedFilterDoctor) return;
+      }
+      
+      const name = normalizedShiftDoctor;
       if (!stats[name]) {
         stats[name] = {
           name,
@@ -63,7 +80,7 @@ export default function DoctorKPIComparison({ shifts, doctors, user }) {
     });
 
     return Object.values(stats).sort((a, b) => b.totalRevenue - a.totalRevenue);
-  }, [shifts, user]);
+  }, [shifts, doctors, user, filters]);
 
   const topPerformer = doctorStats[0];
 

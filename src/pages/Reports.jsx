@@ -125,13 +125,14 @@ export default function Reports() {
       />
 
       <DoctorKPIComparison 
-        shifts={shifts}
+        shifts={filteredShifts}
         doctors={doctors}
         user={user}
+        filters={filters}
       />
 
       <DoctorTrendCharts 
-        shifts={shifts}
+        shifts={filteredShifts}
         doctors={doctors}
       />
 
