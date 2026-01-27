@@ -4,6 +4,7 @@ import Finance from './pages/Finance';
 import Hospitals from './pages/Hospitals';
 import Settings from './pages/Settings';
 import Shifts from './pages/Shifts';
+import Reports from './pages/Reports';
 import __Layout from './Layout.jsx';
 
 
@@ -14,6 +15,7 @@ export const PAGES = {
     "Hospitals": Hospitals,
     "Settings": Settings,
     "Shifts": Shifts,
+    "Reports": Reports,
 }
 
 export const pagesConfig = {
