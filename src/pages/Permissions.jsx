@@ -68,29 +68,29 @@ export default function Permissions() {
   }, [users, permissions]);
 
   const togglePermission = async (userId, userEmail, pageName, permType) => {
-    const currentPerm = userPermissions[userId][pageName];
-
     try {
-      if (!currentPerm) {
-        // Criar nova permissão
-        await createPermissionMutation.mutateAsync({
-          userId,
-          userEmail,
-          pageName,
-          canView: permType === 'canView',
-          canEdit: permType === 'canEdit',
-          canDelete: permType === 'canDelete',
-        });
-      } else {
-        // Atualizar permissão existente
-        await updatePermissionMutation.mutateAsync({
-          id: currentPerm.id,
-          data: {
-            ...currentPerm,
-            [permType]: !currentPerm[permType],
-          },
-        });
+      const existingPerms = permissions.filter(p => p.userId === userId && p.pageName === pageName);
+
+      if (existingPerms.length > 0) {
+        for (const perm of existingPerms) {
+          await deletePermissionMutation.mutateAsync(perm.id);
+        }
       }
+      
+      const currentPerm = existingPerms.length > 0 ? existingPerms[0] : null;
+
+      const newPermData = {
+        userId,
+        userEmail,
+        pageName,
+        canView: (currentPerm && currentPerm.canView) || false,
+        canEdit: (currentPerm && currentPerm.canEdit) || false,
+        canDelete: (currentPerm && currentPerm.canDelete) || false,
+      };
+
+      newPermData[permType] = !newPermData[permType];
+
+      await createPermissionMutation.mutateAsync(newPermData);
       setToast({ message: 'Permissão atualizada!', type: 'success' });
       setTimeout(() => setToast(null), 2000);
     } catch (error) {
@@ -114,33 +114,26 @@ export default function Permissions() {
   const grantAllPermissions = async (userId, userEmail) => {
     setSaving(true);
     try {
+      // Delete all existing permissions for this user before granting new ones
+      const existingUserPerms = permissions.filter(p => p.userId === userId);
+      for (const perm of existingUserPerms) {
+        await deletePermissionMutation.mutateAsync(perm.id);
+      }
+
       for (const page of pages) {
-        const currentPerm = userPermissions[userId][page];
-        
-        if (!currentPerm) {
-          await createPermissionMutation.mutateAsync({
-            userId,
-            userEmail,
-            pageName: page,
-            canView: true,
-            canEdit: true,
-            canDelete: true,
-          });
-        } else {
-          await updatePermissionMutation.mutateAsync({
-            id: currentPerm.id,
-            data: {
-              ...currentPerm,
-              canView: true,
-              canEdit: true,
-              canDelete: true,
-            },
-          });
-        }
+        await createPermissionMutation.mutateAsync({
+          userId,
+          userEmail,
+          pageName: page,
+          canView: true,
+          canEdit: true,
+          canDelete: true,
+        });
       }
       setToast({ message: 'Todas as permissões concedidas!', type: 'success' });
       setTimeout(() => setToast(null), 3000);
     } catch (error) {
+      console.error("Error in grantAllPermissions:", error);
       setToast({ message: 'Erro ao conceder permissões', type: 'error' });
       setTimeout(() => setToast(null), 3000);
     }
@@ -150,15 +143,14 @@ export default function Permissions() {
   const revokeAllPermissions = async (userId) => {
     setSaving(true);
     try {
-      for (const page of pages) {
-        const currentPerm = userPermissions[userId][page];
-        if (currentPerm) {
-          await deletePermissionMutation.mutateAsync(currentPerm.id);
-        }
+      const existingUserPerms = permissions.filter(p => p.userId === userId);
+      for (const perm of existingUserPerms) {
+        await deletePermissionMutation.mutateAsync(perm.id);
       }
       setToast({ message: 'Todas as permissões revogadas!', type: 'success' });
       setTimeout(() => setToast(null), 3000);
     } catch (error) {
+      console.error("Error in revokeAllPermissions:", error);
       setToast({ message: 'Erro ao revogar permissões', type: 'error' });
       setTimeout(() => setToast(null), 3000);
     }

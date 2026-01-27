@@ -1,23 +1,23 @@
-import Finance from './pages/Finance';
-import Shifts from './pages/Shifts';
-import Doctors from './pages/Doctors';
-import Hospitals from './pages/Hospitals';
-import Settings from './pages/Settings';
 import Deposits from './pages/Deposits';
-import Reports from './pages/Reports';
+import Doctors from './pages/Doctors';
+import Finance from './pages/Finance';
+import Hospitals from './pages/Hospitals';
 import Permissions from './pages/Permissions';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
+import Shifts from './pages/Shifts';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Finance": Finance,
-    "Shifts": Shifts,
-    "Doctors": Doctors,
-    "Hospitals": Hospitals,
-    "Settings": Settings,
     "Deposits": Deposits,
-    "Reports": Reports,
+    "Doctors": Doctors,
+    "Finance": Finance,
+    "Hospitals": Hospitals,
     "Permissions": Permissions,
+    "Reports": Reports,
+    "Settings": Settings,
+    "Shifts": Shifts,
 }
 
 export const pagesConfig = {

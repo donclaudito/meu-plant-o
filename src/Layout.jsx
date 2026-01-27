@@ -232,6 +232,10 @@ export default function Layout({ children, currentPageName }) {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
         {navItems.map(item => {
           const Icon = item.icon;
+          // Condicionalmente renderizar o item 'PERMISSÕES' apenas para admins
+          if (item.page === 'Permissions' && user?.role !== 'admin') {
+            return null;
+          }
           return (
             <Link
               key={item.page}
