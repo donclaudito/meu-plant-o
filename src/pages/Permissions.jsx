@@ -11,7 +11,8 @@ const pages = [
   'Reports',
   'Doctors',
   'Hospitals',
-  'Settings'
+  'Settings',
+  'Permissions'
 ];
 
 export default function Permissions() {
