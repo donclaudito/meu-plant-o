@@ -76,27 +76,60 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters, di
       else if (shiftHours === 24) stats[name].shifts24h++;
     });
 
-    // Calcular descontos por médico específico
+    // Calcular totais para distribuição proporcional de descontos globais
+    const totalRevenueAllDoctors = Object.values(stats).reduce((sum, d) => sum + d.totalRevenue, 0);
+
+    // Separar descontos específicos de descontos globais
+    const specificDiscounts = (discounts || []).filter(d => {
+      if (!d.description) return false;
+      const normalizedDescription = d.description.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      // Verifica se contém algum nome de médico cadastrado
+      return Object.values(stats).some(doctor => normalizedDescription.includes(doctor.name));
+    });
+
+    const globalDiscounts = (discounts || []).filter(d => {
+      if (!d.description) return false;
+      const normalizedDescription = d.description.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      // Descontos que NÃO contêm nome de médico específico
+      return !Object.values(stats).some(doctor => normalizedDescription.includes(doctor.name));
+    });
+
+    // Calcular descontos por médico
     Object.values(stats).forEach(doctor => {
       doctor.avgShiftValue = doctor.totalShifts > 0 ? doctor.totalRevenue / doctor.totalShifts : 0;
       doctor.hourlyRate = doctor.totalHours > 0 ? doctor.totalRevenue / doctor.totalHours : 0;
-      
-      // Encontrar descontos específicos para este médico
-      const doctorDiscounts = (discounts || []).filter(d => {
-        if (!d.description) return false;
+
+      // 1. Descontos específicos para este médico
+      const doctorSpecificDiscounts = specificDiscounts.filter(d => {
         const normalizedDescription = d.description.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         return normalizedDescription.includes(doctor.name);
       });
-      
-      // Calcular total de descontos para este médico
-      doctor.totalDiscounts = doctorDiscounts.reduce((acc, d) => {
+
+      let specificDiscountTotal = doctorSpecificDiscounts.reduce((acc, d) => {
         const isPercentage = d.isPercentage === true;
         if (isPercentage) {
           return acc + (doctor.totalRevenue * (Number(d.value) || 0) / 100);
         }
         return acc + (Number(d.value) || 0);
       }, 0);
-      
+
+      // 2. Descontos globais aplicados proporcionalmente
+      let globalDiscountTotal = 0;
+      if (totalRevenueAllDoctors > 0) {
+        globalDiscountTotal = globalDiscounts.reduce((acc, d) => {
+          const isPercentage = d.isPercentage === true;
+          if (isPercentage) {
+            // Desconto percentual aplicado diretamente sobre a receita do médico
+            return acc + (doctor.totalRevenue * (Number(d.value) || 0) / 100);
+          } else {
+            // Desconto fixo distribuído proporcionalmente à receita do médico
+            const proportion = doctor.totalRevenue / totalRevenueAllDoctors;
+            return acc + ((Number(d.value) || 0) * proportion);
+          }
+        }, 0);
+      }
+
+      doctor.totalDiscounts = specificDiscountTotal + globalDiscountTotal;
       doctor.netRevenue = Math.max(0, doctor.totalRevenue - doctor.totalDiscounts);
     });
 
