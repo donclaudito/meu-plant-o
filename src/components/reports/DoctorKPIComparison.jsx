@@ -76,25 +76,31 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters, di
       else if (shiftHours === 24) stats[name].shifts24h++;
     });
 
-    // Calcular descontos por médico
-    const globalDiscounts = discounts || [];
+    // Calcular totais gerais para aplicar descontos proporcionalmente
+    const totalRevenueAllDoctors = Object.values(stats).reduce((sum, d) => sum + d.totalRevenue, 0);
+    
+    // Calcular descontos globais (sem tipo específico)
+    const globalDiscounts = (discounts || []).filter(d => !d.type || d.type === '');
+    
+    const totalGlobalDiscounts = globalDiscounts.reduce((acc, d) => {
+      const isPercentage = d.isPercentage === true;
+      if (isPercentage) {
+        return acc + (totalRevenueAllDoctors * (Number(d.value) || 0) / 100);
+      }
+      return acc + (Number(d.value) || 0);
+    }, 0);
+    
+    // Aplicar descontos proporcionalmente por médico
     Object.values(stats).forEach(doctor => {
       doctor.avgShiftValue = doctor.totalShifts > 0 ? doctor.totalRevenue / doctor.totalShifts : 0;
       doctor.hourlyRate = doctor.totalHours > 0 ? doctor.totalRevenue / doctor.totalHours : 0;
       
-      // Aplicar descontos globais proporcionalmente
-      globalDiscounts.forEach(discount => {
-        const isPercentage = discount.isPercentage === true;
-        if (isPercentage) {
-          doctor.totalDiscounts += (doctor.totalRevenue * (Number(discount.value) || 0) / 100);
-        } else {
-          // Desconto fixo distribuído proporcionalmente entre todos os médicos
-          const totalRevenue = Object.values(stats).reduce((sum, d) => sum + d.totalRevenue, 0);
-          if (totalRevenue > 0) {
-            doctor.totalDiscounts += (Number(discount.value) || 0) * (doctor.totalRevenue / totalRevenue);
-          }
-        }
-      });
+      // Desconto proporcional à receita do médico
+      if (totalRevenueAllDoctors > 0) {
+        doctor.totalDiscounts = totalGlobalDiscounts * (doctor.totalRevenue / totalRevenueAllDoctors);
+      } else {
+        doctor.totalDiscounts = 0;
+      }
       
       doctor.netRevenue = Math.max(0, doctor.totalRevenue - doctor.totalDiscounts);
     });
