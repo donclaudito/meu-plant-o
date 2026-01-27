@@ -1,7 +1,13 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function ListView({ shifts, onTogglePaid, onDeleteShift, selectedShifts = [], onToggleSelect, onToggleSelectAll }) {
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
   return (
     <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden mb-8">
       <table className="w-full text-left">
@@ -17,7 +23,7 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift, selected
             </th>
             <th className="px-6 py-4">Data</th>
             <th className="px-6 py-4">Unidade / Médico</th>
-            <th className="px-6 py-4 text-right">Valor</th>
+            {user?.role !== 'shift_editor' && <th className="px-6 py-4 text-right">Valor</th>}
             <th className="px-6 py-4 text-center">Status</th>
             <th className="px-6 py-4"></th>
           </tr>
@@ -42,9 +48,11 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift, selected
                   {s.doctorName} • {s.type}
                 </div>
               </td>
-              <td className="px-6 py-5 font-black text-right">
-                R$ {Number(s.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </td>
+              {user?.role !== 'shift_editor' && (
+                <td className="px-6 py-5 font-black text-right">
+                  R$ {Number(s.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </td>
+              )}
               <td className="px-6 py-5 text-center">
                 <button 
                   onClick={() => onTogglePaid(s.id, !s.paid)}
@@ -69,7 +77,7 @@ export default function ListView({ shifts, onTogglePaid, onDeleteShift, selected
           ))}
           {shifts.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-6 py-12 text-center text-slate-400 font-medium">
+              <td colSpan={user?.role === 'shift_editor' ? 5 : 6} className="px-6 py-12 text-center text-slate-400 font-medium">
                 Nenhum plantão registado para este período
               </td>
             </tr>
