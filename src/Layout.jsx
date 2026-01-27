@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
@@ -38,6 +38,22 @@ export default function Layout({ children, currentPageName }) {
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
   });
+
+  const { data: userPermissionsData } = useQuery({
+    queryKey: ['userPermissions', user?.id],
+    queryFn: () => user ? base44.entities.Permission.filter({ userId: user.id }) : [],
+    enabled: !!user,
+  });
+
+  const userPagePermissions = useMemo(() => {
+    const permissionsMap = {};
+    if (userPermissionsData) {
+      userPermissionsData.forEach(perm => {
+        permissionsMap[perm.pageName] = perm;
+      });
+    }
+    return permissionsMap;
+  }, [userPermissionsData]);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -102,16 +118,27 @@ export default function Layout({ children, currentPageName }) {
     setCurrentYear(newYear);
   };
 
-  const navItems = [
-    { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
-    { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
-    { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
-    { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
-    { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
-    { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
-    { page: 'Permissions', label: 'PERMISSÕES', icon: Shield },
-    { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
-  ];
+  const navItems = useMemo(() => {
+    const allNavItems = [
+      { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
+      { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
+      { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
+      { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
+      { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
+      { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
+      { page: 'Permissions', label: 'PERMISSÕES', icon: Shield },
+      { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
+    ];
+
+    if (!user || user.role === 'admin') {
+      return allNavItems;
+    }
+
+    return allNavItems.filter(item => {
+      const perm = userPagePermissions[item.page];
+      return perm && perm.canView;
+    });
+  }, [user, userPagePermissions]);
 
   const childWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
