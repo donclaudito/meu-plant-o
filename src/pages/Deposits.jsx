@@ -32,10 +32,6 @@ export default function Deposits() {
   const { data: deposits = [] } = useQuery({
     queryKey: ['deposits', user?.email],
     queryFn: async () => {
-      // Admins can see all deposits, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Deposit.list('-date');
-      }
       const all = await base44.entities.Deposit.list('-date');
       return all.filter(d => d.created_by === user?.email);
     },
@@ -45,10 +41,6 @@ export default function Deposits() {
   const { data: shifts = [] } = useQuery({
     queryKey: ['shifts', user?.email],
     queryFn: async () => {
-      // Admins can see all shifts, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Shift.list('-date');
-      }
       const allShifts = await base44.entities.Shift.list('-date');
       return allShifts.filter(s => s.created_by === user?.email);
     },
@@ -58,10 +50,6 @@ export default function Deposits() {
   const { data: extraIncomes = [] } = useQuery({
     queryKey: ['extraIncomes', user?.email],
     queryFn: async () => {
-      // Admins can see all extra incomes, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.ExtraIncome.list('-date');
-      }
       const all = await base44.entities.ExtraIncome.list('-date');
       return all.filter(i => i.created_by === user?.email);
     },
@@ -71,10 +59,6 @@ export default function Deposits() {
   const { data: doctors = [] } = useQuery({
     queryKey: ['doctors', user?.email],
     queryFn: async () => {
-      // Admins can see all doctors, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Doctor.list();
-      }
       const all = await base44.entities.Doctor.list();
       return all.filter(d => d.created_by === user?.email);
     },
@@ -84,10 +68,6 @@ export default function Deposits() {
   const { data: discounts = [] } = useQuery({
     queryKey: ['discounts', user?.email],
     queryFn: async () => {
-      // Admins can see all discounts, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Discount.list('-date');
-      }
       const all = await base44.entities.Discount.list('-date');
       return all.filter(d => d.created_by === user?.email);
     },

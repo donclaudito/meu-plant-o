@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
@@ -16,8 +16,7 @@ import {
         LogOut,
         User,
         Trash2,
-        FileText,
-        Shield
+        FileText
       } from 'lucide-react';
 
 const monthNames = [
@@ -38,22 +37,6 @@ export default function Layout({ children, currentPageName }) {
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
   });
-
-  const { data: userPermissionsData } = useQuery({
-    queryKey: ['userPermissions', user?.id],
-    queryFn: () => user ? base44.entities.Permission.filter({ userId: user.id }) : [],
-    enabled: !!user,
-  });
-
-  const userPagePermissions = useMemo(() => {
-    const permissionsMap = {};
-    if (userPermissionsData) {
-      userPermissionsData.forEach(perm => {
-        permissionsMap[perm.pageName] = perm;
-      });
-    }
-    return permissionsMap;
-  }, [userPermissionsData]);
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
@@ -118,27 +101,15 @@ export default function Layout({ children, currentPageName }) {
     setCurrentYear(newYear);
   };
 
-  const navItems = useMemo(() => {
-    const allNavItems = [
-      { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
-      { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
-      { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
-      { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
-      { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
-      { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
-      { page: 'Permissions', label: 'PERMISSÕES', icon: Shield },
-      { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
-    ];
-
-    if (!user || user.role === 'admin') {
-      return allNavItems;
-    }
-
-    return allNavItems.filter(item => {
-      const perm = userPagePermissions[item.page];
-      return perm && perm.canView;
-    });
-  }, [user, userPagePermissions]);
+  const navItems = [
+    { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
+    { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
+    { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
+    { page: 'Reports', label: 'RELATÓRIOS', icon: FileText },
+    { page: 'Doctors', label: 'MÉDICOS', icon: Stethoscope },
+    { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
+    { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
+  ];
 
   const childWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {
@@ -232,10 +203,6 @@ export default function Layout({ children, currentPageName }) {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-around z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] backdrop-blur-md">
         {navItems.map(item => {
           const Icon = item.icon;
-          // Condicionalmente renderizar o item 'PERMISSÕES' apenas para admins
-          if (item.page === 'Permissions' && user?.role !== 'admin') {
-            return null;
-          }
           return (
             <Link
               key={item.page}

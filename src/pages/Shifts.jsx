@@ -41,10 +41,6 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const { data: shifts = [] } = useQuery({
     queryKey: ['shifts', user?.email],
     queryFn: async () => {
-      // Admins can see all shifts, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Shift.list('-date');
-      }
       const allShifts = await base44.entities.Shift.list('-date');
       return allShifts.filter(s => s.created_by === user?.email);
     },
@@ -54,10 +50,6 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const { data: doctors = [] } = useQuery({
     queryKey: ['doctors', user?.email],
     queryFn: async () => {
-      // Admins can see all doctors, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Doctor.list('name');
-      }
       const all = await base44.entities.Doctor.list('name');
       return all.filter(d => d.created_by === user?.email);
     },
@@ -67,10 +59,6 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
   const { data: hospitals = [] } = useQuery({
     queryKey: ['hospitals', user?.email],
     queryFn: async () => {
-      // Admins can see all hospitals, regular users see only their own
-      if (user?.role === 'admin') {
-        return await base44.entities.Hospital.list('name');
-      }
       const all = await base44.entities.Hospital.list('name');
       return all.filter(h => h.created_by === user?.email);
     },

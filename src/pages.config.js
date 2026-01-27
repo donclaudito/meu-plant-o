@@ -2,7 +2,6 @@ import Deposits from './pages/Deposits';
 import Doctors from './pages/Doctors';
 import Finance from './pages/Finance';
 import Hospitals from './pages/Hospitals';
-import Permissions from './pages/Permissions';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Shifts from './pages/Shifts';
@@ -14,7 +13,6 @@ export const PAGES = {
     "Doctors": Doctors,
     "Finance": Finance,
     "Hospitals": Hospitals,
-    "Permissions": Permissions,
     "Reports": Reports,
     "Settings": Settings,
     "Shifts": Shifts,
