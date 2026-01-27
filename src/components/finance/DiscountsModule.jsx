@@ -96,16 +96,8 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Se um médico específico está selecionado, adicionar o nome dele à descrição
-    let finalDescription = newDiscount.description;
-    if (selectedDoctor !== 'TODOS') {
-      finalDescription = `${newDiscount.description} - ${selectedDoctor}`;
-    }
-    
     const discountData = {
       ...newDiscount,
-      description: finalDescription,
       date: new Date().toISOString().split('T')[0],
       type: '' // Desconto global sem tipo específico
     };
