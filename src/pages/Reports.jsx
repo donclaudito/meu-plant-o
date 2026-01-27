@@ -27,11 +27,6 @@ export default function Reports() {
     type: 'TODOS'
   });
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
-
   const { data: shifts = [] } = useQuery({
     queryKey: ['shifts', user?.email],
     queryFn: async () => {
