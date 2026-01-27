@@ -101,7 +101,7 @@ export default function Layout({ children, currentPageName }) {
     setCurrentYear(newYear);
   };
 
-  const navItems = [
+  const allNavItems = [
     { page: 'Shifts', label: 'PLANTÕES', icon: CalendarIcon },
     { page: 'Finance', label: 'FINANCEIRO', icon: Wallet },
     { page: 'Deposits', label: 'DEPÓSITOS', icon: Building2 },
@@ -110,6 +110,10 @@ export default function Layout({ children, currentPageName }) {
     { page: 'Hospitals', label: 'HOSPITAIS', icon: Building2 },
     { page: 'Settings', label: 'DEFINIÇÕES', icon: Hospital },
   ];
+
+  const navItems = user?.role === 'shift_editor' 
+    ? allNavItems.filter(item => item.page === 'Shifts')
+    : allNavItems;
 
   const childWithProps = React.Children.map(children, child => {
     if (React.isValidElement(child)) {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { FileText, Download } from 'lucide-react';
@@ -8,6 +8,17 @@ import DoctorTrendCharts from '@/components/reports/DoctorTrendCharts';
 import DoctorPDFExport from '@/components/reports/DoctorPDFExport';
 
 export default function Reports() {
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
+  useEffect(() => {
+    if (user?.role === 'shift_editor') {
+      window.location.href = '/shifts';
+    }
+  }, [user]);
+
   const [filters, setFilters] = useState({
     month: '',
     doctorName: 'TODOS',
