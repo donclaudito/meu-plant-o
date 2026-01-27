@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { TrendingUp, Clock, DollarSign, Award, Activity } from 'lucide-react';
 
-export default function DoctorKPIComparison({ shifts, doctors, user, filters }) {
+export default function DoctorKPIComparison({ shifts, doctors, user, filters, discounts }) {
   const doctorStats = useMemo(() => {
     const stats = {};
     
@@ -44,7 +44,9 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters }) 
           specialty: shift.specialty,
           shifts12h: 0,
           shifts6h: 0,
-          shifts24h: 0
+          shifts24h: 0,
+          totalDiscounts: 0,
+          netRevenue: 0
         };
       }
 
@@ -74,13 +76,31 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters }) 
       else if (shiftHours === 24) stats[name].shifts24h++;
     });
 
+    // Calcular descontos por médico
+    const globalDiscounts = discounts || [];
     Object.values(stats).forEach(doctor => {
       doctor.avgShiftValue = doctor.totalShifts > 0 ? doctor.totalRevenue / doctor.totalShifts : 0;
       doctor.hourlyRate = doctor.totalHours > 0 ? doctor.totalRevenue / doctor.totalHours : 0;
+      
+      // Aplicar descontos globais proporcionalmente
+      globalDiscounts.forEach(discount => {
+        const isPercentage = discount.isPercentage === true;
+        if (isPercentage) {
+          doctor.totalDiscounts += (doctor.totalRevenue * (Number(discount.value) || 0) / 100);
+        } else {
+          // Desconto fixo distribuído proporcionalmente entre todos os médicos
+          const totalRevenue = Object.values(stats).reduce((sum, d) => sum + d.totalRevenue, 0);
+          if (totalRevenue > 0) {
+            doctor.totalDiscounts += (Number(discount.value) || 0) * (doctor.totalRevenue / totalRevenue);
+          }
+        }
+      });
+      
+      doctor.netRevenue = Math.max(0, doctor.totalRevenue - doctor.totalDiscounts);
     });
 
-    return Object.values(stats).sort((a, b) => b.totalRevenue - a.totalRevenue);
-  }, [shifts, doctors, user, filters]);
+    return Object.values(stats).sort((a, b) => b.netRevenue - a.netRevenue);
+  }, [shifts, doctors, user, filters, discounts]);
 
   const topPerformer = doctorStats[0];
 
@@ -125,10 +145,30 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters }) 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
-                      <DollarSign size={14} /> Receita Total
+                      <DollarSign size={14} /> Receita Bruta
+                    </span>
+                    <span className="text-sm font-black text-blue-600 dark:text-blue-400">
+                      R$ {doctor.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                    </span>
+                  </div>
+
+                  {doctor.totalDiscounts > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                        Descontos
+                      </span>
+                      <span className="text-sm font-black text-red-600 dark:text-red-400">
+                        - R$ {doctor.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-2 rounded-lg">
+                    <span className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1 font-black">
+                      💰 Líquido
                     </span>
                     <span className="text-sm font-black text-green-600 dark:text-green-400">
-                      R$ {doctor.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                      R$ {doctor.netRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                     </span>
                   </div>
 
@@ -205,9 +245,23 @@ export default function DoctorKPIComparison({ shifts, doctors, user, filters }) 
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Receita Total</p>
-                  <p className="text-2xl font-black text-green-600 dark:text-green-400">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Receita Bruta</p>
+                  <p className="text-2xl font-black text-blue-600 dark:text-blue-400">
                     R$ {topPerformer.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                  </p>
+                </div>
+                {topPerformer.totalDiscounts > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Descontos</p>
+                    <p className="text-2xl font-black text-red-600 dark:text-red-400">
+                      R$ {topPerformer.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">💰 Líquido</p>
+                  <p className="text-2xl font-black text-green-600 dark:text-green-400">
+                    R$ {topPerformer.netRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                   </p>
                 </div>
                 <div>

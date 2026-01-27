@@ -129,6 +129,7 @@ export default function Reports() {
         doctors={doctors}
         user={user}
         filters={filters}
+        discounts={discounts}
       />
 
       <DoctorTrendCharts 
