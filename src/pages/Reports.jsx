@@ -128,20 +128,12 @@ export default function Reports() {
     const safeShifts = filteredShifts || [];
     const safeExtraIncome = filteredExtraIncomes.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
 
-    // Validar plantões e calcular total
+    // Validar plantões
     const validShifts = safeShifts.filter(
       (shift) => shift && typeof shift.hours === "number" && shift.hours > 0
     );
-    
-    const monthlyShiftsTotal = validShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
-    const safeDiscounts = globalDiscounts.reduce((acc, d) => {
-      const isPercentage = d.isPercentage === true;
-      if (isPercentage) {
-        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
-      }
-      return acc + (Number(d.value) || 0);
-    }, 0);
 
+    // Valores de referência das definições
     const shift6hValue = Number(user?.shift6hValue) || 1000;
     const shift12hValue = Number(user?.shift12hValue) || 1800;
     const shift24hValue = Number(user?.shift24hValue) || 3000;
@@ -149,6 +141,7 @@ export default function Reports() {
 
     const hours = validShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
 
+    // Calcular o total usando os valores dos plantões (como na página Finance)
     const totalByConfig = validShifts.reduce((acc, shift) => {
       const shiftHours = Number(shift.hours) || 0;
       const shiftValue = Number(shift.value) || 0;
@@ -158,6 +151,15 @@ export default function Reports() {
       if (shiftHours === 12) return acc + shift12hValue;
       if (shiftHours === 6) return acc + shift6hValue;
       return acc + baseHourlyRate * shiftHours;
+    }, 0);
+
+    // Calcular descontos sobre o total de plantões (como na página Finance)
+    const safeDiscounts = globalDiscounts.reduce((acc, d) => {
+      const isPercentage = d.isPercentage === true;
+      if (isPercentage) {
+        return acc + (totalByConfig * (Number(d.value) || 0) / 100);
+      }
+      return acc + (Number(d.value) || 0);
     }, 0);
 
     const paid = validShifts.filter((s) => s.paid).reduce((acc, shift) => {
@@ -208,8 +210,22 @@ export default function Reports() {
     const byUnit = validShifts.reduce((acc, s) => {
       if (!acc[s.unit]) acc[s.unit] = { count: 0, total: 0, hours: 0 };
       acc[s.unit].count++;
-      acc[s.unit].total += s.value;
-      acc[s.unit].hours += s.hours;
+      const shiftHours = Number(s.hours) || 0;
+      const shiftValue = Number(s.value) || 0;
+      acc[s.unit].hours += shiftHours;
+      
+      // Calcular valor usando a mesma lógica
+      if (shiftValue > 0) {
+        acc[s.unit].total += shiftValue;
+      } else if (shiftHours === 24) {
+        acc[s.unit].total += shift24hValue;
+      } else if (shiftHours === 12) {
+        acc[s.unit].total += shift12hValue;
+      } else if (shiftHours === 6) {
+        acc[s.unit].total += shift6hValue;
+      } else {
+        acc[s.unit].total += baseHourlyRate * shiftHours;
+      }
       return acc;
     }, {});
 
@@ -224,10 +240,11 @@ export default function Reports() {
           specialty: s.specialty,
         };
       acc[s.doctorName].count++;
-      acc[s.doctorName].total += s.value;
+      const shiftValue = Number(s.value) || 0;
+      acc[s.doctorName].total += shiftValue;
       acc[s.doctorName].hours += s.hours;
-      if (s.paid) acc[s.doctorName].paid += s.value;
-      else acc[s.doctorName].pending += s.value;
+      if (s.paid) acc[s.doctorName].paid += shiftValue;
+      else acc[s.doctorName].pending += shiftValue;
       return acc;
     }, {});
 
