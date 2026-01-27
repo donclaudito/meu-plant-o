@@ -9,7 +9,6 @@ const specialties = [
 
 export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals, initialDate }) {
   const queryClient = useQueryClient();
-  const [currentUser, setCurrentUser] = useState(null);
   const [userSettings, setUserSettings] = useState({ hourlyRate: 150, shift12hValue: 1800, shift24hValue: 3000 });
   const [newShift, setNewShift] = useState({
     date: initialDate || new Date().toISOString().split('T')[0],
@@ -30,7 +29,6 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     const loadUserSettings = async () => {
       try {
         const user = await base44.auth.me();
-        setCurrentUser(user);
         const settings = {
           shift6hValue: user.shift6hValue || 900,
           shift12hValue: user.shift12hValue || 1800,
@@ -133,7 +131,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          <div className={currentUser?.role === 'shift_editor' ? 'space-y-1' : 'grid grid-cols-2 gap-4'}>
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data</label>
               <input 
@@ -144,32 +142,30 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
                 className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
               />
             </div>
-            {currentUser?.role !== 'shift_editor' && (
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                  <span>Valor (R$)</span>
-                  <button
-                    type="button"
-                    onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
-                  >
-                    <Calculator size={10} /> Auto
-                  </button>
-                </label>
-                <input 
-                  type="number" 
-                  required 
-                  value={newShift.value} 
-                  onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
-                />
-                {calculateSuggestedValue() !== newShift.value && (
-                  <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
-                    Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
-                  </p>
-                )}
-              </div>
-            )}
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
+                <span>Valor (R$)</span>
+                <button
+                  type="button"
+                  onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
+                >
+                  <Calculator size={10} /> Auto
+                </button>
+              </label>
+              <input 
+                type="number" 
+                required 
+                value={newShift.value} 
+                onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
+              />
+              {calculateSuggestedValue() !== newShift.value && (
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
+                  Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
+                </p>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Settings as SettingsIcon } from 'lucide-react';
@@ -14,12 +14,6 @@ export default function Settings({ currentMonth = new Date().getMonth(), current
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
   });
-
-  useEffect(() => {
-    if (user?.role === 'shift_editor') {
-      window.location.href = '/shifts';
-    }
-  }, [user]);
 
   const { data: doctors = [] } = useQuery({
     queryKey: ['doctors'],

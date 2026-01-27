@@ -33,11 +33,6 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
 
   const queryClient = useQueryClient();
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
-
   const { data: discounts = [] } = useQuery({
     queryKey: ['discounts'],
     queryFn: () => base44.entities.Discount.list('-date'),
@@ -74,15 +69,6 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     queryKey: ['doctors'],
     queryFn: () => base44.entities.Doctor.list('name'),
   });
-
-  // Tipos de desconto personalizados do usuário
-  const customDiscountTypes = user?.discountTypes || [];
-  const allDiscountTypes = [
-    'Impostos',
-    'Sky',
-    'Despesas contábeis',
-    ...customDiscountTypes
-  ];
 
   // Descontos globais (sem data específica ou com type vazio)
   const globalDiscounts = discounts.filter(d => !d.type || d.type === '');
@@ -225,32 +211,16 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-800">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Desconto</label>
-            <select
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição</label>
+            <input
+              type="text"
+              required
               value={newDiscount.description}
               onChange={e => setNewDiscount({ ...newDiscount, description: e.target.value })}
-              required
+              placeholder="Ex: Impostos, Sky, Despesas contábeis"
               className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
-            >
-              <option value="">Selecione um tipo</option>
-              {allDiscountTypes.map((type, index) => (
-                <option key={index} value={type}>{type}</option>
-              ))}
-              <option value="custom">✏️ Outro (personalizado)</option>
-            </select>
+            />
           </div>
-          {newDiscount.description === 'custom' && (
-            <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Descrição Personalizada</label>
-              <input
-                type="text"
-                required
-                placeholder="Digite o tipo de desconto"
-                onChange={e => setNewDiscount({ ...newDiscount, description: e.target.value })}
-                className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
-              />
-            </div>
-          )}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Tipo de Desconto</label>

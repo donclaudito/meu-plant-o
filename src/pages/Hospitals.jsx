@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Building2, Save, Trash2 } from 'lucide-react';
@@ -6,23 +6,17 @@ import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 
 export default function Hospitals() {
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
-
-  useEffect(() => {
-    if (user?.role === 'shift_editor') {
-      window.location.href = '/shifts';
-    }
-  }, [user]);
-
   const [newHospital, setNewHospital] = useState({ name: '', address: '', city: '' });
   const [message, setMessage] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, id: '', name: '' });
   const [selectedHospitals, setSelectedHospitals] = useState([]);
 
   const queryClient = useQueryClient();
+
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
 
   const { data: hospitals = [] } = useQuery({
     queryKey: ['hospitals', user?.email],
