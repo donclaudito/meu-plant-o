@@ -9,6 +9,7 @@ import DepositsModule from '@/components/finance/DepositsModule';
 import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
 import PixImportModal from '@/components/finance/PixImportModal';
 import PaymentReceipt from '@/components/finance/PaymentReceipt';
+import DoctorPayslip from '@/components/finance/DoctorPayslip';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -190,16 +191,23 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [globalDiscounts, filteredShifts]);
 
   const totalExtraIncome = useMemo(() => {
-    return extraIncomes
-      .filter(income => {
-        if (filters.startDate && income.date < filters.startDate) return false;
-        if (filters.endDate && income.date > filters.endDate) return false;
-        if (!filters.startDate && !filters.endDate) {
-          if (!isDateInActiveMonth(income.date, currentMonth, currentYear)) return false;
-        }
-        return true;
-      })
-      .reduce((acc, income) => acc + (Number(income.value) || 0), 0);
+    const filtered = extraIncomes.filter(income => {
+      if (filters.startDate && income.date < filters.startDate) return false;
+      if (filters.endDate && income.date > filters.endDate) return false;
+      if (!filters.startDate && !filters.endDate) {
+        if (!isDateInActiveMonth(income.date, currentMonth, currentYear)) return false;
+      }
+      
+      // Filtrar por médico case-insensitive
+      if (filters.doctor && filters.doctor !== 'TODOS') {
+        const matchDoctor = (income.doctorName || '').trim().toUpperCase() === filters.doctor.trim().toUpperCase();
+        return matchDoctor;
+      }
+      
+      return true;
+    });
+    
+    return filtered.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
   }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalDepositsAmount = useMemo(() => {
@@ -882,6 +890,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         currentMonth={currentMonth}
         currentYear={currentYear}
         showToast={(msg) => {}}
+        doctors={doctors}
       />
 
 
