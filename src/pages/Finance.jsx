@@ -229,6 +229,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const safeDeposits = Number(totalDepositsAmount) || 0;
     const safeManualPayments = Number(totalManualPayments) || 0;
     
+    console.log('=== CÁLCULO FINANCEIRO ===');
+    console.log('Plantões filtrados:', safeShifts.length);
+    console.log('Exemplo de plantão:', safeShifts[0]);
+    
     if (safeShifts.length === 0) {
       return {
         total: 0,
@@ -291,10 +295,19 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       }
     }, 0);
 
+    // Calcular total líquido dos plantões (usando netValue quando disponível)
+    const netTotalShifts = validShifts.reduce((acc, shift) => {
+      return acc + (Number(shift.netValue) || Number(shift.value) || 0);
+    }, 0);
+    
+    console.log('Total bruto plantões:', totalByConfig);
+    console.log('Total líquido plantões:', netTotalShifts);
+    console.log('Descontos:', safeDiscounts);
+    
     const grossTotal = Number(totalByConfig) + Number(safeExtraIncome);
-    const netTotal = Math.max(0, Number(grossTotal) - Number(safeDiscounts));
+    const netTotal = Math.max(0, Number(netTotalShifts) + Number(safeExtraIncome));
     const totalPaid = Number(paid) + Number(safeManualPayments);
-    const pending = Math.max(0, Number(totalByConfig) - Number(totalPaid));
+    const pending = Math.max(0, Number(netTotalShifts) - Number(totalPaid));
     const valuePerHour = hours > 0 ? (Number(netTotal) / Number(hours)) : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
@@ -381,6 +394,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         return acc;
       }
     }, {});
+    
+    console.log('=== TOTAIS FINAIS ===');
+    console.log('Total bruto:', grossTotal);
+    console.log('Total líquido:', netTotal);
+    console.log('Total descontos aplicados:', safeDiscounts);
     
     return { 
       total: Number(totalByConfig) || 0,

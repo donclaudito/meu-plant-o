@@ -5,6 +5,19 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
   const today = React.useMemo(() => new Date(), []);
   const [draggedShift, setDraggedShift] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
+  
+  // Otimização: usar useCallback para prevenir re-renders desnecessários
+  const handleDayClickMemo = React.useCallback((date) => {
+    if (date) onDayClick(date);
+  }, [onDayClick]);
+  
+  const handleDeleteMemo = React.useCallback((id, name) => {
+    onDeleteShift(id, name);
+  }, [onDeleteShift]);
+  
+  const handleToggleSelectMemo = React.useCallback((id) => {
+    onToggleSelect(id);
+  }, [onToggleSelect]);
 
   const getShiftOrder = (type) => {
     const order = {
@@ -98,7 +111,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
             return (
             <div 
               key={idx} 
-              onClick={() => item.day && onDayClick(item.date)}
+              onClick={() => handleDayClickMemo(item.date)}
               onDragOver={handleDragOver}
               onDrop={(e) => item.day && handleDrop(e, item.date)}
               className={`min-h-[120px] md:min-h-[140px] p-2 border-r-2 border-b-2 border-slate-300 dark:border-slate-600 transition-colors ${
@@ -135,7 +148,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                             draggable
                             onDragStart={(e) => handleDragStart(e, s)}
                             onDragEnd={handleDragEnd}
-                            onClick={(e) => { e.stopPropagation(); onToggleSelect(s.id); }}
+                            onClick={(e) => { e.stopPropagation(); handleToggleSelectMemo(s.id); }}
                           >
                             <GripVertical size={10} className="opacity-40 flex-shrink-0 mt-0.5 hidden md:block" />
                             <div className="flex-1 min-w-0">
@@ -167,7 +180,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
                             <div className="flex justify-between items-center mb-3">
                               <span className="text-[10px] font-black text-blue-400 uppercase">Detalhes</span>
                               <button 
-                                onClick={(e) => { e.stopPropagation(); onDeleteShift(s.id, s.unit); setActiveTooltip(null); }} 
+                                onClick={(e) => { e.stopPropagation(); handleDeleteMemo(s.id, s.unit); setActiveTooltip(null); }} 
                                 className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-400/10"
                               >
                                 <Trash2 size={14} />
