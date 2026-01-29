@@ -733,6 +733,14 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
+      {/* Holerite Detalhado por Médico */}
+      <DoctorPayslip 
+        doctorName={filters.doctor} 
+        shifts={filteredShifts}
+        extraIncomes={extraIncomes}
+        discounts={totalDiscounts}
+      />
+
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6 will-change-auto">
         <h3 className="text-xl font-black text-blue-900 dark:text-blue-200 mb-6 flex items-center gap-2">
           <Calculator className="text-blue-600 dark:text-blue-400" /> Conciliação Financeira
