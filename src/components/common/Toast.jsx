@@ -6,6 +6,8 @@ export default function Toast({ message, type = 'success' }) {
 
   return (
     <div 
+      role="alert"
+      aria-live="polite"
       className="fixed top-20 z-[100] px-6 py-3 rounded-2xl shadow-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center gap-3 animate-in slide-in-from-top duration-300 max-w-[90vw]"
       style={{ left: '50%', transform: 'translateX(-50%)' }}
     >

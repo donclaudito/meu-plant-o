@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MinusCircle, Plus, Trash2, Calendar as CalendarIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
+
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 import Toast from '@/components/common/Toast';
 
@@ -14,7 +13,6 @@ const monthNames = [
 
 export default function DiscountsModule({ currentMonth, currentYear }) {
   const [message, setMessage] = useState(null);
-  const navigate = useNavigate();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState('TODOS');
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);

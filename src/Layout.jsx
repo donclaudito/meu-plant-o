@@ -39,46 +39,48 @@ export default function Layout({ children, currentPageName }) {
   });
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    try {
+      localStorage.setItem('darkMode', JSON.stringify(darkMode));
+      document.documentElement.classList.toggle('dark', darkMode);
+    } catch (e) {
+      console.error('Erro ao salvar tema:', e);
     }
   }, [darkMode]);
 
   const handleLogout = async () => {
-    // Limpar todo o cache e estado da aplicação
-    queryClient.clear();
-    localStorage.clear();
-    sessionStorage.clear();
-    await base44.auth.logout();
-    window.location.reload();
+    try {
+      queryClient.clear();
+      localStorage.clear();
+      sessionStorage.clear();
+      await base44.auth.logout();
+    } catch (e) {
+      console.error('Erro ao fazer logout:', e);
+      window.location.reload();
+    }
   };
 
   const handleUninstall = async () => {
     if (confirm('Tem a certeza que deseja desinstalar a aplicação? Todos os dados locais serão removidos.')) {
-      // Limpar todos os dados
-      queryClient.clear();
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Desregistar service workers
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (let registration of registrations) {
-          await registration.unregister();
+      try {
+        queryClient.clear();
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.allSettled(registrations.map(r => r.unregister()));
         }
+        
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.allSettled(cacheNames.map(n => caches.delete(n)));
+        }
+        
+        alert('Aplicação desinstalada. Por favor, feche esta janela.');
+        window.close();
+      } catch (e) {
+        console.error('Erro ao desinstalar:', e);
       }
-      
-      // Limpar cache
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-      }
-      
-      alert('Aplicação desinstalada. Por favor, feche esta janela.');
-      window.close();
     }
   };
 

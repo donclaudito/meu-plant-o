@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Clock, Euro, Trash2, GripVertical, Info } from 'lucide-react';
 
 export default function CalendarView({ calendarDays, currentMonth, currentYear, onDayClick, onDeleteShift, onUpdateShiftDate, selectedShifts = [], onToggleSelect }) {
-  const today = new Date();
+  const today = React.useMemo(() => new Date(), []);
   const [draggedShift, setDraggedShift] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
 
@@ -21,7 +21,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
     return [...shifts].sort((a, b) => getShiftOrder(a.type) - getShiftOrder(b.type));
   };
 
-  const getDoctorColor = (doctorName) => {
+  const getDoctorColor = React.useCallback((doctorName) => {
     const colors = [
       { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800' },
       { bg: 'bg-green-100', border: 'border-green-300', text: 'text-green-800' },
@@ -44,7 +44,7 @@ export default function CalendarView({ calendarDays, currentMonth, currentYear, 
     const colorIndex = Math.abs(hash) % colors.length;
     const color = colors[colorIndex];
     return `${color.bg} border-2 ${color.border} ${color.text}`;
-  };
+  }, []);
 
   const getShiftColor = (shift) => {
     const type = shift.type;
