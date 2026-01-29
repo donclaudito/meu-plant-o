@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 
 const specialties = [
-  "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "OUTRA"
+  "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "GASTROENTEROLOGIA", "CIRURGIA DIGESTIVA", "OUTRA"
 ];
 
 export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals, initialDate }) {
@@ -17,6 +17,9 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     specialty: 'CIRURGIA GERAL',
     type: '12h Dia',
     value: 1800,
+    grossValue: 1800,
+    taxRate: 15,
+    netValue: 1530,
     paid: false,
     hours: 12
   });
@@ -93,6 +96,22 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     onClose();
   };
 
+  const calculateNetValue = (gross, rate) => {
+    return Math.round(gross * (1 - rate / 100));
+  };
+
+  const handleGrossValueChange = (gross) => {
+    const rate = newShift.taxRate || 15;
+    const net = calculateNetValue(gross, rate);
+    setNewShift({ ...newShift, grossValue: gross, value: gross, netValue: net });
+  };
+
+  const handleTaxRateChange = (rate) => {
+    const gross = newShift.grossValue || newShift.value;
+    const net = calculateNetValue(gross, rate);
+    setNewShift({ ...newShift, taxRate: rate, netValue: net });
+  };
+
   const handleTypeChange = (val) => {
     let h = 12;
     let calculatedValue = userSettings.shift12hValue;
@@ -108,7 +127,18 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
       calculatedValue = userSettings.shift12hValue;
     }
     
-    setNewShift({ ...newShift, type: val, hours: h, value: Math.round(calculatedValue) });
+    const roundedValue = Math.round(calculatedValue);
+    const rate = newShift.taxRate || 15;
+    const net = calculateNetValue(roundedValue, rate);
+    
+    setNewShift({ 
+      ...newShift, 
+      type: val, 
+      hours: h, 
+      value: roundedValue,
+      grossValue: roundedValue,
+      netValue: net
+    });
   };
 
   const calculateSuggestedValue = () => {
@@ -131,23 +161,24 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data</label>
+            <input 
+              type="date" 
+              required 
+              value={newShift.date} 
+              onChange={e => setNewShift({ ...newShift, date: e.target.value })} 
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
+            />
+          </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Data</label>
-              <input 
-                type="date" 
-                required 
-                value={newShift.date} 
-                onChange={e => setNewShift({ ...newShift, date: e.target.value })} 
-                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500 text-sm" 
-              />
-            </div>
-            <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 flex items-center justify-between">
-                <span>Valor (R$)</span>
+                <span>Valor Bruto (R$)</span>
                 <button
                   type="button"
-                  onClick={() => setNewShift({ ...newShift, value: calculateSuggestedValue() })}
+                  onClick={() => handleGrossValueChange(calculateSuggestedValue())}
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 flex items-center gap-1 text-[9px]"
                 >
                   <Calculator size={10} /> Auto
@@ -156,15 +187,29 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
               <input 
                 type="number" 
                 required 
-                value={newShift.value} 
-                onChange={e => setNewShift({ ...newShift, value: Number(e.target.value) })} 
+                value={newShift.grossValue || newShift.value} 
+                onChange={e => handleGrossValueChange(Number(e.target.value))} 
                 className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500" 
               />
-              {calculateSuggestedValue() !== newShift.value && (
-                <p className="text-[9px] text-slate-500 dark:text-slate-400 ml-1">
-                  Sugerido: R$ {calculateSuggestedValue().toLocaleString('pt-BR')}
-                </p>
-              )}
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Desconto (%)</label>
+              <input 
+                type="number" 
+                value={newShift.taxRate || 15} 
+                onChange={e => handleTaxRateChange(Number(e.target.value))} 
+                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white border-none rounded-2xl font-bold focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
+                min="0"
+                max="100"
+                step="0.1"
+              />
+            </div>
+          </div>
+          
+          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border-2 border-green-200 dark:border-green-800">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-black text-green-700 dark:text-green-400 uppercase tracking-widest">Valor Líquido</span>
+              <span className="text-2xl font-black text-green-700 dark:text-green-300">R$ {(newShift.netValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">

@@ -720,6 +720,28 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6">
+        <h3 className="text-xl font-black text-blue-900 dark:text-blue-200 mb-6 flex items-center gap-2">
+          <Calculator className="text-blue-600 dark:text-blue-400" /> Conciliação Financeira do Mês
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl">
+            <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Total Bruto</p>
+            <p className="text-3xl font-black text-blue-700 dark:text-blue-300">R$ {safeStats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{safeStats.count} plantões</p>
+          </div>
+          <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl">
+            <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Total Descontos</p>
+            <p className="text-3xl font-black text-red-600 dark:text-red-400">- R$ {safeStats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+          </div>
+          <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 p-6 rounded-2xl border-2 border-green-300 dark:border-green-700">
+            <p className="text-[10px] font-black text-green-700 dark:text-green-400 uppercase tracking-widest mb-2">Total Líquido</p>
+            <p className="text-3xl font-black text-green-700 dark:text-green-300">R$ {safeStats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2">Após descontos</p>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
           <div className="absolute top-4 right-4">
@@ -734,8 +756,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           </div>
           <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Plantões</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-slate-400 dark:text-slate-500 font-bold text-xl">€</span>
-            <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{safeStats.total.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <span className="text-slate-400 dark:text-slate-500 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">{safeStats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase">
             <TrendingUp size={14}/> {safeStats.count} plantões
@@ -745,8 +767,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-green-100 dark:border-green-900/30 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
           <p className="text-[11px] font-black text-green-600 dark:text-green-400 uppercase tracking-[0.2em]">Receitas Extras</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-300 font-bold text-xl">€</span>
-            <p className="text-4xl font-black text-green-700 dark:text-green-400 tracking-tight">{safeStats.totalExtraIncome.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <span className="text-green-300 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-green-700 dark:text-green-400 tracking-tight">{safeStats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-green-700 dark:text-green-400 text-[10px] font-black uppercase">
             <TrendingUp size={14}/> Ambulatório, Cirurgia, Bónus
@@ -756,8 +778,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 p-8 rounded-[2.5rem] border-2 border-indigo-200 dark:border-indigo-800 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
           <p className="text-[11px] font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-[0.2em]">Faturamento Bruto Total</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-indigo-400 font-bold text-xl">€</span>
-            <p className="text-4xl font-black text-indigo-700 dark:text-indigo-300 tracking-tight">{safeStats.grossTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <span className="text-indigo-400 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-indigo-700 dark:text-indigo-300 tracking-tight">{safeStats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-indigo-700 dark:text-indigo-400 text-[10px] font-black uppercase">
             <CheckCircle size={14}/> Plantões + Extras
@@ -767,8 +789,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-red-100 dark:border-red-900/30 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow">
           <p className="text-[11px] font-black text-red-500 dark:text-red-400 uppercase tracking-[0.2em]">Descontos</p>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-red-200 font-bold text-xl">€</span>
-            <p className="text-4xl font-black text-red-600 dark:text-red-400 tracking-tight">{safeStats.totalDiscounts.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <span className="text-red-200 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-red-600 dark:text-red-400 tracking-tight">{safeStats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-red-600 dark:text-red-400 text-[10px] font-black uppercase">
             <MinusCircle size={14}/> Deduzido
@@ -790,8 +812,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             </button>
           </div>
           <div className="mt-4 flex items-baseline gap-2">
-            <span className="text-green-400 font-bold text-xl">€</span>
-            <p className="text-4xl font-black text-green-700 dark:text-green-300 tracking-tight">{safeStats.netTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+            <span className="text-green-400 font-bold text-xl">R$</span>
+            <p className="text-4xl font-black text-green-700 dark:text-green-300 tracking-tight">{safeStats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
           <div className="mt-6 flex items-center gap-2 text-green-700 dark:text-green-400 text-[10px] font-black uppercase">
             <CheckCircle size={14}/> Após descontos

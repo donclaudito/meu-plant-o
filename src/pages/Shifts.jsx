@@ -15,7 +15,7 @@ const monthNames = [
 ];
 
 const specialties = [
-  "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "OUTRA"
+  "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "GASTROENTEROLOGIA", "CIRURGIA DIGESTIVA", "OUTRA"
 ];
 
 export default function Shifts({ currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear() }) {
