@@ -36,6 +36,8 @@ export default function Deposits() {
       return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
   });
 
   const { data: shifts = [] } = useQuery({
@@ -45,6 +47,8 @@ export default function Deposits() {
       return allShifts.filter(s => s.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
   });
 
   const { data: extraIncomes = [] } = useQuery({
@@ -54,6 +58,8 @@ export default function Deposits() {
       return all.filter(i => i.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
   });
 
   const { data: doctors = [] } = useQuery({
@@ -63,6 +69,8 @@ export default function Deposits() {
       return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 30,
+    cacheTime: 1000 * 60 * 60,
   });
 
   const { data: discounts = [] } = useQuery({
@@ -72,6 +80,8 @@ export default function Deposits() {
       return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 10,
+    cacheTime: 1000 * 60 * 20,
   });
 
   const createDepositMutation = useMutation({

@@ -45,6 +45,8 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       return allShifts.filter(s => s.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    cacheTime: 1000 * 60 * 10, // 10 minutos
   });
 
   const { data: doctors = [] } = useQuery({
@@ -54,6 +56,8 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       return all.filter(d => d.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 30, // 30 minutos (dados mudam raramente)
+    cacheTime: 1000 * 60 * 60, // 60 minutos
   });
 
   const { data: hospitals = [] } = useQuery({
@@ -63,6 +67,8 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       return all.filter(h => h.created_by === user?.email);
     },
     enabled: !!user,
+    staleTime: 1000 * 60 * 30, // 30 minutos (dados mudam raramente)
+    cacheTime: 1000 * 60 * 60, // 60 minutos
   });
 
   const createShiftMutation = useMutation({

@@ -36,6 +36,8 @@ export default function Layout({ children, currentPageName }) {
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
+    staleTime: 1000 * 60 * 60, // 1 hora (dados do utilizador mudam raramente)
+    cacheTime: 1000 * 60 * 120, // 2 horas
   });
 
   useEffect(() => {
