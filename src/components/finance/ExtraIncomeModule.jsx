@@ -4,13 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, DollarSign, Trash2, Calendar, Upload, Sparkles } from 'lucide-react';
 import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 
-const incomeTypes = ["Ambulatório", "Cirurgia", "Bónus", "Aposentadoria", "Outro"];
+const incomeTypes = ["Consulta SUS", "Cirurgia CO", "Ambulatório", "Cirurgia", "Bónus", "Aposentadoria", "Outro"];
 
-export default function ExtraIncomeModule({ currentMonth, currentYear, showToast }) {
+export default function ExtraIncomeModule({ currentMonth, currentYear, showToast, doctors = [] }) {
   const [showForm, setShowForm] = useState(false);
   const [newIncome, setNewIncome] = useState({
     date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
-    type: 'Ambulatório',
+    doctorName: '',
+    type: 'Consulta SUS',
     description: '',
     value: 0
   });
@@ -29,7 +30,7 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['extraIncomes'] });
       setShowForm(false);
-      setNewIncome({ date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`, type: 'Ambulatório', description: '', value: 0 });
+      setNewIncome({ date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`, doctorName: '', type: 'Consulta SUS', description: '', value: 0 });
       showToast('Receita adicionada!');
     },
   });
@@ -153,7 +154,19 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
             <p className="text-[9px] text-slate-500 text-center mt-2">JPG, PNG ou PDF • A IA extrairá data, valor e tipo automaticamente</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Médico Responsável</label>
+              <select
+                value={newIncome.doctorName}
+                onChange={(e) => setNewIncome({...newIncome, doctorName: e.target.value})}
+                className="w-full px-4 py-3 bg-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-green-600"
+                required
+              >
+                <option value="">Selecione</option>
+                {doctors.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+              </select>
+            </div>
             <div>
               <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Mês e Ano</label>
               <input
@@ -222,6 +235,7 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
                   <span className="text-xs font-black text-slate-900">{new Date(income.date + 'T00:00:00').toLocaleDateString('pt-PT')}</span>
                   <span className="text-[10px] font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">{income.type}</span>
                 </div>
+                <p className="text-[10px] font-bold text-blue-600 mt-1">{income.doctorName}</p>
                 {income.description && <p className="text-[10px] text-slate-500 mt-1">{income.description}</p>}
               </div>
             </div>
