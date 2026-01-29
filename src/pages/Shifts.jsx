@@ -122,8 +122,14 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(s => {
+      // Garantir que s.date existe e é válido
+      if (!s.date) return false;
+      
       // Extrai ano e mês diretamente da string YYYY-MM-DD para evitar problemas de timezone
-      const [year, month] = s.date.split('-').map(Number);
+      const dateParts = s.date.split('-').map(Number);
+      if (dateParts.length < 2) return false;
+      
+      const [year, month] = dateParts;
       const matchMonth = month === currentMonth + 1 && year === currentYear;
 
       // Aplicar filtros de médico, especialidade e semana - case insensitive
