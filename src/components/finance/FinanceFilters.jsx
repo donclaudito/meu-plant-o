@@ -2,7 +2,7 @@ import React from 'react';
 import { Filter, X } from 'lucide-react';
 
 const specialties = [
-  "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "OUTRA"
+  "CIRURGIA GERAL", "CLÍNICA MÉDICA", "PEDIATRIA", "GINECOLOGIA", "ORTOPEDIA", "ANESTESIA", "GASTROENTEROLOGIA", "CIRURGIA DIGESTIVA", "OUTRA"
 ];
 
 export default function FinanceFilters({ filters, setFilters, doctors, hospitals }) {
@@ -81,7 +81,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
 
         <input
           type="month"
-          value={filters.startDate}
+          value={filters.startDate ? filters.startDate.substring(0, 7) : ''}
           onChange={(e) => setFilters({ ...filters, startDate: e.target.value ? `${e.target.value}-01` : '' })}
           placeholder="Mês Início"
           className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
@@ -89,7 +89,7 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
 
         <input
           type="month"
-          value={filters.endDate}
+          value={filters.endDate ? filters.endDate.substring(0, 7) : ''}
           onChange={(e) => setFilters({ ...filters, endDate: e.target.value ? `${e.target.value}-31` : '' })}
           placeholder="Mês Fim"
           className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"

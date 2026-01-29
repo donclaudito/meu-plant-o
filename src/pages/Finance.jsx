@@ -738,24 +738,24 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
 
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6 will-change-auto">
         <h3 className="text-xl font-black text-blue-900 dark:text-blue-200 mb-6 flex items-center gap-2">
-          <Calculator className="text-blue-600 dark:text-blue-400" /> Conciliação Financeira do Mês
+          <Calculator className="text-blue-600 dark:text-blue-400" /> Conciliação Financeira
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl">
+          <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl transform-gpu">
             <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Total Bruto</p>
             <p className="text-3xl font-black text-blue-700 dark:text-blue-300">R$ {safeStats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{safeStats.count} plantões</p>
           </div>
-          <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl">
+          <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl transform-gpu">
             <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Total Descontos</p>
             <p className="text-3xl font-black text-red-600 dark:text-red-400">- R$ {safeStats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
           </div>
-          <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 p-6 rounded-2xl border-2 border-green-300 dark:border-green-700">
+          <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40 p-6 rounded-2xl border-2 border-green-300 dark:border-green-700 transform-gpu">
             <p className="text-[10px] font-black text-green-700 dark:text-green-400 uppercase tracking-widest mb-2">Total Líquido</p>
             <p className="text-3xl font-black text-green-700 dark:text-green-300">R$ {safeStats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-2">Após descontos</p>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-2">Valores líquidos</p>
           </div>
         </div>
       </div>
