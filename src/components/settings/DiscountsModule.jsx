@@ -76,10 +76,11 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     .filter(s => {
       const shiftDate = new Date(s.date + 'T00:00:00');
       const isInMonth = shiftDate.getMonth() === selectedMonth && shiftDate.getFullYear() === selectedYear;
-      const matchesDoctor = selectedDoctor === 'TODOS' || (s.doctorName && s.doctorName.trim().toUpperCase() === selectedDoctor.trim().toUpperCase());
+      const matchesDoctor = selectedDoctor === 'TODOS' || 
+        (s.doctorName && s.doctorName.trim().toUpperCase() === selectedDoctor.trim().toUpperCase());
       return isInMonth && matchesDoctor;
     })
-    .reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    .reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
 
   // Calcular descontos aplicados (porcentagem convertida em valor)
   const totalDiscounts = globalDiscounts.reduce((acc, d) => {

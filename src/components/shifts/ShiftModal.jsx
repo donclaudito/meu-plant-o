@@ -65,7 +65,7 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
     if (!quickDoctorName.trim()) return;
     try {
       const newDoc = await base44.entities.Doctor.create({
-        name: quickDoctorName,
+        name: quickDoctorName.trim().toUpperCase(),
         specialty: newShift.specialty
       });
       queryClient.invalidateQueries({ queryKey: ['doctors'] });
@@ -92,7 +92,12 @@ export default function ShiftModal({ isOpen, onClose, onSave, doctors, hospitals
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await onSave(newShift);
+    // Normalizar nome do médico para maiúsculas
+    const normalizedShift = {
+      ...newShift,
+      doctorName: newShift.doctorName.trim().toUpperCase()
+    };
+    await onSave(normalizedShift);
     onClose();
   };
 
