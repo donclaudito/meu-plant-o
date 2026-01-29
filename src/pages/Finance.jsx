@@ -97,14 +97,14 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (!isDateInActiveMonth(s.date, currentMonth, currentYear)) return false;
       }
       
-      // Other filters
+      // Other filters - case insensitive
       if (filters.doctor !== 'TODOS') {
         const normalizedFilterDoctor = filters.doctor.trim().toUpperCase();
         const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
         if (normalizedDoctorName !== normalizedFilterDoctor) return false;
       }
-      if (filters.hospital !== 'TODOS' && s.unit !== filters.hospital) return false;
-      if (filters.specialty !== 'TODAS' && s.specialty !== filters.specialty) return false;
+      if (filters.hospital !== 'TODOS' && (s.unit || '').toUpperCase() !== filters.hospital.toUpperCase()) return false;
+      if (filters.specialty !== 'TODAS' && (s.specialty || '').toUpperCase() !== filters.specialty.toUpperCase()) return false;
       if (filters.paid === 'PAGO' && !s.paid) return false;
       if (filters.paid === 'PENDENTE' && s.paid) return false;
       
@@ -169,8 +169,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [discounts]);
 
   const totalDiscounts = useMemo(() => {
-    // Primeiro, calcular o total bruto de plantões para aplicar percentagens
-    const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.value) || 0), 0);
+    // Calcular o total bruto usando grossValue ou value
+    const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
     
     // Aplicar descontos globais (fixos e percentuais)
     return globalDiscounts.reduce((acc, d) => {
@@ -267,7 +267,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const totalByConfig = validShifts.reduce((acc, shift) => {
       try {
         const shiftHours = Number(shift.hours) || 0;
-        const shiftValue = Number(shift.value) || 0;
+        const shiftValue = Number(shift.grossValue || shift.value) || 0;
 
         // Usa o valor configurado se disponível, senão calcula
         if (shiftValue > 0) return acc + shiftValue;
@@ -283,7 +283,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
     const paid = validShifts.filter(s => s.paid).reduce((acc, shift) => {
       try {
-        const shiftValue = Number(shift.value) || 0;
+        const shiftValue = Number(shift.netValue || shift.value) || 0;
         return acc + shiftValue;
       } catch (error) {
         console.error('Erro ao calcular valor pago:', error);

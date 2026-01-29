@@ -126,12 +126,12 @@ export default function Shifts({ currentMonth = new Date().getMonth(), currentYe
       const [year, month] = s.date.split('-').map(Number);
       const matchMonth = month === currentMonth + 1 && year === currentYear;
 
-      // Aplicar filtros de médico, especialidade e semana
+      // Aplicar filtros de médico, especialidade e semana - case insensitive
       const normalizedFilterDoctor = filterDoctor === 'TODOS' ? 'TODOS' : filterDoctor.trim().toUpperCase();
       const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
       const matchDoctor = normalizedFilterDoctor === 'TODOS' || normalizedDoctorName === normalizedFilterDoctor;
 
-      const matchSpecialty = filterSpecialty === 'TODAS' || s.specialty === filterSpecialty;
+      const matchSpecialty = filterSpecialty === 'TODAS' || (s.specialty || '').toUpperCase() === filterSpecialty.toUpperCase();
 
       let matchWeek = true;
       if (filterWeek !== 'TODAS') {
