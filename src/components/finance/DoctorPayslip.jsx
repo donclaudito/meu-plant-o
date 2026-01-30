@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { FileText, Stethoscope, ChevronDown, ChevronUp, Award } from 'lucide-react';
 
-export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, currentMonth, currentYear, filters }) {
+export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, doctorDiscount, doctorDiscountReason, currentMonth, currentYear, filters }) {
   const [showDetails, setShowDetails] = useState(false);
   
   const normalizeDoctorName = (name) => {
@@ -33,9 +33,12 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
     
     // Total de descontos (aplicado proporcionalmente) - SÓ SE HOUVER FATURAMENTO
     const totalDiscounts = (totalShifts + totalExtras > 0) ? (Number(discounts) || 0) : 0;
-    
+
+    // Desconto personalizado do médico
+    const personalDiscount = Number(doctorDiscount) || 0;
+
     // Total líquido final - NÃO NEGATIVO
-    const netTotal = Math.max(0, totalShifts + totalExtras - totalDiscounts);
+    const netTotal = Math.max(0, totalShifts + totalExtras - totalDiscounts - personalDiscount);
     
     return {
       doctorShifts,
@@ -43,9 +46,10 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
       totalShifts,
       totalExtras,
       totalDiscounts,
+      personalDiscount,
       netTotal
-    };
-  }, [doctorName, shifts, extraIncomes, discounts]);
+      };
+      }, [doctorName, shifts, extraIncomes, discounts, doctorDiscount]);
 
   if (!doctorName || doctorName === 'TODOS') {
     return null;
@@ -187,16 +191,40 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
           </div>
 
           {/* Descontos */}
-          {summary.totalDiscounts > 0 && (
-            <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl">
+          {(summary.totalDiscounts > 0 || summary.personalDiscount > 0) && (
+            <div className="bg-white dark:bg-slate-800/50 p-6 rounded-2xl space-y-3">
               <h4 className="text-sm font-black text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                 DESCONTOS
               </h4>
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase">Total Descontos:</span>
-                <span className="text-lg font-black text-red-600 dark:text-red-400">
-                  - R$ {summary.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+              {summary.totalDiscounts > 0 && (
+                <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-700">
+                  <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase">Descontos Fixos:</span>
+                  <span className="text-lg font-black text-red-600 dark:text-red-400">
+                    - R$ {summary.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
+
+              {summary.personalDiscount > 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase">Desconto Adicional (ADM):</span>
+                    <span className="text-lg font-black text-red-600 dark:text-red-400">
+                      - R$ {summary.personalDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {doctorDiscountReason && (
+                    <p className="text-xs text-amber-600 dark:text-amber-500 font-bold">Motivo: {doctorDiscountReason}</p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-3 border-t-2 border-red-300 dark:border-red-800">
+                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">Total Descontos:</span>
+                <span className="text-xl font-black text-red-600 dark:text-red-400">
+                  - R$ {(summary.totalDiscounts + summary.personalDiscount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
@@ -209,7 +237,7 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         <div className="flex justify-between items-center">
           <div>
             <p className="text-xs font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">Valor Líquido Total</p>
-            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Plantões + Extras - Descontos</p>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Plantões + Extras - Descontos{summary.personalDiscount > 0 ? ' - Ajuste ADM' : ''}</p>
           </div>
           <span className="text-4xl font-black text-purple-700 dark:text-purple-300">
             R$ {summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}

@@ -9,6 +9,7 @@ import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
 import PixImportModal from '@/components/finance/PixImportModal';
 import PaymentReceipt from '@/components/finance/PaymentReceipt';
 import DoctorPayslip from '@/components/finance/DoctorPayslip';
+import DoctorDiscountModule from '@/components/finance/DoctorDiscountModule';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -207,10 +208,42 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     cacheTime: 1000 * 60 * 10,
   });
 
+  const { data: doctorDiscounts = [] } = useQuery({
+    queryKey: ['doctorDiscounts', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.DoctorDiscount.list('-created_date');
+      return all.filter(d => d.created_by === user?.email);
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+    cacheTime: 1000 * 60 * 10,
+  });
+
   const createManualPaymentMutation = useMutation({
     mutationFn: (data) => base44.entities.ManualPayment.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['manualPayments'] });
+    },
+  });
+
+  const createDoctorDiscountMutation = useMutation({
+    mutationFn: (data) => base44.entities.DoctorDiscount.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctorDiscounts'] });
+    },
+  });
+
+  const updateDoctorDiscountMutation = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.DoctorDiscount.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctorDiscounts'] });
+    },
+  });
+
+  const deleteDoctorDiscountMutation = useMutation({
+    mutationFn: (id) => base44.entities.DoctorDiscount.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctorDiscounts'] });
     },
   });
 
@@ -351,6 +384,20 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     return filtered.reduce((acc, payment) => acc + (Number(payment.value) || 0), 0);
   }, [manualPayments, currentMonth, currentYear, filters]);
 
+  // Desconto personalizado do médico selecionado
+  const currentDoctorDiscount = useMemo(() => {
+    if (!filters.doctor || filters.doctor === 'TODOS') return null;
+    
+    const normalizedFilterName = normalizeDoctorName(filters.doctor);
+    const discount = doctorDiscounts.find(d => 
+      normalizeDoctorName(d.doctorName) === normalizedFilterName &&
+      d.month === currentMonth &&
+      d.year === currentYear
+    );
+    
+    return discount || null;
+  }, [doctorDiscounts, filters.doctor, currentMonth, currentYear]);
+
   const stats = useMemo(() => {
     // Zerar variáveis
     let total = 0;
@@ -466,8 +513,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     });
     
     grossTotal = total + safeExtraIncome;
-    // CORRIGIDO: Líquido = (soma netValues + extras) - descontos globais
-    netTotal = Math.max(0, netTotalShifts + safeExtraIncome - safeDiscounts);
+    // CORRIGIDO: Líquido = (soma netValues + extras) - descontos globais - desconto personalizado
+    const doctorDiscountValue = currentDoctorDiscount ? (Number(currentDoctorDiscount.value) || 0) : 0;
+    netTotal = Math.max(0, netTotalShifts + safeExtraIncome - safeDiscounts - doctorDiscountValue);
     const totalPaid = paid + safeManualPayments;
     pending = Math.max(0, netTotalShifts - totalPaid - safeDiscounts);
     const valuePerHour = hours > 0 ? (netTotal / hours) : 0;
@@ -563,6 +611,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       totalExtraIncome: safeExtraIncome,
       netTotal: netTotal,
       totalDiscounts: safeDiscounts,
+      doctorDiscount: currentDoctorDiscount ? (Number(currentDoctorDiscount.value) || 0) : 0,
       totalDepositsAmount: safeDeposits,
       totalManualPayments: safeManualPayments,
       paid: paid, 
@@ -573,7 +622,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       byType, 
       byDuration 
     };
-  }, [filteredShifts, user, totalDiscounts, totalExtraIncome, totalDepositsAmount, totalManualPayments]);
+  }, [filteredShifts, user, totalDiscounts, totalExtraIncome, totalDepositsAmount, totalManualPayments, currentDoctorDiscount]);
 
 
 
@@ -908,9 +957,27 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         shifts={filteredShifts}
         extraIncomes={filteredExtraIncomes}
         discounts={totalDiscounts}
+        doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
+        doctorDiscountReason={currentDoctorDiscount?.description || ''}
         currentMonth={currentMonth}
         currentYear={currentYear}
         filters={filters}
+      />
+
+      <DoctorDiscountModule
+        doctorName={filters.doctor}
+        currentDiscount={currentDoctorDiscount}
+        onSave={(data) => {
+          if (data.id) {
+            updateDoctorDiscountMutation.mutate(data);
+          } else {
+            createDoctorDiscountMutation.mutate(data.data);
+          }
+        }}
+        onDelete={(id) => deleteDoctorDiscountMutation.mutate(id)}
+        currentMonth={currentMonth}
+        currentYear={currentYear}
+        normalizeDoctorName={normalizeDoctorName}
       />
 
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6 will-change-auto">
