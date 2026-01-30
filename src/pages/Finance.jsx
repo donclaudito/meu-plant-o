@@ -96,13 +96,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(s => {
+      if (!s.date) return false;
+      
       // Date range filter
       if (filters.startDate && s.date < filters.startDate) return false;
       if (filters.endDate && s.date > filters.endDate) return false;
       
-      // If no date range, filter by current month using robust validation
+      // If no date range, filter by current month - strict validation
       if (!filters.startDate && !filters.endDate) {
-        if (!isDateInActiveMonth(s.date, currentMonth, currentYear)) return false;
+        const [year, month] = s.date.split('-').map(Number);
+        if (!year || !month) return false;
+        if (month !== currentMonth + 1 || year !== currentYear) return false;
       }
       
       // Other filters - case insensitive
@@ -192,10 +196,15 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   const totalExtraIncome = useMemo(() => {
     const filtered = extraIncomes.filter(income => {
+      if (!income.date) return false;
+      
       if (filters.startDate && income.date < filters.startDate) return false;
       if (filters.endDate && income.date > filters.endDate) return false;
+      
       if (!filters.startDate && !filters.endDate) {
-        if (!isDateInActiveMonth(income.date, currentMonth, currentYear)) return false;
+        const [year, month] = income.date.split('-').map(Number);
+        if (!year || !month) return false;
+        if (month !== currentMonth + 1 || year !== currentYear) return false;
       }
       
       // Filtrar por médico case-insensitive
@@ -213,10 +222,15 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalDepositsAmount = useMemo(() => {
     return deposits
       .filter(deposit => {
+        if (!deposit.date) return false;
+        
         if (filters.startDate && deposit.date < filters.startDate) return false;
         if (filters.endDate && deposit.date > filters.endDate) return false;
+        
         if (!filters.startDate && !filters.endDate) {
-          if (!isDateInActiveMonth(deposit.date, currentMonth, currentYear)) return false;
+          const [year, month] = deposit.date.split('-').map(Number);
+          if (!year || !month) return false;
+          if (month !== currentMonth + 1 || year !== currentYear) return false;
         }
         return true;
       })
@@ -226,10 +240,15 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalManualPayments = useMemo(() => {
     return manualPayments
       .filter(payment => {
+        if (!payment.date) return false;
+        
         if (filters.startDate && payment.date < filters.startDate) return false;
         if (filters.endDate && payment.date > filters.endDate) return false;
+        
         if (!filters.startDate && !filters.endDate) {
-          if (!isDateInActiveMonth(payment.date, currentMonth, currentYear)) return false;
+          const [year, month] = payment.date.split('-').map(Number);
+          if (!year || !month) return false;
+          if (month !== currentMonth + 1 || year !== currentYear) return false;
         }
         return true;
       })
