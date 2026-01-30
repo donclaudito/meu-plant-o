@@ -21,9 +21,9 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
       normalizeDoctorName(e.doctorName) === normalizedFilterName
     );
     
-    // Total líquido de plantões
-    const totalShifts = doctorShifts.reduce((acc, s) => 
-      acc + (Number(s.netValue) || Number(s.value) || 0), 0
+    // Total BRUTO de plantões (usar grossValue ou value)
+    const totalShiftsBruto = doctorShifts.reduce((acc, s) => 
+      acc + (Number(s.grossValue) || Number(s.value) || 0), 0
     );
     
     // Total de receitas extras
@@ -31,25 +31,33 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
       acc + (Number(e.value) || 0), 0
     );
     
-    // Total de descontos (aplicado proporcionalmente) - SÓ SE HOUVER FATURAMENTO
-    const totalDiscounts = (totalShifts + totalExtras > 0) ? (Number(discounts) || 0) : 0;
+    // Total BRUTO (Plantões + Extras)
+    const totalBruto = totalShiftsBruto + totalExtras;
+    
+    // Cálculo CORRETO: Imposto sobre BRUTO (Plantões + Extras) * 15%
+    const impostoCalculado = totalBruto * 0.15;
+    
+    // Outros descontos (Contador, etc.) - Desconto total MENOS o imposto já calculado
+    const outrosDescontos = Math.max(0, (Number(discounts) || 0) - impostoCalculado);
 
     // Desconto personalizado do médico
     const personalDiscount = Number(doctorDiscount) || 0;
 
-    // Total líquido final - NÃO NEGATIVO
-    const netTotal = Math.max(0, totalShifts + totalExtras - totalDiscounts - personalDiscount);
+    // Valor Líquido = Bruto - (Imposto + Contador + Desconto Adicional)
+    const netTotal = Math.max(0, totalBruto - impostoCalculado - outrosDescontos - personalDiscount);
     
     return {
       doctorShifts,
       doctorExtras,
-      totalShifts,
+      totalShiftsBruto,
       totalExtras,
-      totalDiscounts,
+      totalBruto,
+      impostoCalculado,
+      outrosDescontos,
       personalDiscount,
       netTotal
-      };
-      }, [doctorName, shifts, extraIncomes, discounts, doctorDiscount]);
+    };
+  }, [doctorName, shifts, extraIncomes, discounts, doctorDiscount]);
 
   if (!doctorName || doctorName === 'TODOS') {
     return null;
@@ -143,14 +151,14 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
                     <td className="py-2 text-slate-700">{shift.unit}</td>
                     <td className="py-2 text-slate-700">{shift.type}</td>
                     <td className="py-2 text-right font-black text-blue-600">
-                      R$ {(Number(shift.netValue) || Number(shift.value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(Number(shift.grossValue) || Number(shift.value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
                 ))}
                 <tr className="bg-slate-100 border-t-2 border-slate-300">
                   <td colSpan="3" className="py-3 font-black text-slate-900 uppercase">Subtotal Plantões:</td>
                   <td className="py-3 text-right font-black text-blue-600 text-lg">
-                    R$ {summary.totalShifts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {summary.totalShiftsBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </td>
                 </tr>
               </tbody>
@@ -201,6 +209,16 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         )}
       </div>
 
+      {/* TOTAL BRUTO */}
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border-2 border-blue-300 mb-6">
+        <div className="flex justify-between items-center">
+          <p className="text-sm font-black text-blue-900 uppercase tracking-widest">💵 Total Bruto (Plantões + Extras)</p>
+          <span className="text-4xl font-black text-blue-700">
+            R$ {summary.totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+      </div>
+
       {/* SEÇÃO DE DESCONTOS */}
       <div className="bg-white border-2 border-slate-300 rounded-2xl mb-6 overflow-hidden">
         <div className="bg-slate-200 px-6 py-3 border-b-2 border-slate-300">
@@ -215,51 +233,49 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
               </tr>
             </thead>
             <tbody>
-          <tr className="border-b border-slate-200">
-            <td className="py-2 text-slate-700">Impostos (15%)</td>
-            <td className="py-2 text-right font-black text-red-600">
-              - R$ {(summary.totalShifts * 0.15).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </td>
-          </tr>
-          {summary.totalDiscounts > 0 && (
-            <tr className="border-b border-slate-200">
-              <td className="py-2 text-slate-700">Contador / Outros Descontos Fixos</td>
-              <td className="py-2 text-right font-black text-red-600">
-                - R$ {(summary.totalDiscounts - (summary.totalShifts * 0.15)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-              </td>
-            </tr>
-          )}
-          {summary.personalDiscount > 0 && (
-            <>
-              <tr className="border-b border-slate-200 bg-amber-50">
-                <td className="py-2 text-slate-900 font-bold">
-                  Desconto Adicional (Ajuste ADM)
-                  <br />
-                  <span className="text-xs text-amber-700">Motivo: {doctorDiscountReason || 'Não informado'}</span>
-                </td>
+              <tr className="border-b border-slate-200">
+                <td className="py-2 text-slate-700">Impostos (15% sobre Bruto Total)</td>
                 <td className="py-2 text-right font-black text-red-600">
-                  - R$ {summary.personalDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  - R$ {summary.impostoCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </td>
               </tr>
-            </>
-          )}
-          <tr className="bg-slate-100 border-t-2 border-slate-300">
-            <td className="py-3 font-black text-slate-900 uppercase">Total de Descontos:</td>
-            <td className="py-3 text-right font-black text-red-600 text-lg">
-              - R$ {(summary.totalDiscounts + summary.personalDiscount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </td>
-          </tr>
-          </tbody>
+              {summary.outrosDescontos > 0 && (
+                <tr className="border-b border-slate-200">
+                  <td className="py-2 text-slate-700">Contador / Outros Descontos Fixos</td>
+                  <td className="py-2 text-right font-black text-red-600">
+                    - R$ {summary.outrosDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              )}
+              {summary.personalDiscount > 0 && (
+                <tr className="border-b border-slate-200 bg-amber-50">
+                  <td className="py-3 text-slate-900 font-bold">
+                    Desconto Adicional (Ajuste ADM)
+                    <br />
+                    <span className="text-xs text-amber-700 font-normal">Motivo: {doctorDiscountReason || 'Não informado'}</span>
+                  </td>
+                  <td className="py-3 text-right font-black text-red-600">
+                    - R$ {summary.personalDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              )}
+              <tr className="bg-slate-100 border-t-2 border-slate-300">
+                <td className="py-3 font-black text-slate-900 uppercase">Total de Descontos:</td>
+                <td className="py-3 text-right font-black text-red-600 text-lg">
+                  - R$ {(summary.impostoCalculado + summary.outrosDescontos + summary.personalDiscount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </td>
+              </tr>
+            </tbody>
           </table>
-          </div>
-          </div>
+        </div>
+      </div>
 
       {/* Total Líquido Final */}
-      <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-6 rounded-2xl border-2 border-green-400 mt-6">
+      <div className="bg-gradient-to-br from-green-100 to-emerald-100 p-8 rounded-2xl border-2 border-green-400 mt-6">
         <div className="flex justify-between items-center">
           <div>
-            <p className="text-xs font-black text-green-900 uppercase tracking-widest">💰 Valor Líquido a Receber</p>
-            <p className="text-xs text-green-800 mt-1">Plantões + Extras - Descontos{summary.personalDiscount > 0 ? ' - Ajuste ADM' : ''}</p>
+            <p className="text-sm font-black text-green-900 uppercase tracking-widest">💰 Valor Líquido a Receber</p>
+            <p className="text-sm text-green-800 mt-2 font-bold">Bruto - (Imposto + Contador + Ajustes)</p>
           </div>
           <span className="text-5xl font-black text-green-700">
             R$ {summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
