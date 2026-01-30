@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Settings as SettingsIcon } from 'lucide-react';
 import PricingSettings from '@/components/settings/PricingSettings';
-import RecurringRules from '@/components/settings/RecurringRules';
 import DiscountsModule from '@/components/settings/DiscountsModule';
 import Toast from '@/components/common/Toast';
 
@@ -58,8 +57,6 @@ export default function Settings({ currentMonth = new Date().getMonth(), current
         currentMonth={currentMonth} 
         currentYear={currentYear}
       />
-      
-      <RecurringRules doctors={doctors} hospitals={hospitals} showToast={showToast} />
     </div>
   );
 }

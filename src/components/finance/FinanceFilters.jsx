@@ -42,8 +42,13 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
           className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="TODOS">Todos Médicos</option>
-          {Array.from(new Set(doctors.map(d => d.name.trim().toLowerCase()))).sort().map(normalizedName => {
-            const doctor = doctors.find(d => d.name.trim().toLowerCase() === normalizedName);
+          {Array.from(new Set(doctors.map(d => {
+            // NORMALIZAÇÃO: Unificar nomes variantes
+            let name = d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if (name === 'lavosier') name = 'lavoisier';
+            if (name === 'mario') name = 'mário';
+            return name;
+          }))).sort().map(normalizedName => {
             const titleCaseName = normalizedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
             return <option key={normalizedName} value={titleCaseName}>{titleCaseName}</option>;
           })}
