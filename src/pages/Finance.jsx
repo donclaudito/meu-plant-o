@@ -221,6 +221,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     // Calcular o total bruto usando grossValue ou value
     const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
     
+    // SÓ APLICAR DESCONTOS SE HOUVER FATURAMENTO
+    if (monthlyShiftsTotal === 0 && totalExtraIncome === 0) {
+      return 0;
+    }
+    
     // Aplicar descontos globais (fixos e percentuais)
     return globalDiscounts.reduce((acc, d) => {
       const isPercentage = d.isPercentage === true;
@@ -229,7 +234,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       }
       return acc + (Number(d.value) || 0);
     }, 0);
-  }, [globalDiscounts, filteredShifts]);
+  }, [globalDiscounts, filteredShifts, totalExtraIncome]);
 
   const totalExtraIncome = useMemo(() => {
     const filtered = extraIncomes.filter(income => {
@@ -365,13 +370,34 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     const safeDeposits = Number(totalDepositsAmount) || 0;
     const safeManualPayments = Number(totalManualPayments) || 0;
     
+    if (safeShifts.length === 0 && safeExtraIncome === 0) {
+      return {
+        total: 0,
+        grossTotal: 0,
+        totalExtraIncome: 0,
+        netTotal: 0,
+        totalDiscounts: 0,
+        totalDepositsAmount: safeDeposits,
+        totalManualPayments: safeManualPayments,
+        paid: 0,
+        pending: 0,
+        hours: 0,
+        count: 0,
+        valuePerHour: 0,
+        byType: {},
+        byDuration: {}
+      };
+    }
+    
     if (safeShifts.length === 0) {
+      // Se não há plantões mas há receitas extras
+      const netExtraOnly = Math.max(0, safeExtraIncome - (safeExtraIncome > 0 ? safeDiscounts : 0));
       return {
         total: 0,
         grossTotal: safeExtraIncome,
         totalExtraIncome: safeExtraIncome,
-        netTotal: Math.max(0, safeExtraIncome - safeDiscounts),
-        totalDiscounts: safeDiscounts,
+        netTotal: netExtraOnly,
+        totalDiscounts: safeExtraIncome > 0 ? safeDiscounts : 0,
         totalDepositsAmount: safeDeposits,
         totalManualPayments: safeManualPayments,
         paid: 0,

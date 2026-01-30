@@ -4,15 +4,21 @@ import { FileText, Stethoscope, ChevronDown, ChevronUp, Award } from 'lucide-rea
 export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, currentMonth, currentYear, filters }) {
   const [showDetails, setShowDetails] = useState(false);
   
+  const normalizeDoctorName = (name) => {
+    if (!name) return '';
+    return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+  };
+  
   const summary = useMemo(() => {
-    // Filtrar shifts do médico (case-insensitive)
+    // Filtrar shifts do médico (normalizado - sem prefixo)
+    const normalizedFilterName = normalizeDoctorName(doctorName);
     const doctorShifts = shifts.filter(s => 
-      (s.doctorName || '').trim().toUpperCase() === doctorName.trim().toUpperCase()
+      normalizeDoctorName(s.doctorName) === normalizedFilterName
     );
     
-    // Filtrar receitas extras do médico (case-insensitive)
+    // Filtrar receitas extras do médico (normalizado - sem prefixo)
     const doctorExtras = extraIncomes.filter(e => 
-      (e.doctorName || '').trim().toUpperCase() === doctorName.trim().toUpperCase()
+      normalizeDoctorName(e.doctorName) === normalizedFilterName
     );
     
     // Total líquido de plantões
@@ -25,11 +31,11 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
       acc + (Number(e.value) || 0), 0
     );
     
-    // Total de descontos (aplicado proporcionalmente)
-    const totalDiscounts = Number(discounts) || 0;
+    // Total de descontos (aplicado proporcionalmente) - SÓ SE HOUVER FATURAMENTO
+    const totalDiscounts = (totalShifts + totalExtras > 0) ? (Number(discounts) || 0) : 0;
     
-    // Total líquido final
-    const netTotal = totalShifts + totalExtras - totalDiscounts;
+    // Total líquido final - NÃO NEGATIVO
+    const netTotal = Math.max(0, totalShifts + totalExtras - totalDiscounts);
     
     return {
       doctorShifts,
