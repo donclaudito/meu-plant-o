@@ -55,8 +55,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' or 'paid'
   const [showShiftsList, setShowShiftsList] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [password, setPassword] = useState('');
   const queryClient = useQueryClient();
 
   // Resetar aprovação ao trocar de médico no filtro
@@ -156,13 +154,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   };
 
   const handleApprove = () => {
-    if (password === '58120') {
+    const senha = window.prompt('Digite a Senha do ADM Master:');
+    if (senha === '58120') {
       setIsApproved(true);
-      setShowPasswordModal(false);
-      setPassword('');
-    } else {
-      alert('Senha incorreta!');
-      setPassword('');
+      alert('✅ Aprovação realizada com sucesso!');
+    } else if (senha !== null) {
+      alert('❌ Senha incorreta!');
     }
   };
 
@@ -847,37 +844,25 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
-      {/* DASHBOARD DE AUDITORIA - Exclusivo para Dr. Claudio */}
-      {user?.email === 'claudioleallr@gmail.com' && !isApproved && (
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 border-2 border-amber-400 dark:border-amber-700 rounded-[2rem] p-8 shadow-lg">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-lg">
-              <FileText size={32} />
-            </div>
-            <div>
-              <h3 className="text-2xl font-black text-amber-900 dark:text-amber-200">⚠️ PENDENTE DE AUDITORIA</h3>
-              <p className="text-sm text-amber-700 dark:text-amber-400 font-bold">Fechamento aguardando assinatura do Dr. Claudio (ADM Master)</p>
-            </div>
-          </div>
+      {/* BOTÃO DE VALIDAÇÃO ADM - Sempre visível se não aprovado */}
+      {!isApproved && (
+        <div className="bg-slate-900 dark:bg-slate-950 border-4 border-red-600 rounded-[2rem] p-8 shadow-2xl">
           <button
-            onClick={() => setShowPasswordModal(true)}
-            className="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-5 rounded-2xl font-black text-lg uppercase shadow-xl transition-all transform hover:scale-[1.02] animate-pulse"
+            onClick={handleApprove}
+            className="w-full flex items-center justify-center gap-4 bg-red-600 hover:bg-red-700 text-white px-8 py-6 rounded-2xl font-black text-2xl uppercase shadow-2xl transition-all"
           >
-            🔐 ASSINAR E LIBERAR PAGAMENTO
+            🔐 VALIDAR ACESSO ADM MASTER
           </button>
+          <p className="text-center text-white text-sm mt-4 font-bold">⚠️ Fechamento pendente de aprovação administrativa</p>
         </div>
       )}
 
       {/* Confirmação de Aprovação */}
       {isApproved && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-400 dark:border-green-700 rounded-[2rem] p-6 shadow-lg animate-in fade-in duration-500">
-          <div className="flex items-center gap-4">
-            <CheckCircle size={48} className="text-green-600 animate-in zoom-in duration-300" />
-            <div>
-              <h3 className="text-xl font-black text-green-900 dark:text-green-200">✅ FECHAMENTO AUDITADO E ASSINADO</h3>
-              <p className="text-sm text-green-700 dark:text-green-400 font-bold">Dr. Claudio (ADM Master) | ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
-            </div>
-          </div>
+        <div className="bg-green-600 border-4 border-green-700 rounded-[2rem] p-8 shadow-2xl text-center">
+          <h3 className="text-4xl font-black text-white mb-2">✅ AUDITADO E ASSINADO</h3>
+          <p className="text-xl text-white font-bold">DR. CLAUDIO (ADM MASTER)</p>
+          <p className="text-sm text-green-100 mt-3 font-bold">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
         </div>
       )}
 
@@ -1113,47 +1098,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         filters={filters}
         isApproved={isApproved}
         addDoctorPrefix={addDoctorPrefix}
-        onRequestApproval={() => setShowPasswordModal(true)}
       />
 
-      {/* Modal de Senha */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-md p-8 shadow-2xl animate-in zoom-in duration-300">
-            <div className="text-center mb-6">
-              <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={40} className="text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="text-2xl font-black dark:text-white">🔐 Senha de Aprovação</h3>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 text-center">Digite a senha de auditoria para assinar e aprovar o fechamento financeiro:</p>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleApprove()}
-              className="w-full px-4 py-4 bg-slate-100 dark:bg-slate-700 rounded-xl font-bold text-center text-3xl tracking-[0.5em] mb-6 focus:ring-4 focus:ring-green-500 focus:outline-none"
-              placeholder="• • • • •"
-              maxLength={5}
-              autoFocus
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowPasswordModal(false); setPassword(''); }}
-                className="flex-1 py-4 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all transform hover:scale-[1.02]"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleApprove}
-                className="flex-1 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all transform hover:scale-[1.02] shadow-lg"
-              >
-                ✅ Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
     </div>
   );

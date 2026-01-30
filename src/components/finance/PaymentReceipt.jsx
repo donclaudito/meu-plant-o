@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Copy, Printer, Share2, X, CheckCircle } from 'lucide-react';
 
-export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts, extraIncomes, currentMonth, currentYear, user, filters, isApproved, addDoctorPrefix, onRequestApproval }) {
+export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts, extraIncomes, currentMonth, currentYear, user, filters, isApproved, addDoctorPrefix }) {
   const [showReceipt, setShowReceipt] = useState(false);
   const [copied, setCopied] = useState(false);
 
