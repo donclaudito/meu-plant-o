@@ -58,10 +58,21 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [isApproved, setIsApproved] = useState(false);
   const queryClient = useQueryClient();
 
+  // Verificar se usuário é ADM Master
+  const isAdminMaster = user?.email === 'claudioleallr@gmail.com' || user?.full_name?.toUpperCase().includes('LAVOISIER');
+
   // Resetar aprovação ao trocar de médico no filtro
   React.useEffect(() => {
     setIsApproved(false);
   }, [filters.doctor]);
+
+  // Se não for ADM, forçar filtro no próprio médico
+  React.useEffect(() => {
+    if (user && !isAdminMaster) {
+      const doctorName = user.full_name || user.email?.split('@')[0];
+      setFilters(prev => ({ ...prev, doctor: doctorName }));
+    }
+  }, [user, isAdminMaster]);
 
   const normalizeDoctorName = (name) => {
     if (!name) return '';
@@ -893,8 +904,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
-      {/* BOTÃO DE VALIDAÇÃO ADM - Sempre visível se não aprovado */}
-      {!isApproved && (
+      {/* BOTÃO DE VALIDAÇÃO ADM - Apenas para ADM Master */}
+      {isAdminMaster && !isApproved && (
         <div className="bg-slate-900 dark:bg-slate-950 border-4 border-red-600 rounded-[2rem] p-8 shadow-2xl">
           <button
             onClick={handleApprove}
@@ -906,8 +917,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
       )}
 
-      {/* Confirmação de Aprovação */}
-      {isApproved && (
+      {/* Confirmação de Aprovação - Apenas para ADM */}
+      {isAdminMaster && isApproved && (
         <div className="bg-green-600 border-4 border-green-700 rounded-[2rem] p-8 shadow-2xl text-center">
           <h3 className="text-4xl font-black text-white mb-2">✅ AUDITADO E ASSINADO</h3>
           <p className="text-xl text-white font-bold">DR. LAVOISIER (ADM MASTER)</p>
@@ -915,41 +926,41 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
       )}
 
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex items-center justify-between flex-wrap gap-4 no-print">
          <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-           <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Resumo Financeiro
+           <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> {isAdminMaster ? 'Resumo Financeiro' : 'Meu Contracheque'}
          </h2>
-         <div className="flex items-center gap-2 flex-wrap">
-           <button
-             onClick={exportToCSV}
-             className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
-           >
-             <FileSpreadsheet size={18} /> CSV
-           </button>
-           <button
-             onClick={exportToXLSX}
-             className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg"
-           >
-             <Download size={18} /> Excel
-           </button>
-           <button
-             onClick={exportToPDF}
-             className="flex items-center gap-2 bg-red-600 dark:bg-red-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors shadow-lg"
-           >
-             <FileText size={18} /> PDF
-           </button>
+         {isAdminMaster && (
+           <div className="flex items-center gap-2 flex-wrap">
+             <button
+               onClick={exportToCSV}
+               className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors shadow-lg"
+             >
+               <FileSpreadsheet size={18} /> CSV
+             </button>
+             <button
+               onClick={exportToXLSX}
+               className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors shadow-lg"
+             >
+               <Download size={18} /> Excel
+             </button>
+             <button
+               onClick={exportToPDF}
+               className="flex items-center gap-2 bg-red-600 dark:bg-red-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors shadow-lg"
+             >
+               <FileText size={18} /> PDF
+             </button>
            <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
              {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
            </div>
          </div>
        </div>
 
-      <FinanceFilters 
-        filters={filters} 
-        setFilters={setFilters} 
-        doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
-        hospitals={hospitals} 
-      />
+      filters={filters} 
+      setFilters={setFilters} 
+      doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
+      hospitals={hospitals} 
+      />}
 
       {/* Holerite Detalhado por Médico */}
       <DoctorPayslip 
@@ -999,10 +1010,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             <p className="text-3xl font-black text-green-700 dark:text-green-300">R$ {safeStats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-2">Valores líquidos</p>
           </div>
-        </div>
-      </div>
+          </div>
+          </div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          {isAdminMaster && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 no-print">
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
           <div className="absolute top-4 right-4">
             <button
@@ -1165,10 +1176,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         filters={filters}
         isApproved={isApproved}
         addDoctorPrefix={addDoctorPrefix}
-      />
-
-
-
-    </div>
+        />}
+        </div>
   );
 }
