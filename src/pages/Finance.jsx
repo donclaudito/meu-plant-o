@@ -336,47 +336,55 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalDiscounts = useMemo(() => {
-    // FILTRO ANTI-DUPLICIDADE: Garantir descontos únicos por nome
-    const uniqueGlobalDiscounts = globalDiscounts.reduce((acc, d) => {
-      const normalizedName = (d.description || '').trim().toLowerCase();
-      if (!acc.some(existing => (existing.description || '').trim().toLowerCase() === normalizedName)) {
-        acc.push(d);
-      }
-      return acc;
-    }, []);
-
-    // Se há descontos dinâmicos, calcular baseado neles
-    if (dynamicDiscounts.length > 0) {
-      const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
-      const extraTotal = totalExtraIncome;
-      const totalBruto = monthlyShiftsTotal + extraTotal;
-      
-      // Garantir que cada desconto seja processado apenas UMA VEZ
-      const uniqueDynamicDiscounts = dynamicDiscounts.reduce((acc, d) => {
-        if (!acc.some(existing => existing.id === d.id)) {
+    try {
+      // FILTRO ANTI-DUPLICIDADE: Garantir descontos únicos por nome
+      const uniqueGlobalDiscounts = (globalDiscounts || []).reduce((acc, d) => {
+        if (!d) return acc;
+        const normalizedName = (d.description || '').trim().toLowerCase();
+        if (!acc.some(existing => (existing.description || '').trim().toLowerCase() === normalizedName)) {
           acc.push(d);
         }
         return acc;
       }, []);
+
+      // Se há descontos dinâmicos, calcular baseado neles
+      if (dynamicDiscounts && dynamicDiscounts.length > 0) {
+        const monthlyShiftsTotal = (filteredShifts || []).reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
+        const extraTotal = Number(totalExtraIncome) || 0;
+        const totalBruto = monthlyShiftsTotal + extraTotal;
+        
+        // Garantir que cada desconto seja processado apenas UMA VEZ
+        const uniqueDynamicDiscounts = dynamicDiscounts.reduce((acc, d) => {
+          if (!d || !d.id) return acc;
+          if (!acc.some(existing => existing.id === d.id)) {
+            acc.push(d);
+          }
+          return acc;
+        }, []);
+        
+        return uniqueDynamicDiscounts.reduce((acc, d) => {
+          if (d.id === 'imposto') return acc + (totalBruto * 0.15);
+          if (d.isPercentage) return acc + (totalBruto * (Number(d.value) || 0) / 100);
+          return acc + (Number(d.value) || 0);
+        }, 0);
+      }
       
-      return uniqueDynamicDiscounts.reduce((acc, d) => {
-        if (d.id === 'imposto') return acc + (totalBruto * 0.15);
-        if (d.isPercentage) return acc + (totalBruto * (Number(d.value) || 0) / 100);
+      // Caso contrário, usar descontos globais ÚNICOS
+      const monthlyShiftsTotal = (filteredShifts || []).reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
+      
+      // Aplicar descontos globais (fixos e percentuais) - CADA UM APENAS UMA VEZ
+      return uniqueGlobalDiscounts.reduce((acc, d) => {
+        if (!d) return acc;
+        const isPercentage = d.isPercentage === true;
+        if (isPercentage) {
+          return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+        }
         return acc + (Number(d.value) || 0);
       }, 0);
+    } catch (error) {
+      console.error('Erro ao calcular descontos:', error);
+      return 0;
     }
-    
-    // Caso contrário, usar descontos globais ÚNICOS
-    const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
-    
-    // Aplicar descontos globais (fixos e percentuais) - CADA UM APENAS UMA VEZ
-    return uniqueGlobalDiscounts.reduce((acc, d) => {
-      const isPercentage = d.isPercentage === true;
-      if (isPercentage) {
-        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
-      }
-      return acc + (Number(d.value) || 0);
-    }, 0);
   }, [globalDiscounts, filteredShifts, dynamicDiscounts, totalExtraIncome]);
 
   const filteredExtraIncomes = useMemo(() => {
