@@ -198,17 +198,16 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         </div>
       )}
 
-        {/* Total Líquido Final */}
-        <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 p-6 rounded-2xl border-2 border-purple-300 dark:border-purple-700">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xs font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">Valor Líquido Total</p>
-              <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Plantões + Extras - Descontos</p>
-            </div>
-            <span className="text-4xl font-black text-purple-700 dark:text-purple-300">
-              R$ {summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </span>
+      {/* Total Líquido Final */}
+      <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 p-6 rounded-2xl border-2 border-purple-300 dark:border-purple-700 mt-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-xs font-black text-purple-700 dark:text-purple-400 uppercase tracking-widest">Valor Líquido Total</p>
+            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">Plantões + Extras - Descontos</p>
           </div>
+          <span className="text-4xl font-black text-purple-700 dark:text-purple-300">
+            R$ {summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+          </span>
         </div>
       </div>
     </div>
