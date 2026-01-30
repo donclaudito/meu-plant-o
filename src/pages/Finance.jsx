@@ -787,8 +787,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
          </div>
        </div>
 
-      <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
-
       {/* Holerite Detalhado por Médico */}
       <DoctorPayslip 
         doctorName={filters.doctor} 
