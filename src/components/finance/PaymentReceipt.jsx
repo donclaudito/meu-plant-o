@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Copy, Printer, Share2, X } from 'lucide-react';
+import { FileText, Copy, Printer, Share2, X, CheckCircle } from 'lucide-react';
 
 export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts, extraIncomes, currentMonth, currentYear, user, filters, isApproved, addDoctorPrefix }) {
   const [showReceipt, setShowReceipt] = useState(false);
@@ -212,6 +212,21 @@ _Este fechamento foi auditado e aprovado pela administração._`;
 
       {showReceipt && (
         <div className="space-y-4">
+          {/* Selo de Auditoria Visual */}
+          {isApproved && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-400 dark:border-green-600 rounded-2xl p-6 animate-in fade-in duration-500">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-green-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                  <CheckCircle size={32} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-black text-green-900 dark:text-green-200">✅ DOCUMENTO AUDITADO E ASSINADO</h4>
+                  <p className="text-sm text-green-700 dark:text-green-400 font-bold">ADM Master - Dr. Claudio | ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-slate-50 dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 font-mono text-xs overflow-x-auto">
             <pre className="whitespace-pre-wrap text-slate-900 dark:text-slate-100">{generateReceiptText()}</pre>
           </div>
