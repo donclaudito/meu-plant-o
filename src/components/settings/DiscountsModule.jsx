@@ -91,8 +91,17 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     })
     .reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
 
-  // Calcular descontos aplicados (porcentagem convertida em valor)
-  const totalDiscounts = globalDiscounts.reduce((acc, d) => {
+  // FILTRO ANTI-DUPLICIDADE: Garantir que cada desconto seja aplicado apenas UMA VEZ
+  const uniqueGlobalDiscounts = globalDiscounts.reduce((acc, d) => {
+    const normalizedName = (d.description || '').trim().toLowerCase();
+    if (!acc.some(existing => (existing.description || '').trim().toLowerCase() === normalizedName)) {
+      acc.push(d);
+    }
+    return acc;
+  }, []);
+
+  // Calcular descontos aplicados (porcentagem convertida em valor) - CADA DESCONTO APENAS UMA VEZ
+  const totalDiscounts = uniqueGlobalDiscounts.reduce((acc, d) => {
     const isPercentage = d.isPercentage === true;
     if (isPercentage) {
       return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
@@ -185,10 +194,10 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
           </span>
         </div>
         
-        {globalDiscounts.length > 0 && (
+        {uniqueGlobalDiscounts.length > 0 && (
           <>
             <div className="border-t border-slate-300 dark:border-slate-600 pt-3 space-y-2">
-              {globalDiscounts.map((d) => (
+              {uniqueGlobalDiscounts.map((d) => (
                 <div key={d.id} className="flex justify-between items-center text-sm">
                   <span className="text-slate-600 dark:text-slate-400">- {d.description}:</span>
                   <span className="font-bold text-red-600 dark:text-red-400">
@@ -285,10 +294,10 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
         </form>
       )}
 
-      {globalDiscounts.length > 0 && (
+      {uniqueGlobalDiscounts.length > 0 && (
         <div className="mt-6 space-y-2">
           <h4 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase mb-3">Descontos Registados</h4>
-          {globalDiscounts.map(discount => (
+          {uniqueGlobalDiscounts.map(discount => (
             <div
               key={discount.id}
               className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group"
