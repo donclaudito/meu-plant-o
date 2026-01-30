@@ -221,11 +221,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     // Calcular o total bruto usando grossValue ou value
     const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
     
-    // SÓ APLICAR DESCONTOS SE HOUVER FATURAMENTO
-    if (monthlyShiftsTotal === 0 && totalExtraIncome === 0) {
-      return 0;
-    }
-    
     // Aplicar descontos globais (fixos e percentuais)
     return globalDiscounts.reduce((acc, d) => {
       const isPercentage = d.isPercentage === true;
@@ -234,7 +229,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       }
       return acc + (Number(d.value) || 0);
     }, 0);
-  }, [globalDiscounts, filteredShifts, totalExtraIncome]);
+  }, [globalDiscounts, filteredShifts]);
 
   const totalExtraIncome = useMemo(() => {
     const filtered = extraIncomes.filter(income => {
