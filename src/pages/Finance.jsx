@@ -59,6 +59,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [password, setPassword] = useState('');
   const queryClient = useQueryClient();
 
+  // Resetar aprovação ao trocar de médico no filtro
+  React.useEffect(() => {
+    setIsApproved(false);
+  }, [filters.doctor]);
+
   const normalizeDoctorName = (name) => {
     if (!name) return '';
     return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');

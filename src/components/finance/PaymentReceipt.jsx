@@ -14,7 +14,9 @@ export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts,
     const date = new Date().toLocaleDateString('pt-BR');
     const period = `${monthNames[currentMonth]} ${currentYear}`;
     const auditId = Math.random().toString(36).substr(2, 9).toUpperCase();
-    const doctorName = addDoctorPrefix ? addDoctorPrefix(user?.full_name || 'Não informado') : user?.full_name || 'Não informado';
+    // Usar o médico do filtro, não o usuário logado
+    const selectedDoctor = filters?.doctor && filters.doctor !== 'TODOS' ? filters.doctor : user?.full_name;
+    const doctorName = addDoctorPrefix ? addDoctorPrefix(selectedDoctor || 'Não informado') : selectedDoctor || 'Não informado';
     
     let text = `
 ═══════════════════════════════════════
@@ -69,12 +71,17 @@ TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimu
 ───────────────────────────────────────
 
          R$ ${stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-
+${isApproved ? `
 ───────────────────────────────────────
 ✅ AUDITADO E ASSINADO: ADM MASTER
 ID: ${auditId}
 ───────────────────────────────────────
-
+` : `
+───────────────────────────────────────
+⚠️ PENDENTE DE AUDITORIA
+Aguardando assinatura do ADM Master
+───────────────────────────────────────
+`}
 ═══════════════════════════════════════
 Este é um comprovante informativo
 Gerado por: Meu Plantão
