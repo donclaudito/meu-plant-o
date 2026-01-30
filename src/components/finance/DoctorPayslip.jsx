@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { FileText, Stethoscope, Plus, MinusCircle } from 'lucide-react';
 
-export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts }) {
+export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, currentMonth, currentYear, filters }) {
   const summary = useMemo(() => {
     // Filtrar shifts do médico (case-insensitive)
     const doctorShifts = shifts.filter(s => 

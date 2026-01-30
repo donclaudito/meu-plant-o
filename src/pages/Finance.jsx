@@ -97,14 +97,25 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     return shifts.filter(s => {
       if (!s.date || typeof s.date !== 'string') return false;
       
-      // Date range filter
-      if (filters.startDate && s.date < filters.startDate) return false;
-      if (filters.endDate && s.date > filters.endDate) return false;
-      
-      // If no date range, filter by current month using string includes
-      if (!filters.startDate && !filters.endDate) {
-        const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
-        if (!s.date.includes(monthStr)) return false;
+      // FILTRO CIRÚRGICO POR STRING - Prioridade máxima
+      if (filters.startDate || filters.endDate) {
+        // Se houver filtro de data personalizado, extrair ano-mês
+        if (filters.startDate) {
+          const targetMonth = filters.startDate.substring(0, 7); // AAAA-MM
+          if (!s.date.startsWith(targetMonth)) return false;
+        }
+        if (filters.endDate) {
+          const targetMonth = filters.endDate.substring(0, 7); // AAAA-MM
+          if (!s.date.startsWith(targetMonth)) return false;
+        }
+      } else {
+        // Se não houver filtro personalizado, usar mês/ano atual
+        const yearStr = String(currentYear);
+        const monthStr = String(currentMonth + 1).padStart(2, '0');
+        const datePattern = `${yearStr}-${monthStr}-`;
+        
+        // Verificação rigorosa: a data DEVE começar com AAAA-MM-
+        if (!s.date.startsWith(datePattern)) return false;
       }
       
       // Other filters - case insensitive
@@ -193,16 +204,24 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [globalDiscounts, filteredShifts]);
 
   const totalExtraIncome = useMemo(() => {
-    const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
-    
     const filtered = extraIncomes.filter(income => {
       if (!income.date || typeof income.date !== 'string') return false;
       
-      if (filters.startDate && income.date < filters.startDate) return false;
-      if (filters.endDate && income.date > filters.endDate) return false;
-      
-      if (!filters.startDate && !filters.endDate) {
-        if (!income.date.includes(monthStr)) return false;
+      // FILTRO CIRÚRGICO POR STRING
+      if (filters.startDate || filters.endDate) {
+        if (filters.startDate) {
+          const targetMonth = filters.startDate.substring(0, 7);
+          if (!income.date.startsWith(targetMonth)) return false;
+        }
+        if (filters.endDate) {
+          const targetMonth = filters.endDate.substring(0, 7);
+          if (!income.date.startsWith(targetMonth)) return false;
+        }
+      } else {
+        const yearStr = String(currentYear);
+        const monthStr = String(currentMonth + 1).padStart(2, '0');
+        const datePattern = `${yearStr}-${monthStr}-`;
+        if (!income.date.startsWith(datePattern)) return false;
       }
       
       // Filtrar por médico case-insensitive
@@ -214,55 +233,59 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return true;
     });
     
-    let total = 0;
-    filtered.forEach(income => {
-      total = total + (Number(income.value) || 0);
-    });
-    return total;
+    return filtered.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
   }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalDepositsAmount = useMemo(() => {
-    const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
-    
     const filtered = deposits.filter(deposit => {
       if (!deposit.date || typeof deposit.date !== 'string') return false;
       
-      if (filters.startDate && deposit.date < filters.startDate) return false;
-      if (filters.endDate && deposit.date > filters.endDate) return false;
-      
-      if (!filters.startDate && !filters.endDate) {
-        if (!deposit.date.includes(monthStr)) return false;
+      // FILTRO CIRÚRGICO POR STRING
+      if (filters.startDate || filters.endDate) {
+        if (filters.startDate) {
+          const targetMonth = filters.startDate.substring(0, 7);
+          if (!deposit.date.startsWith(targetMonth)) return false;
+        }
+        if (filters.endDate) {
+          const targetMonth = filters.endDate.substring(0, 7);
+          if (!deposit.date.startsWith(targetMonth)) return false;
+        }
+      } else {
+        const yearStr = String(currentYear);
+        const monthStr = String(currentMonth + 1).padStart(2, '0');
+        const datePattern = `${yearStr}-${monthStr}-`;
+        if (!deposit.date.startsWith(datePattern)) return false;
       }
       return true;
     });
     
-    let total = 0;
-    filtered.forEach(deposit => {
-      total = total + (Number(deposit.value) || 0);
-    });
-    return total;
+    return filtered.reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
   }, [deposits, currentMonth, currentYear, filters]);
 
   const totalManualPayments = useMemo(() => {
-    const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
-    
     const filtered = manualPayments.filter(payment => {
       if (!payment.date || typeof payment.date !== 'string') return false;
       
-      if (filters.startDate && payment.date < filters.startDate) return false;
-      if (filters.endDate && payment.date > filters.endDate) return false;
-      
-      if (!filters.startDate && !filters.endDate) {
-        if (!payment.date.includes(monthStr)) return false;
+      // FILTRO CIRÚRGICO POR STRING
+      if (filters.startDate || filters.endDate) {
+        if (filters.startDate) {
+          const targetMonth = filters.startDate.substring(0, 7);
+          if (!payment.date.startsWith(targetMonth)) return false;
+        }
+        if (filters.endDate) {
+          const targetMonth = filters.endDate.substring(0, 7);
+          if (!payment.date.startsWith(targetMonth)) return false;
+        }
+      } else {
+        const yearStr = String(currentYear);
+        const monthStr = String(currentMonth + 1).padStart(2, '0');
+        const datePattern = `${yearStr}-${monthStr}-`;
+        if (!payment.date.startsWith(datePattern)) return false;
       }
       return true;
     });
     
-    let total = 0;
-    filtered.forEach(payment => {
-      total = total + (Number(payment.value) || 0);
-    });
-    return total;
+    return filtered.reduce((acc, payment) => acc + (Number(payment.value) || 0), 0);
   }, [manualPayments, currentMonth, currentYear, filters]);
 
   const stats = useMemo(() => {
@@ -774,6 +797,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         shifts={filteredShifts}
         extraIncomes={extraIncomes}
         discounts={totalDiscounts}
+        currentMonth={currentMonth}
+        currentYear={currentYear}
+        filters={filters}
       />
 
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6 will-change-auto">
@@ -942,6 +968,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         currentMonth={currentMonth}
         currentYear={currentYear}
         user={user}
+        filters={filters}
       />
 
     </div>
