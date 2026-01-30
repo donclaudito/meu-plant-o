@@ -1078,6 +1078,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         currentYear={currentYear}
         showToast={(msg) => {}}
         doctors={doctors}
+        filters={filters}
       />
 
 

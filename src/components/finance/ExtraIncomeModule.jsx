@@ -6,7 +6,7 @@ import DeleteConfirmation from '@/components/common/DeleteConfirmation';
 
 const incomeTypes = ["Consulta SUS", "Cirurgia CO", "Ambulatório", "Cirurgia", "Bónus", "Aposentadoria", "Outro"];
 
-export default function ExtraIncomeModule({ currentMonth, currentYear, showToast, doctors = [] }) {
+export default function ExtraIncomeModule({ currentMonth, currentYear, showToast, doctors = [], filters = {} }) {
   const [showForm, setShowForm] = useState(false);
   const [newIncome, setNewIncome] = useState({
     date: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
@@ -19,6 +19,11 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
   const [isExtracting, setIsExtracting] = useState(false);
 
   const queryClient = useQueryClient();
+  
+  const normalizeDoctorName = (name) => {
+    if (!name) return '';
+    return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+  };
 
   const { data: extraIncomes = [] } = useQuery({
     queryKey: ['extraIncomes'],
@@ -47,9 +52,20 @@ export default function ExtraIncomeModule({ currentMonth, currentYear, showToast
   const filteredIncomes = useMemo(() => {
     return extraIncomes.filter(income => {
       const [year, month] = income.date.split('-').map(Number);
-      return month === currentMonth + 1 && year === currentYear;
+      const isCurrentMonth = month === currentMonth + 1 && year === currentYear;
+      
+      if (!isCurrentMonth) return false;
+      
+      // FILTRO RIGOROSO POR MÉDICO - IGNORA PREFIXO
+      if (filters.doctor && filters.doctor !== 'TODOS') {
+        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
+        const normalizedIncomeName = normalizeDoctorName(income.doctorName);
+        if (normalizedIncomeName !== normalizedFilterDoctor) return false;
+      }
+      
+      return true;
     });
-  }, [extraIncomes, currentMonth, currentYear]);
+  }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalExtra = useMemo(() => {
     return filteredIncomes.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
