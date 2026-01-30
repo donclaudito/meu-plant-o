@@ -10,6 +10,7 @@ import PixImportModal from '@/components/finance/PixImportModal';
 import PaymentReceipt from '@/components/finance/PaymentReceipt';
 import DoctorPayslip from '@/components/finance/DoctorPayslip';
 import DoctorDiscountModule from '@/components/finance/DoctorDiscountModule';
+import DynamicDiscountsPanel from '@/components/finance/DynamicDiscountsPanel';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -56,6 +57,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' or 'paid'
   const [showShiftsList, setShowShiftsList] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
+  const [dynamicDiscounts, setDynamicDiscounts] = useState([]);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -264,7 +266,20 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [discounts]);
 
   const totalDiscounts = useMemo(() => {
-    // Calcular o total bruto usando grossValue ou value
+    // Se há descontos dinâmicos, calcular baseado neles
+    if (dynamicDiscounts.length > 0) {
+      const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
+      const extraTotal = totalExtraIncome;
+      const totalBruto = monthlyShiftsTotal + extraTotal;
+      
+      return dynamicDiscounts.reduce((acc, d) => {
+        if (d.id === 'imposto') return acc + (totalBruto * 0.15);
+        if (d.isPercentage) return acc + (totalBruto * (Number(d.value) || 0) / 100);
+        return acc + (Number(d.value) || 0);
+      }, 0);
+    }
+    
+    // Caso contrário, usar descontos globais
     const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
     
     // Aplicar descontos globais (fixos e percentuais)
@@ -275,7 +290,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       }
       return acc + (Number(d.value) || 0);
     }, 0);
-  }, [globalDiscounts, filteredShifts]);
+  }, [globalDiscounts, filteredShifts, dynamicDiscounts, totalExtraIncome]);
 
   const totalExtraIncome = useMemo(() => {
     const filtered = extraIncomes.filter(income => {
@@ -966,32 +981,49 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
                {/* Contracheque Hospitalar Completo */}
                {!isAdminMaster ? (
-               <DoctorPayslip 
-               doctorName={addDoctorPrefix(filters.doctor)} 
-               shifts={filteredShifts}
-               extraIncomes={filteredExtraIncomes}
-               discounts={totalDiscounts}
-               doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
-               doctorDiscountReason={currentDoctorDiscount?.description || ''}
-               currentMonth={currentMonth}
-               currentYear={currentYear}
-               filters={filters}
-               isApproved={isApproved}
-               />
+                 <DoctorPayslip 
+                   doctorName={addDoctorPrefix(filters.doctor)} 
+                   shifts={filteredShifts}
+                   extraIncomes={filteredExtraIncomes}
+                   discounts={totalDiscounts}
+                   doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
+                   doctorDiscountReason={currentDoctorDiscount?.description || ''}
+                   dynamicDiscounts={dynamicDiscounts}
+                   currentMonth={currentMonth}
+                   currentYear={currentYear}
+                   filters={filters}
+                   isApproved={isApproved}
+                 />
                ) : (
-               <DoctorPayslip 
-               doctorName={addDoctorPrefix(filters.doctor)} 
-               shifts={filteredShifts}
-               extraIncomes={filteredExtraIncomes}
-               discounts={totalDiscounts}
-               doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
-               doctorDiscountReason={currentDoctorDiscount?.description || ''}
-               currentMonth={currentMonth}
-               currentYear={currentYear}
-               filters={filters}
-               isApproved={isApproved}
-               />
+                 <DoctorPayslip 
+                   doctorName={addDoctorPrefix(filters.doctor)} 
+                   shifts={filteredShifts}
+                   extraIncomes={filteredExtraIncomes}
+                   discounts={totalDiscounts}
+                   doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
+                   doctorDiscountReason={currentDoctorDiscount?.description || ''}
+                   dynamicDiscounts={dynamicDiscounts}
+                   currentMonth={currentMonth}
+                   currentYear={currentYear}
+                   filters={filters}
+                   isApproved={isApproved}
+                 />
                )}
+
+      {isAdminMaster && (
+        <DynamicDiscountsPanel
+          isApproved={isApproved}
+          totalBruto={safeStats.grossTotal}
+          baseDiscounts={globalDiscounts.map(d => ({
+            id: d.id,
+            name: d.description || d.type || 'Desconto',
+            value: d.value,
+            isPercentage: d.isPercentage === true,
+            fixed: false
+          }))}
+          onDiscountsChange={setDynamicDiscounts}
+        />
+      )}
 
       {isAdminMaster && <DoctorDiscountModule
         doctorName={filters.doctor}

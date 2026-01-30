@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { FileText, Stethoscope, ChevronDown, ChevronUp, Award } from 'lucide-react';
 
-export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, doctorDiscount, doctorDiscountReason, currentMonth, currentYear, filters, isApproved }) {
+export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, doctorDiscount, doctorDiscountReason, dynamicDiscounts = [], currentMonth, currentYear, filters, isApproved }) {
   const [showDetails, setShowDetails] = useState(false);
   
   const normalizeDoctorName = (name) => {
@@ -34,11 +34,29 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
     // Total BRUTO (Plantões + Extras)
     const totalBruto = totalShiftsBruto + totalExtras;
     
-    // Cálculo CORRETO: Imposto sobre BRUTO (Plantões + Extras) * 15%
-    const impostoCalculado = totalBruto * 0.15;
+    // Se há descontos dinâmicos, usar eles; senão usar cálculo padrão
+    let impostoCalculado, outrosDescontos, discountsBreakdown = [];
     
-    // Outros descontos (Contador, etc.) - Desconto total MENOS o imposto já calculado
-    const outrosDescontos = Math.max(0, (Number(discounts) || 0) - impostoCalculado);
+    if (dynamicDiscounts && dynamicDiscounts.length > 0) {
+      // Usar descontos dinâmicos
+      discountsBreakdown = dynamicDiscounts.map(d => {
+        const value = d.id === 'imposto' 
+          ? totalBruto * 0.15
+          : d.isPercentage 
+            ? totalBruto * (d.value / 100)
+            : d.value;
+        return { ...d, calculatedValue: value };
+      });
+      
+      impostoCalculado = discountsBreakdown.find(d => d.id === 'imposto')?.calculatedValue || 0;
+      outrosDescontos = discountsBreakdown
+        .filter(d => d.id !== 'imposto')
+        .reduce((acc, d) => acc + d.calculatedValue, 0);
+    } else {
+      // Cálculo padrão
+      impostoCalculado = totalBruto * 0.15;
+      outrosDescontos = Math.max(0, (Number(discounts) || 0) - impostoCalculado);
+    }
 
     // Desconto personalizado do médico
     const personalDiscount = Number(doctorDiscount) || 0;
@@ -54,10 +72,11 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
       totalBruto,
       impostoCalculado,
       outrosDescontos,
+      discountsBreakdown,
       personalDiscount,
       netTotal
     };
-  }, [doctorName, shifts, extraIncomes, discounts, doctorDiscount]);
+  }, [doctorName, shifts, extraIncomes, discounts, doctorDiscount, dynamicDiscounts]);
 
   if (!doctorName || doctorName === 'TODOS') {
     return null;
@@ -233,19 +252,34 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-slate-200">
-                <td className="py-2 text-slate-700">Impostos (15% sobre Bruto Total)</td>
-                <td className="py-2 text-right font-black text-red-600">
-                  - R$ {summary.impostoCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </td>
-              </tr>
-              {summary.outrosDescontos > 0 && (
-                <tr className="border-b border-slate-200">
-                  <td className="py-2 text-slate-700">Contador / Outros Descontos Fixos</td>
-                  <td className="py-2 text-right font-black text-red-600">
-                    - R$ {summary.outrosDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
+              {summary.discountsBreakdown && summary.discountsBreakdown.length > 0 ? (
+                <>
+                  {summary.discountsBreakdown.map(discount => (
+                    <tr key={discount.id} className="border-b border-slate-200">
+                      <td className="py-2 text-slate-700">{discount.name}</td>
+                      <td className="py-2 text-right font-black text-red-600">
+                        - R$ {(discount.calculatedValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <tr className="border-b border-slate-200">
+                    <td className="py-2 text-slate-700">Impostos (15% sobre Bruto Total)</td>
+                    <td className="py-2 text-right font-black text-red-600">
+                      - R$ {summary.impostoCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                  {summary.outrosDescontos > 0 && (
+                    <tr className="border-b border-slate-200">
+                      <td className="py-2 text-slate-700">Contador / Outros Descontos Fixos</td>
+                      <td className="py-2 text-right font-black text-red-600">
+                        - R$ {summary.outrosDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                    </tr>
+                  )}
+                </>
               )}
               {summary.personalDiscount > 0 && (
                 <tr className="border-b border-slate-200 bg-amber-50">
