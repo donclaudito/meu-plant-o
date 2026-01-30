@@ -96,17 +96,19 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   const filteredShifts = useMemo(() => {
     return shifts.filter(s => {
-      if (!s.date) return false;
+      if (!s.date || typeof s.date !== 'string') return false;
+      
+      // Normalizar data: YYYY-MM
+      const shiftMonthYear = s.date.substring(0, 7);
       
       // Date range filter
       if (filters.startDate && s.date < filters.startDate) return false;
       if (filters.endDate && s.date > filters.endDate) return false;
       
-      // If no date range, filter by current month - strict validation
+      // If no date range, filter by current month - strict comparison
       if (!filters.startDate && !filters.endDate) {
-        const [year, month] = s.date.split('-').map(Number);
-        if (!year || !month) return false;
-        if (month !== currentMonth + 1 || year !== currentYear) return false;
+        const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        if (shiftMonthYear !== filterMonthYear) return false;
       }
       
       // Other filters - case insensitive
@@ -196,15 +198,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   const totalExtraIncome = useMemo(() => {
     const filtered = extraIncomes.filter(income => {
-      if (!income.date) return false;
+      if (!income.date || typeof income.date !== 'string') return false;
+      
+      // Normalizar data: YYYY-MM
+      const incomeMonthYear = income.date.substring(0, 7);
       
       if (filters.startDate && income.date < filters.startDate) return false;
       if (filters.endDate && income.date > filters.endDate) return false;
       
       if (!filters.startDate && !filters.endDate) {
-        const [year, month] = income.date.split('-').map(Number);
-        if (!year || !month) return false;
-        if (month !== currentMonth + 1 || year !== currentYear) return false;
+        const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        if (incomeMonthYear !== filterMonthYear) return false;
       }
       
       // Filtrar por médico case-insensitive
@@ -222,15 +226,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalDepositsAmount = useMemo(() => {
     return deposits
       .filter(deposit => {
-        if (!deposit.date) return false;
+        if (!deposit.date || typeof deposit.date !== 'string') return false;
+        
+        // Normalizar data: YYYY-MM
+        const depositMonthYear = deposit.date.substring(0, 7);
         
         if (filters.startDate && deposit.date < filters.startDate) return false;
         if (filters.endDate && deposit.date > filters.endDate) return false;
         
         if (!filters.startDate && !filters.endDate) {
-          const [year, month] = deposit.date.split('-').map(Number);
-          if (!year || !month) return false;
-          if (month !== currentMonth + 1 || year !== currentYear) return false;
+          const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+          if (depositMonthYear !== filterMonthYear) return false;
         }
         return true;
       })
@@ -240,15 +246,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const totalManualPayments = useMemo(() => {
     return manualPayments
       .filter(payment => {
-        if (!payment.date) return false;
+        if (!payment.date || typeof payment.date !== 'string') return false;
+        
+        // Normalizar data: YYYY-MM
+        const paymentMonthYear = payment.date.substring(0, 7);
         
         if (filters.startDate && payment.date < filters.startDate) return false;
         if (filters.endDate && payment.date > filters.endDate) return false;
         
         if (!filters.startDate && !filters.endDate) {
-          const [year, month] = payment.date.split('-').map(Number);
-          if (!year || !month) return false;
-          if (month !== currentMonth + 1 || year !== currentYear) return false;
+          const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+          if (paymentMonthYear !== filterMonthYear) return false;
         }
         return true;
       })
