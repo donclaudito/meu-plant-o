@@ -282,9 +282,17 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     },
   });
 
-  // Descontos globais (sem tipo específico)
+  // Descontos globais (sem tipo específico) - Deduplicados
   const globalDiscounts = useMemo(() => {
-    return discounts.filter(d => !d.type || d.type === '');
+    const filtered = discounts.filter(d => !d.type || d.type === '');
+    // Remover duplicatas por nome normalizado
+    return filtered.reduce((acc, discount) => {
+      const normalizedName = (discount.description || '').trim().toLowerCase();
+      if (!acc.some(d => (d.description || '').trim().toLowerCase() === normalizedName)) {
+        acc.push(discount);
+      }
+      return acc;
+    }, []);
   }, [discounts]);
 
   const totalExtraIncome = useMemo(() => {

@@ -54,15 +54,17 @@ ${globalDiscounts.length > 0 ? `
               DESCONTOS APLICADOS
 ───────────────────────────────────────
 
-${globalDiscounts.map(d => {
-  const isPercentage = d.isPercentage === true;
-  const discountValue = isPercentage 
-    ? (stats.total * d.value / 100)
-    : d.value;
-  return `${d.description}:
+${Array.from(new Set(globalDiscounts.map(d => (d.description || '').trim().toLowerCase())))
+  .map(normalizedDesc => {
+    const d = globalDiscounts.find(discount => (discount.description || '').trim().toLowerCase() === normalizedDesc);
+    const isPercentage = d.isPercentage === true;
+    const discountValue = isPercentage 
+      ? (stats.total * d.value / 100)
+      : d.value;
+    return `${d.description}:
   ${isPercentage ? `${d.value}% sobre plantões` : `Valor fixo`}
   - R$ ${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-}).join('\n\n')}
+  }).join('\n\n')}
 
 TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
 ` : ''}
