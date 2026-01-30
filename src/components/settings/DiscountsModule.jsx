@@ -157,9 +157,11 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
               className="w-full px-4 py-3 bg-white text-slate-900 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
             >
               <option value="TODOS">Todos os Médicos</option>
-              {doctors.map(doctor => (
-                <option key={doctor.id} value={doctor.name}>{doctor.name}</option>
-              ))}
+              {Array.from(new Set(doctors.map(d => d.name.trim().toLowerCase()))).sort().map(normalizedName => {
+                const doctor = doctors.find(d => d.name.trim().toLowerCase() === normalizedName);
+                const titleCaseName = normalizedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                return <option key={normalizedName} value={titleCaseName}>{titleCaseName}</option>;
+              })}
             </select>
           </div>
         </div>
@@ -170,7 +172,7 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
         <div className="flex justify-between items-center">
           <span className="text-sm font-bold text-slate-900 dark:text-white">Total Bruto (Plantões):</span>
           <span className="text-xl font-black text-slate-900 dark:text-white">
-            € {monthlyShiftsTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
+            R$ {monthlyShiftsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </span>
         </div>
         
@@ -182,9 +184,9 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
                   <span className="text-slate-600 dark:text-slate-400">- {d.description}:</span>
                   <span className="font-bold text-red-600 dark:text-red-400">
                     {d.isPercentage === true ? (
-                      <>-{d.value}% (€ {(monthlyShiftsTotal * d.value / 100).toLocaleString('pt-PT', { minimumFractionDigits: 2 })})</>
+                      <>-{d.value}% (R$ {(monthlyShiftsTotal * d.value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})</>
                     ) : (
-                      <>-€ {d.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</>
+                      <>-R$ {d.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
                     )}
                   </span>
                 </div>
@@ -193,7 +195,7 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
             <div className="border-t-2 border-slate-400 dark:border-slate-500 pt-3 flex justify-between items-center">
               <span className="text-base font-black text-slate-700 dark:text-slate-200 uppercase">Valor Líquido Total:</span>
               <span className="text-2xl font-black text-green-600 dark:text-green-400">
-                € {netTotal.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
+                R$ {netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </div>
           </>
@@ -228,13 +230,13 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
                 onChange={e => setNewDiscount({ ...newDiscount, isPercentage: e.target.value === 'percentage' })}
                 className="w-full px-4 py-3 bg-white dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-red-600 dark:focus:ring-red-500"
               >
-                <option value="fixed">Valor Fixo (€)</option>
+                <option value="fixed">Valor Fixo (R$)</option>
                 <option value="percentage">Porcentagem (%)</option>
               </select>
             </div>
             <div className="space-y-1">
               <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
-                {newDiscount.isPercentage ? 'Porcentagem (%)' : 'Valor (€)'}
+                {newDiscount.isPercentage ? 'Porcentagem (%)' : 'Valor (R$)'}
               </label>
               <input
                 type="number"
@@ -298,7 +300,7 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
                   {discount.isPercentage === true ? (
                     <>{discount.value}%</>
                   ) : (
-                    <>€ {discount.value.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</>
+                    <>R$ {discount.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</>
                   )}
                 </p>
                 <button

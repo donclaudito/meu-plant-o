@@ -42,9 +42,11 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
           className="px-3 py-2 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
         >
           <option value="TODOS">Todos Médicos</option>
-          {doctors.map(d => (
-            <option key={d.id} value={d.name}>{d.name}</option>
-          ))}
+          {Array.from(new Set(doctors.map(d => d.name.trim().toLowerCase()))).sort().map(normalizedName => {
+            const doctor = doctors.find(d => d.name.trim().toLowerCase() === normalizedName);
+            const titleCaseName = normalizedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            return <option key={normalizedName} value={titleCaseName}>{titleCaseName}</option>;
+          })}
         </select>
 
         <select

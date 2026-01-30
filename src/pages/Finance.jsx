@@ -943,7 +943,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       <div className="flex items-center justify-between flex-wrap gap-4 no-print">
          <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-           <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> {isAdminMaster ? 'Resumo Financeiro' : 'Meu Contracheque'}
+           <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Resumo Financeiro
          </h2>
          {isAdminMaster && (
            <div className="flex items-center gap-2 flex-wrap">
