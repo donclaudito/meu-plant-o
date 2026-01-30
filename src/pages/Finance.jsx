@@ -1115,6 +1115,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         filters={filters}
         isApproved={isApproved}
         addDoctorPrefix={addDoctorPrefix}
+        onRequestApproval={() => setShowPasswordModal(true)}
       />
 
       {/* Modal de Senha */}
