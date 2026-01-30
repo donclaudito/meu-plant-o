@@ -957,12 +957,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                )}
                </div>
 
-               {isAdminMaster && <FinanceFilters 
-               filters={filters} 
-               setFilters={setFilters} 
-               doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
-               hospitals={hospitals} 
-               />}
+               <FinanceFilters 
+                 filters={filters} 
+                 setFilters={setFilters} 
+                 doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
+                 hospitals={hospitals} 
+               />
 
                {/* Contracheque Hospitalar Completo */}
                {!isAdminMaster ? (
