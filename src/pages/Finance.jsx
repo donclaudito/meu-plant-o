@@ -98,17 +98,14 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     return shifts.filter(s => {
       if (!s.date || typeof s.date !== 'string') return false;
       
-      // Normalizar data: YYYY-MM
-      const shiftMonthYear = s.date.substring(0, 7);
-      
       // Date range filter
       if (filters.startDate && s.date < filters.startDate) return false;
       if (filters.endDate && s.date > filters.endDate) return false;
       
-      // If no date range, filter by current month - strict comparison
+      // If no date range, filter by current month using string includes
       if (!filters.startDate && !filters.endDate) {
-        const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
-        if (shiftMonthYear !== filterMonthYear) return false;
+        const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
+        if (!s.date.includes(monthStr)) return false;
       }
       
       // Other filters - case insensitive
@@ -197,18 +194,16 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [globalDiscounts, filteredShifts]);
 
   const totalExtraIncome = useMemo(() => {
+    const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
+    
     const filtered = extraIncomes.filter(income => {
       if (!income.date || typeof income.date !== 'string') return false;
-      
-      // Normalizar data: YYYY-MM
-      const incomeMonthYear = income.date.substring(0, 7);
       
       if (filters.startDate && income.date < filters.startDate) return false;
       if (filters.endDate && income.date > filters.endDate) return false;
       
       if (!filters.startDate && !filters.endDate) {
-        const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
-        if (incomeMonthYear !== filterMonthYear) return false;
+        if (!income.date.includes(monthStr)) return false;
       }
       
       // Filtrar por médico case-insensitive
@@ -220,50 +215,66 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return true;
     });
     
-    return filtered.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
+    let total = 0;
+    filtered.forEach(income => {
+      total = total + (Number(income.value) || 0);
+    });
+    return total;
   }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalDepositsAmount = useMemo(() => {
-    return deposits
-      .filter(deposit => {
-        if (!deposit.date || typeof deposit.date !== 'string') return false;
-        
-        // Normalizar data: YYYY-MM
-        const depositMonthYear = deposit.date.substring(0, 7);
-        
-        if (filters.startDate && deposit.date < filters.startDate) return false;
-        if (filters.endDate && deposit.date > filters.endDate) return false;
-        
-        if (!filters.startDate && !filters.endDate) {
-          const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
-          if (depositMonthYear !== filterMonthYear) return false;
-        }
-        return true;
-      })
-      .reduce((acc, deposit) => acc + (Number(deposit.value) || 0), 0);
+    const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
+    
+    const filtered = deposits.filter(deposit => {
+      if (!deposit.date || typeof deposit.date !== 'string') return false;
+      
+      if (filters.startDate && deposit.date < filters.startDate) return false;
+      if (filters.endDate && deposit.date > filters.endDate) return false;
+      
+      if (!filters.startDate && !filters.endDate) {
+        if (!deposit.date.includes(monthStr)) return false;
+      }
+      return true;
+    });
+    
+    let total = 0;
+    filtered.forEach(deposit => {
+      total = total + (Number(deposit.value) || 0);
+    });
+    return total;
   }, [deposits, currentMonth, currentYear, filters]);
 
   const totalManualPayments = useMemo(() => {
-    return manualPayments
-      .filter(payment => {
-        if (!payment.date || typeof payment.date !== 'string') return false;
-        
-        // Normalizar data: YYYY-MM
-        const paymentMonthYear = payment.date.substring(0, 7);
-        
-        if (filters.startDate && payment.date < filters.startDate) return false;
-        if (filters.endDate && payment.date > filters.endDate) return false;
-        
-        if (!filters.startDate && !filters.endDate) {
-          const filterMonthYear = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
-          if (paymentMonthYear !== filterMonthYear) return false;
-        }
-        return true;
-      })
-      .reduce((acc, payment) => acc + (Number(payment.value) || 0), 0);
+    const monthStr = `-${String(currentMonth + 1).padStart(2, '0')}-`;
+    
+    const filtered = manualPayments.filter(payment => {
+      if (!payment.date || typeof payment.date !== 'string') return false;
+      
+      if (filters.startDate && payment.date < filters.startDate) return false;
+      if (filters.endDate && payment.date > filters.endDate) return false;
+      
+      if (!filters.startDate && !filters.endDate) {
+        if (!payment.date.includes(monthStr)) return false;
+      }
+      return true;
+    });
+    
+    let total = 0;
+    filtered.forEach(payment => {
+      total = total + (Number(payment.value) || 0);
+    });
+    return total;
   }, [manualPayments, currentMonth, currentYear, filters]);
 
   const stats = useMemo(() => {
+    // Zerar variáveis
+    let total = 0;
+    let grossTotal = 0;
+    let netTotal = 0;
+    let paid = 0;
+    let pending = 0;
+    let hours = 0;
+    
     // Proteção defensiva contra dados inválidos
     const safeShifts = filteredShifts || [];
     const safeExtraIncome = Number(totalExtraIncome) || 0;
@@ -276,7 +287,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         total: 0,
         grossTotal: safeExtraIncome,
         totalExtraIncome: safeExtraIncome,
-        netTotal: safeExtraIncome - safeDiscounts,
+        netTotal: Math.max(0, safeExtraIncome - safeDiscounts),
         totalDiscounts: safeDiscounts,
         totalDepositsAmount: safeDeposits,
         totalManualPayments: safeManualPayments,
@@ -303,47 +314,57 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       shift.hours > 0
     );
     
-    // Calcular horas e valores baseados nas configurações
-    const hours = validShifts.reduce((acc, c) => acc + (Number(c.hours) || 0), 0);
+    // Calcular horas e valores baseados nas configurações - zerado
+    hours = 0;
+    validShifts.forEach(c => {
+      hours = hours + (Number(c.hours) || 0);
+    });
     
-    const totalByConfig = validShifts.reduce((acc, shift) => {
+    total = 0;
+    validShifts.forEach(shift => {
       try {
         const shiftHours = Number(shift.hours) || 0;
         const shiftValue = Number(shift.grossValue || shift.value) || 0;
 
         // Usa o valor configurado se disponível, senão calcula
-        if (shiftValue > 0) return acc + shiftValue;
-        if (shiftHours === 24) return acc + shift24hValue;
-        if (shiftHours === 12) return acc + shift12hValue;
-        if (shiftHours === 6) return acc + shift6hValue;
-        return acc + (baseHourlyRate * shiftHours);
+        if (shiftValue > 0) {
+          total = total + shiftValue;
+        } else if (shiftHours === 24) {
+          total = total + shift24hValue;
+        } else if (shiftHours === 12) {
+          total = total + shift12hValue;
+        } else if (shiftHours === 6) {
+          total = total + shift6hValue;
+        } else {
+          total = total + (baseHourlyRate * shiftHours);
+        }
       } catch (error) {
         console.error('Erro ao calcular valor do plantão:', error);
-        return acc;
       }
-    }, 0);
+    });
 
-    const paid = validShifts.filter(s => s.paid).reduce((acc, shift) => {
+    paid = 0;
+    validShifts.filter(s => s.paid).forEach(shift => {
       try {
         const shiftValue = Number(shift.netValue || shift.value) || 0;
-        return acc + shiftValue;
+        paid = paid + shiftValue;
       } catch (error) {
         console.error('Erro ao calcular valor pago:', error);
-        return acc;
       }
-    }, 0);
+    });
 
     // Calcular totais: bruto usa grossValue/value, líquido usa netValue/value
-    const netTotalShifts = validShifts.reduce((acc, shift) => {
-      return acc + (Number(shift.netValue) || Number(shift.value) || 0);
-    }, 0);
+    let netTotalShifts = 0;
+    validShifts.forEach(shift => {
+      netTotalShifts = netTotalShifts + (Number(shift.netValue) || Number(shift.value) || 0);
+    });
     
-    const grossTotal = Number(totalByConfig) + Number(safeExtraIncome);
+    grossTotal = total + safeExtraIncome;
     // CORRIGIDO: Líquido = (soma netValues + extras) - descontos globais
-    const netTotal = Math.max(0, Number(netTotalShifts) + Number(safeExtraIncome) - Number(safeDiscounts));
-    const totalPaid = Number(paid) + Number(safeManualPayments);
-    const pending = Math.max(0, Number(netTotalShifts) - Number(totalPaid) - Number(safeDiscounts));
-    const valuePerHour = hours > 0 ? (Number(netTotal) / Number(hours)) : 0;
+    netTotal = Math.max(0, netTotalShifts + safeExtraIncome - safeDiscounts);
+    const totalPaid = paid + safeManualPayments;
+    pending = Math.max(0, netTotalShifts - totalPaid - safeDiscounts);
+    const valuePerHour = hours > 0 ? (netTotal / hours) : 0;
     
     // Breakdown por tipo - consolidando 12h Dia e 12h Noite
     const byType = validShifts.reduce((acc, shift) => {
@@ -431,18 +452,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     }, {});
     
     return { 
-      total: Number(totalByConfig) || 0,
-      grossTotal: Number(grossTotal) || 0,
+      total: total,
+      grossTotal: grossTotal,
       totalExtraIncome: safeExtraIncome,
-      netTotal: Number(netTotal) || 0,
+      netTotal: netTotal,
       totalDiscounts: safeDiscounts,
       totalDepositsAmount: safeDeposits,
       totalManualPayments: safeManualPayments,
-      paid: Number(paid) || 0, 
-      pending: Number(pending) || 0, 
-      hours: Number(hours) || 0, 
+      paid: paid, 
+      pending: pending, 
+      hours: hours, 
       count: validShifts.length, 
-      valuePerHour: Number(valuePerHour) || 0,
+      valuePerHour: valuePerHour,
       byType, 
       byDuration 
     };
