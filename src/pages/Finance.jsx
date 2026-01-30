@@ -861,7 +861,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       {isApproved && (
         <div className="bg-green-600 border-4 border-green-700 rounded-[2rem] p-8 shadow-2xl text-center">
           <h3 className="text-4xl font-black text-white mb-2">✅ AUDITADO E ASSINADO</h3>
-          <p className="text-xl text-white font-bold">DR. CLAUDIO (ADM MASTER)</p>
+          <p className="text-xl text-white font-bold">DR. LAVOISIER (ADM MASTER)</p>
           <p className="text-sm text-green-100 mt-3 font-bold">ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
         </div>
       )}

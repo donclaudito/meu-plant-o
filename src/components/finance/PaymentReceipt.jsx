@@ -73,7 +73,8 @@ TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimu
          R$ ${stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
 ${isApproved ? `
 ───────────────────────────────────────
-✅ AUDITADO E ASSINADO: ADM MASTER
+✅ AUDITADO E ASSINADO
+DR. LAVOISIER (ADM MASTER)
 ID: ${auditId}
 ───────────────────────────────────────
 ` : `
@@ -221,7 +222,7 @@ _Este fechamento foi auditado e aprovado pela administração._`;
                 </div>
                 <div>
                   <h4 className="text-xl font-black text-green-900 dark:text-green-200">✅ DOCUMENTO AUDITADO E ASSINADO</h4>
-                  <p className="text-sm text-green-700 dark:text-green-400 font-bold">ADM Master - Dr. Claudio | ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+                  <p className="text-sm text-green-700 dark:text-green-400 font-bold">DR. LAVOISIER (ADM MASTER) | ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
                 </div>
               </div>
             </div>
