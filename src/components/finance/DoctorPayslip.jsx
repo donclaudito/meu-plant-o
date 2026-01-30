@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { FileText, Stethoscope, ChevronDown, ChevronUp, Award } from 'lucide-react';
+import { FileText, Stethoscope, ChevronDown, ChevronUp, Award, CheckCircle } from 'lucide-react';
 
 export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, doctorDiscount, doctorDiscountReason, dynamicDiscounts = [], currentMonth, currentYear, filters, isApproved }) {
-  const [showDetails, setShowDetails] = useState(false);
+  const [showShiftsDetails, setShowShiftsDetails] = useState(false);
+  const [showExtrasDetails, setShowExtrasDetails] = useState(false);
+  const [showDiscountsDetails, setShowDiscountsDetails] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   
   const normalizeDoctorName = (name) => {
     if (!name) return '';
@@ -107,6 +110,8 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
             padding: 40px !important;
           }
           .no-print { display: none !important; }
+          .accordion-content { display: block !important; max-height: none !important; }
+          .accordion-toggle { display: none !important; }
           * { background: white !important; color: black !important; }
           h1, h2, h3, h4, p, span, div { color: black !important; }
         }
@@ -143,12 +148,28 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
           <h3 className="text-lg font-black text-slate-900">📋 RECEITAS DO PERÍODO</h3>
         </div>
         
-        {/* Plantões */}
-        <div className="p-6">
-          <h4 className="text-sm font-black text-slate-900 mb-3 uppercase flex items-center gap-2">
-            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-            Plantões Realizados ({summary.doctorShifts.length})
-          </h4>
+        {/* Plantões - Accordion */}
+        <div className="border-b-2 border-slate-300">
+          <button
+            onClick={() => setShowShiftsDetails(!showShiftsDetails)}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors accordion-toggle no-print"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+              <h4 className="text-sm font-black text-slate-900 uppercase">
+                Plantões Realizados ({summary.doctorShifts.length})
+              </h4>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-lg font-black text-blue-600">
+                R$ {summary.totalShiftsBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+              {(showShiftsDetails || isPrinting) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </div>
+          </button>
+          
+          <div className={`accordion-content ${(showShiftsDetails || isPrinting) ? 'block' : 'hidden'}`}>
+            <div className="p-6">
           {summary.doctorShifts.length > 0 ? (
             <table className="w-full text-sm">
               <thead>
@@ -183,15 +204,33 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
           ) : (
             <p className="text-sm text-slate-500 italic py-4">Nenhum plantão registrado</p>
           )}
+            </div>
+          </div>
         </div>
 
-        {/* Receitas Extras */}
+        {/* Receitas Extras - Accordion */}
         {summary.doctorExtras.length > 0 && (
-          <div className="p-6 border-t-2 border-slate-300">
-            <h4 className="text-sm font-black text-slate-900 mb-3 uppercase flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-              Receitas Extras ({summary.doctorExtras.length})
-            </h4>
+          <div className="border-b-2 border-slate-300">
+            <button
+              onClick={() => setShowExtrasDetails(!showExtrasDetails)}
+              className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors accordion-toggle no-print"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                <h4 className="text-sm font-black text-slate-900 uppercase">
+                  Receitas Extras ({summary.doctorExtras.length})
+                </h4>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-lg font-black text-green-600">
+                  + R$ {summary.totalExtras.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+                {(showExtrasDetails || isPrinting) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+            
+            <div className={`accordion-content ${(showExtrasDetails || isPrinting) ? 'block' : 'hidden'}`}>
+              <div className="p-6">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-slate-300">
@@ -222,6 +261,8 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
                 </tr>
               </tbody>
             </table>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -236,11 +277,22 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         </div>
       </div>
 
-      {/* SEÇÃO DE DESCONTOS */}
+      {/* SEÇÃO DE DESCONTOS - Accordion */}
       <div className="bg-white border-2 border-slate-300 rounded-2xl mb-6 overflow-hidden">
-        <div className="bg-slate-200 px-6 py-3 border-b-2 border-slate-300">
+        <button
+          onClick={() => setShowDiscountsDetails(!showDiscountsDetails)}
+          className="w-full bg-slate-200 px-6 py-4 border-b-2 border-slate-300 flex items-center justify-between hover:bg-slate-300 transition-colors accordion-toggle no-print"
+        >
           <h3 className="text-lg font-black text-slate-900">📉 DESCONTOS APLICADOS</h3>
-        </div>
+          <div className="flex items-center gap-4">
+            <span className="text-lg font-black text-red-600">
+              - R$ {(summary.impostoCalculado + summary.outrosDescontos + summary.personalDiscount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </span>
+            {(showDiscountsDetails || isPrinting) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          </div>
+        </button>
+        
+        <div className={`accordion-content ${(showDiscountsDetails || isPrinting) ? 'block' : 'hidden'}`}>
         <div className="p-6">
           <table className="w-full text-sm">
             <thead>
@@ -300,6 +352,7 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
             </tbody>
           </table>
         </div>
+        </div>
       </div>
 
       {/* Total Líquido Final */}
@@ -315,26 +368,32 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         </div>
       </div>
 
-      {/* RODAPÉ DE AUTORIDADE */}
+      {/* RODAPÉ DE AUTORIDADE - COMPACTO */}
       {isApproved && (
-        <div className="bg-white border-2 border-green-500 rounded-2xl p-6 mt-6 text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <CheckCircle size={32} className="text-green-600" />
-            <h4 className="text-2xl font-black text-green-900">✅ AUDITADO E ASSINADO</h4>
+        <div className="bg-slate-50 border border-green-400 rounded-xl p-3 mt-6 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle size={12} className="text-green-600" />
+            <p className="text-[10px] font-bold text-green-900">AUDITADO E ASSINADO - DR. LAVOISIER (ADM) - ID: {auditId} - {new Date().toLocaleDateString('pt-BR')}</p>
           </div>
-          <p className="text-lg font-bold text-slate-900">DR. LAVOISIER (ADM MASTER)</p>
-          <p className="text-sm text-slate-600 mt-2">ID de Autenticação: {auditId}</p>
-          <p className="text-xs text-slate-500 mt-1">Data: {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
         </div>
       )}
 
       {/* Botão de Impressão */}
       <div className="mt-6 text-center no-print">
         <button 
-          onClick={() => window.print()}
+          onClick={() => {
+            setIsPrinting(true);
+            setShowShiftsDetails(true);
+            setShowExtrasDetails(true);
+            setShowDiscountsDetails(true);
+            setTimeout(() => {
+              window.print();
+              setIsPrinting(false);
+            }, 100);
+          }}
           className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-black text-lg uppercase shadow-lg transition-all"
         >
-          🖨️ Imprimir / Salvar PDF
+          🖨️ Gerar PDF Completo
         </button>
       </div>
     </div>
