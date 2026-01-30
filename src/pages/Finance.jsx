@@ -58,6 +58,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [isApproved, setIsApproved] = useState(false);
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   // Verificar se usuário é ADM Master
   const isAdminMaster = user?.email === 'claudioleallr@gmail.com' || user?.full_name?.toUpperCase().includes('LAVOISIER');
 
@@ -78,11 +83,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     if (!name) return '';
     return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
   };
-
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
-  });
 
   const { data: shifts = [] } = useQuery({
     queryKey: ['shifts', user?.email],
