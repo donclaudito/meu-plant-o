@@ -949,46 +949,49 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                className="flex items-center gap-2 bg-red-600 dark:bg-red-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-red-700 dark:hover:bg-red-600 transition-colors shadow-lg"
              >
                <FileText size={18} /> PDF
-             </button>
-           <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
-             {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
-           </div>
-         </div>
-       </div>
+               </button>
+               <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-800 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+               {filters.startDate || filters.endDate ? 'Período Personalizado' : `${monthNames[currentMonth]} ${currentYear}`}
+               </div>
+               </div>
+               )}
+               </div>
 
-      filters={filters} 
-      setFilters={setFilters} 
-      doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
-      hospitals={hospitals} 
-      />}
+               {isAdminMaster && <FinanceFilters 
+               filters={filters} 
+               setFilters={setFilters} 
+               doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
+               hospitals={hospitals} 
+               />}
 
-      {/* Holerite Detalhado por Médico */}
-      <DoctorPayslip 
-        doctorName={addDoctorPrefix(filters.doctor)} 
-        shifts={filteredShifts}
-        extraIncomes={filteredExtraIncomes}
-        discounts={totalDiscounts}
-        doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
-        doctorDiscountReason={currentDoctorDiscount?.description || ''}
-        currentMonth={currentMonth}
-        currentYear={currentYear}
-        filters={filters}
-        isApproved={isApproved}
-      />
-      ) : (
-        <DoctorPayslip 
-          doctorName={addDoctorPrefix(filters.doctor)} 
-          shifts={filteredShifts}
-          extraIncomes={filteredExtraIncomes}
-          discounts={totalDiscounts}
-          doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
-          doctorDiscountReason={currentDoctorDiscount?.description || ''}
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          filters={filters}
-          isApproved={isApproved}
-        />
-      )}
+               {/* Contracheque Hospitalar Completo */}
+               {!isAdminMaster ? (
+               <DoctorPayslip 
+               doctorName={addDoctorPrefix(filters.doctor)} 
+               shifts={filteredShifts}
+               extraIncomes={filteredExtraIncomes}
+               discounts={totalDiscounts}
+               doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
+               doctorDiscountReason={currentDoctorDiscount?.description || ''}
+               currentMonth={currentMonth}
+               currentYear={currentYear}
+               filters={filters}
+               isApproved={isApproved}
+               />
+               ) : (
+               <DoctorPayslip 
+               doctorName={addDoctorPrefix(filters.doctor)} 
+               shifts={filteredShifts}
+               extraIncomes={filteredExtraIncomes}
+               discounts={totalDiscounts}
+               doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
+               doctorDiscountReason={currentDoctorDiscount?.description || ''}
+               currentMonth={currentMonth}
+               currentYear={currentYear}
+               filters={filters}
+               isApproved={isApproved}
+               />
+               )}
 
       {isAdminMaster && <DoctorDiscountModule
         doctorName={filters.doctor}
