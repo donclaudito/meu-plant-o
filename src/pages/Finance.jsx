@@ -155,10 +155,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (!s.date.startsWith(datePattern)) return false;
       }
       
-      // Other filters - case insensitive - NORMALIZAR NOMES
+      // NORMALIZAÇÃO DE MÉDICOS - Case Insensitive
       if (filters.doctor !== 'TODOS') {
-        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
-        const normalizedDoctorName = normalizeDoctorName(s.doctorName);
+        const normalizedFilterDoctor = normalizeDoctorNameForComparison(filters.doctor);
+        const normalizedDoctorName = normalizeDoctorNameForComparison(s.doctorName);
         if (normalizedDoctorName !== normalizedFilterDoctor) return false;
       }
       if (filters.hospital !== 'TODOS' && (s.unit || '').toUpperCase() !== filters.hospital.toUpperCase()) return false;
@@ -169,6 +169,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return true;
     });
   }, [shifts, currentMonth, currentYear, filters]);
+
+  const normalizeDoctorNameForComparison = (name) => {
+    if (!name) return '';
+    return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+  };
 
   const addDoctorPrefix = (name) => {
     if (!name || name === 'TODOS') return name;
@@ -316,10 +321,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (!income.date.startsWith(datePattern)) return false;
       }
       
-      // FILTRO RIGOROSO: Filtrar SEMPRE por médico quando não for TODOS
+      // NORMALIZAÇÃO: Filtrar SEMPRE por médico quando não for TODOS (Case Insensitive)
       if (filters.doctor && filters.doctor !== 'TODOS') {
-        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
-        const normalizedIncomeName = normalizeDoctorName(income.doctorName);
+        const normalizedFilterDoctor = normalizeDoctorNameForComparison(filters.doctor);
+        const normalizedIncomeName = normalizeDoctorNameForComparison(income.doctorName);
         if (normalizedIncomeName !== normalizedFilterDoctor) return false;
       }
       
@@ -330,24 +335,41 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalDiscounts = useMemo(() => {
+    // FILTRO ANTI-DUPLICIDADE: Garantir descontos únicos por nome
+    const uniqueGlobalDiscounts = globalDiscounts.reduce((acc, d) => {
+      const normalizedName = (d.description || '').trim().toLowerCase();
+      if (!acc.some(existing => (existing.description || '').trim().toLowerCase() === normalizedName)) {
+        acc.push(d);
+      }
+      return acc;
+    }, []);
+
     // Se há descontos dinâmicos, calcular baseado neles
     if (dynamicDiscounts.length > 0) {
       const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
       const extraTotal = totalExtraIncome;
       const totalBruto = monthlyShiftsTotal + extraTotal;
       
-      return dynamicDiscounts.reduce((acc, d) => {
+      // Garantir que cada desconto seja processado apenas UMA VEZ
+      const uniqueDynamicDiscounts = dynamicDiscounts.reduce((acc, d) => {
+        if (!acc.some(existing => existing.id === d.id)) {
+          acc.push(d);
+        }
+        return acc;
+      }, []);
+      
+      return uniqueDynamicDiscounts.reduce((acc, d) => {
         if (d.id === 'imposto') return acc + (totalBruto * 0.15);
         if (d.isPercentage) return acc + (totalBruto * (Number(d.value) || 0) / 100);
         return acc + (Number(d.value) || 0);
       }, 0);
     }
     
-    // Caso contrário, usar descontos globais
+    // Caso contrário, usar descontos globais ÚNICOS
     const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
     
-    // Aplicar descontos globais (fixos e percentuais)
-    return globalDiscounts.reduce((acc, d) => {
+    // Aplicar descontos globais (fixos e percentuais) - CADA UM APENAS UMA VEZ
+    return uniqueGlobalDiscounts.reduce((acc, d) => {
       const isPercentage = d.isPercentage === true;
       if (isPercentage) {
         return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
@@ -377,10 +399,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (!income.date.startsWith(datePattern)) return false;
       }
       
-      // FILTRO RIGOROSO por médico
+      // NORMALIZAÇÃO: Filtrar por médico (Case Insensitive)
       if (filters.doctor && filters.doctor !== 'TODOS') {
-        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
-        const normalizedIncomeName = normalizeDoctorName(income.doctorName);
+        const normalizedFilterDoctor = normalizeDoctorNameForComparison(filters.doctor);
+        const normalizedIncomeName = normalizeDoctorNameForComparison(income.doctorName);
         if (normalizedIncomeName !== normalizedFilterDoctor) return false;
       }
       
@@ -444,9 +466,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const currentDoctorDiscount = useMemo(() => {
     if (!filters.doctor || filters.doctor === 'TODOS') return null;
     
-    const normalizedFilterName = normalizeDoctorName(filters.doctor);
+    const normalizedFilterName = normalizeDoctorNameForComparison(filters.doctor);
     const discount = doctorDiscounts.find(d => 
-      normalizeDoctorName(d.doctorName) === normalizedFilterName &&
+      normalizeDoctorNameForComparison(d.doctorName) === normalizedFilterName &&
       d.month === currentMonth &&
       d.year === currentYear
     );

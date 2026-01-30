@@ -12,16 +12,21 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
     return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
   };
   
+  const normalizeDoctorNameForComparison = (name) => {
+    if (!name) return '';
+    return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').replace(/^dr\.\s*/i, '').replace(/^dra\.\s*/i, '');
+  };
+
   const summary = useMemo(() => {
-    // Filtrar shifts do médico (normalizado - sem prefixo)
-    const normalizedFilterName = normalizeDoctorName(doctorName);
+    // NORMALIZAÇÃO: Filtrar shifts do médico (Case Insensitive)
+    const normalizedFilterName = normalizeDoctorNameForComparison(doctorName);
     const doctorShifts = shifts.filter(s => 
-      normalizeDoctorName(s.doctorName) === normalizedFilterName
+      normalizeDoctorNameForComparison(s.doctorName) === normalizedFilterName
     );
     
-    // Filtrar receitas extras do médico (normalizado - sem prefixo)
+    // NORMALIZAÇÃO: Filtrar receitas extras do médico (Case Insensitive)
     const doctorExtras = extraIncomes.filter(e => 
-      normalizeDoctorName(e.doctorName) === normalizedFilterName
+      normalizeDoctorNameForComparison(e.doctorName) === normalizedFilterName
     );
     
     // Total BRUTO de plantões (usar grossValue ou value)
@@ -37,19 +42,26 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
     // Total BRUTO (Plantões + Extras)
     const totalBruto = totalShiftsBruto + totalExtras;
     
-    // Se há descontos dinâmicos, usar eles; senão usar cálculo padrão
+    // FILTRO ANTI-DUPLICIDADE: Garantir descontos únicos
     let impostoCalculado, outrosDescontos, discountsBreakdown = [];
-    
+
     if (dynamicDiscounts && dynamicDiscounts.length > 0) {
-      // Usar descontos dinâmicos com cálculo em tempo real
-      discountsBreakdown = dynamicDiscounts.map(d => {
+      // Usar descontos dinâmicos ÚNICOS com cálculo em tempo real
+      const uniqueDynamicDiscounts = dynamicDiscounts.reduce((acc, d) => {
+        if (!acc.some(existing => existing.id === d.id)) {
+          acc.push(d);
+        }
+        return acc;
+      }, []);
+
+      discountsBreakdown = uniqueDynamicDiscounts.map(d => {
         const value = d.isPercentage 
           ? totalBruto * (Number(d.value) / 100)
           : Number(d.value || 0);
         return { ...d, calculatedValue: value };
       });
-      
-      // Calcular o total de todos os descontos
+
+      // Calcular o total de todos os descontos (CADA UM APENAS UMA VEZ)
       const totalDiscountsValue = discountsBreakdown.reduce((acc, d) => acc + d.calculatedValue, 0);
       impostoCalculado = discountsBreakdown.find(d => d.id === 'imposto')?.calculatedValue || 0;
       outrosDescontos = totalDiscountsValue - impostoCalculado;
