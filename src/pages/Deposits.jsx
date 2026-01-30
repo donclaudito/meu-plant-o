@@ -111,7 +111,9 @@ export default function Deposits() {
 
   const filteredDeposits = useMemo(() => {
     return deposits.filter(deposit => {
+      if (!deposit || !deposit.date) return false;
       const [year, month] = deposit.date.split('-').map(Number);
+      if (!year || !month) return false;
       
       const refMonth = selectedReferenceMonth;
       const refYear = selectedReferenceYear;
@@ -144,6 +146,7 @@ export default function Deposits() {
       if (!s || !s.date) return false;
       
       const [year, month] = s.date.split('-').map(Number);
+      if (!year || !month) return false;
       const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
       
       if (selectedDoctorFilter) {
@@ -166,7 +169,9 @@ export default function Deposits() {
 
   const extraIncomesFromReferenceMonth = useMemo(() => {
     return extraIncomes.filter(income => {
+      if (!income || !income.date) return false;
       const [year, month] = income.date.split('-').map(Number);
+      if (!year || !month) return false;
       const dateMatch = month === selectedReferenceMonth + 1 && year === selectedReferenceYear;
       
       if (selectedDoctorFilter && income.description) {
