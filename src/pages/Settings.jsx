@@ -17,7 +17,20 @@ export default function Settings({ currentMonth = new Date().getMonth(), current
 
   const { data: doctors = [] } = useQuery({
     queryKey: ['doctors'],
-    queryFn: () => base44.entities.Doctor.list('name'),
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list('name');
+      
+      // Deduplicar médicos por nome normalizado
+      const uniqueDoctors = all.reduce((acc, doctor) => {
+        const normalizedName = doctor.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (!acc.some(d => d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === normalizedName)) {
+          acc.push(doctor);
+        }
+        return acc;
+      }, []);
+      
+      return uniqueDoctors;
+    },
   });
 
   const { data: hospitals = [] } = useQuery({

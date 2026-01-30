@@ -101,7 +101,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     queryKey: ['doctors', user?.email],
     queryFn: async () => {
       const all = await base44.entities.Doctor.list('name');
-      return all.filter(d => d.created_by === user?.email);
+      const filtered = all.filter(d => d.created_by === user?.email);
+      
+      // Deduplicar médicos por nome normalizado
+      const uniqueDoctors = filtered.reduce((acc, doctor) => {
+        const normalizedName = doctor.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (!acc.some(d => d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === normalizedName)) {
+          acc.push(doctor);
+        }
+        return acc;
+      }, []);
+      
+      return uniqueDoctors;
     },
     enabled: !!user,
     staleTime: 1000 * 60 * 30,
@@ -181,7 +192,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     queryKey: ['discounts', user?.email],
     queryFn: async () => {
       const all = await base44.entities.Discount.list('-date');
-      return all.filter(d => d.created_by === user?.email);
+      const filtered = all.filter(d => d.created_by === user?.email);
+      
+      // Deduplicar descontos por descrição normalizada
+      const uniqueDiscounts = filtered.reduce((acc, discount) => {
+        const normalizedDesc = (discount.description || '').trim().toLowerCase();
+        if (!acc.some(d => (d.description || '').trim().toLowerCase() === normalizedDesc)) {
+          acc.push(discount);
+        }
+        return acc;
+      }, []);
+      
+      return uniqueDiscounts;
     },
     enabled: !!user,
     staleTime: 1000 * 60 * 10,

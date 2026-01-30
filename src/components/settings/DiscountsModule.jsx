@@ -68,8 +68,17 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     queryFn: () => base44.entities.Doctor.list('name'),
   });
 
-  // Descontos globais (sem data específica ou com type vazio)
-  const globalDiscounts = discounts.filter(d => !d.type || d.type === '');
+  // Descontos globais (sem data específica ou com type vazio) - Deduplicados
+  const globalDiscounts = discounts
+    .filter(d => !d.type || d.type === '')
+    .reduce((acc, discount) => {
+      const normalizedName = (discount.description || '').trim().toLowerCase();
+      // Manter apenas a primeira ocorrência de cada desconto
+      if (!acc.some(d => (d.description || '').trim().toLowerCase() === normalizedName)) {
+        acc.push(discount);
+      }
+      return acc;
+    }, []);
 
   // Calcular total de plantões do mês (com filtro de médico)
   const monthlyShiftsTotal = shifts
