@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Wallet, TrendingUp, CheckCircle, Clock, PieChart, Download, Calculator, FileText, RefreshCw, MinusCircle, HandCoins, FileSpreadsheet, ArrowDown, ArrowUp, Sparkles } from 'lucide-react';
 import FinanceFilters from '@/components/finance/FinanceFilters';
-import FinanceCharts from '@/components/finance/FinanceCharts';
 import ExtraIncomeModule from '@/components/finance/ExtraIncomeModule';
 import DepositsModule from '@/components/finance/DepositsModule';
 import ManualPaymentModal from '@/components/finance/ManualPaymentModal';
@@ -469,27 +468,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     };
   }, [filteredShifts, user, totalDiscounts, totalExtraIncome, totalDepositsAmount, totalManualPayments]);
 
-  const monthlyData = useMemo(() => {
-    const monthsData = {};
-    shifts.forEach(s => {
-      const date = new Date(s.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const monthLabel = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-      
-      if (!monthsData[key]) {
-        monthsData[key] = { month: monthLabel, total: 0, paid: 0, pending: 0 };
-      }
-      
-      monthsData[key].total += s.value || 0;
-      if (s.paid) {
-        monthsData[key].paid += s.value || 0;
-      } else {
-        monthsData[key].pending += s.value || 0;
-      }
-    });
-    
-    return Object.values(monthsData).sort((a, b) => a.month.localeCompare(b.month)).slice(-6);
-  }, [shifts]);
+
 
   const exportToCSV = () => {
     const headers = ['Data', 'Hospital', 'Médico', 'Especialidade', 'Tipo', 'Horas', 'Valor', 'Status'];
@@ -787,6 +766,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
          </div>
        </div>
 
+      <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
+
       {/* Holerite Detalhado por Médico */}
       <DoctorPayslip 
         doctorName={filters.doctor} 
@@ -927,10 +908,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         </div>
 
       </div>
-
-      <FinanceCharts stats={stats} monthlyData={monthlyData} />
-
-
 
       <ExtraIncomeModule 
         currentMonth={currentMonth}
