@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { FileText, Stethoscope, ChevronDown, ChevronUp, Award, CheckCircle } from 'lucide-react';
 
-export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, doctorDiscount, doctorDiscountReason, dynamicDiscounts = [], currentMonth, currentYear, filters, isApproved }) {
+export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discounts, doctorDiscount, doctorDiscountReason, dynamicDiscounts = [], currentMonth, currentYear, filters, isApproved, isAdminMaster = false }) {
   const [showShiftsDetails, setShowShiftsDetails] = useState(false);
   const [showExtrasDetails, setShowExtrasDetails] = useState(false);
   const [showDiscountsDetails, setShowDiscountsDetails] = useState(false);
@@ -368,18 +368,21 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         </div>
       </div>
 
-      {/* RODAPÉ DE AUTORIDADE - COMPACTO */}
-      {isApproved && (
-        <div className="bg-slate-50 border border-green-400 rounded-xl p-3 mt-6 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <CheckCircle size={12} className="text-green-600" />
-            <p className="text-[10px] font-bold text-green-900">AUDITADO E ASSINADO - DR. LAVOISIER (ADM) - ID: {auditId} - {new Date().toLocaleDateString('pt-BR')}</p>
-          </div>
+      {/* RODAPÉ DE AUTORIDADE - SEMPRE VISÍVEL E COMPACTO */}
+      <div className="bg-slate-50 border border-green-400 rounded-xl p-3 mt-6 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <CheckCircle size={12} className="text-green-600" />
+          <p className="text-[10px] font-bold text-green-900">
+            {isApproved 
+              ? `✅ AUDITADO E ASSINADO - DR. LAVOISIER (ADM MASTER) - ID: ${auditId} - ${new Date().toLocaleDateString('pt-BR')}`
+              : `⏳ AGUARDANDO AUDITORIA - DR. LAVOISIER (ADM MASTER) - ${new Date().toLocaleDateString('pt-BR')}`
+            }
+          </p>
         </div>
-      )}
+      </div>
 
-      {/* Botão de Impressão */}
-      <div className="mt-6 text-center no-print">
+      {/* Botões de Ação */}
+      <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center no-print">
         <button 
           onClick={() => {
             setIsPrinting(true);
@@ -395,6 +398,21 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         >
           🖨️ Gerar PDF Completo
         </button>
+        
+        {/* Botão WhatsApp - Apenas para ADM e com Senha Validada */}
+        {isAdminMaster && isApproved && (
+          <button
+            onClick={() => {
+              const monthName = monthNames[currentMonth];
+              const message = `Olá ${doctorName}, seu extrato de ${monthName} ${currentYear} já foi auditado e está disponível. Valor Líquido: R$ ${summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+              const encodedText = encodeURIComponent(message);
+              window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-black text-lg uppercase shadow-lg transition-all flex items-center justify-center gap-2"
+          >
+            📱 Enviar via WhatsApp
+          </button>
+        )}
       </div>
     </div>
   );

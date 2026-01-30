@@ -979,8 +979,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                  hospitals={hospitals} 
                />
 
-               {/* Contracheque Hospitalar Completo */}
-               {!isAdminMaster ? (
+               {/* Contracheque Hospitalar Completo - SEMPRE RENDERIZAR QUANDO MÉDICO SELECIONADO */}
+               {filters.doctor && filters.doctor !== 'TODOS' && (
                  <DoctorPayslip 
                    doctorName={addDoctorPrefix(filters.doctor)} 
                    shifts={filteredShifts}
@@ -993,20 +993,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                    currentYear={currentYear}
                    filters={filters}
                    isApproved={isApproved}
-                 />
-               ) : (
-                 <DoctorPayslip 
-                   doctorName={addDoctorPrefix(filters.doctor)} 
-                   shifts={filteredShifts}
-                   extraIncomes={filteredExtraIncomes}
-                   discounts={totalDiscounts}
-                   doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
-                   doctorDiscountReason={currentDoctorDiscount?.description || ''}
-                   dynamicDiscounts={dynamicDiscounts}
-                   currentMonth={currentMonth}
-                   currentYear={currentYear}
-                   filters={filters}
-                   isApproved={isApproved}
+                   isAdminMaster={isAdminMaster}
                  />
                )}
 
