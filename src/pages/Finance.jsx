@@ -60,6 +60,12 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [dynamicDiscounts, setDynamicDiscounts] = useState([]);
   const queryClient = useQueryClient();
 
+  // NORMALIZAÇÃO: Função auxiliar para comparar médicos (Case Insensitive)
+  const normalizeDoctorNameForComparison = (name) => {
+    if (!name) return '';
+    return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').replace(/^dr\.\s*/i, '').replace(/^dra\.\s*/i, '');
+  };
+
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
@@ -169,11 +175,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return true;
     });
   }, [shifts, currentMonth, currentYear, filters]);
-
-  const normalizeDoctorNameForComparison = (name) => {
-    if (!name) return '';
-    return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
-  };
 
   const addDoctorPrefix = (name) => {
     if (!name || name === 'TODOS') return name;
