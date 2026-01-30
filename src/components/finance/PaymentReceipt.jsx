@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Copy, Printer, Share2, X } from 'lucide-react';
 
-export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts, extraIncomes, currentMonth, currentYear, user, filters }) {
+export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts, extraIncomes, currentMonth, currentYear, user, filters, isApproved, addDoctorPrefix }) {
   const [showReceipt, setShowReceipt] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -111,18 +111,64 @@ TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimu
   };
 
   const shareViaWhatsApp = () => {
-    const doctorName = filters.doctor !== 'TODOS' ? filters.doctor : (user?.full_name || 'Médico');
+    const doctorDisplayName = addDoctorPrefix ? addDoctorPrefix(filters.doctor !== 'TODOS' ? filters.doctor : user?.full_name) : (filters.doctor !== 'TODOS' ? filters.doctor : user?.full_name || 'Médico');
     const monthName = monthNames[currentMonth];
     const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const auditId = Math.random().toString(36).substr(2, 9).toUpperCase();
     
-    const message = `*Segue fechamento para conferência - ${doctorName}*
+    // Discriminar receitas extras
+    let extrasDetail = '';
+    if (extraIncomes && extraIncomes.length > 0) {
+      extrasDetail = '\n📋 *RECEITAS EXTRAS:*\n';
+      extraIncomes.forEach(extra => {
+        extrasDetail += `   • ${extra.type}: R$ ${Number(extra.value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+      });
+      extrasDetail += `   *SUBTOTAL EXTRAS:* R$ ${stats.totalExtraIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+    }
 
-*Período:* 01/${String(currentMonth + 1).padStart(2, '0')}/${currentYear} a ${lastDay}/${String(currentMonth + 1).padStart(2, '0')}/${currentYear}
+    // Discriminar descontos
+    let discountsDetail = '';
+    if (globalDiscounts && globalDiscounts.length > 0) {
+      discountsDetail = '\n📉 *DESCONTOS:*\n';
+      globalDiscounts.forEach(d => {
+        const isPercentage = d.isPercentage === true;
+        const discountValue = isPercentage ? (stats.total * d.value / 100) : d.value;
+        discountsDetail += `   • ${d.description}: R$ ${discountValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+      });
+      discountsDetail += `   *TOTAL DESCONTOS:* R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n`;
+    }
+    
+    const message = `══════════════════════════════
+*📋 FECHAMENTO FINANCEIRO PROFISSIONAL*
+══════════════════════════════
 
-*Total Bruto:* R$ ${stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-*Total Líquido:* R$ ${stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+👨‍⚕️ *Médico:* ${doctorDisplayName}
+📅 *Período:* 01/${String(currentMonth + 1).padStart(2, '0')}/${currentYear} a ${lastDay}/${String(currentMonth + 1).padStart(2, '0')}/${currentYear}
 
-_Detalhamento completo disponível no sistema._`;
+───────────────────────────────
+💰 *RESUMO FINANCEIRO*
+───────────────────────────────
+
+🏥 *PLANTÕES:*
+   • Quantidade: ${stats.count} plantões
+   • Total Horas: ${stats.hours}h
+   • *VALOR PLANTÕES:* R$ ${stats.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+${extrasDetail}
+💵 *FATURAMENTO BRUTO TOTAL:* R$ ${stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+${discountsDetail}
+───────────────────────────────
+✅ *VALOR LÍQUIDO A RECEBER*
+───────────────────────────────
+
+💸 *R$ ${stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}*
+
+══════════════════════════════
+✅ *FECHAMENTO AUDITADO E ASSINADO*
+DR. CLAUDIO (ADM MASTER)
+ID: ${auditId}
+══════════════════════════════
+
+_Este fechamento foi auditado e aprovado pela administração._`;
     
     const encodedText = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedText}`, '_blank');
@@ -165,12 +211,18 @@ _Detalhamento completo disponível no sistema._`;
               <Printer size={16} /> Imprimir
             </button>
 
-            <button
-              onClick={shareViaWhatsApp}
-              className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
-            >
-              <Share2 size={16} /> Enviar WhatsApp
-            </button>
+            {isApproved ? (
+              <button
+                onClick={shareViaWhatsApp}
+                className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
+              >
+                <Share2 size={16} /> Enviar WhatsApp
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-4 py-2.5 rounded-xl font-bold text-xs uppercase border-2 border-amber-400 dark:border-amber-600">
+                ⚠️ Aguardando Auditoria do Dr. Claudio
+              </div>
+            )}
 
             <button
               onClick={() => setShowReceipt(false)}

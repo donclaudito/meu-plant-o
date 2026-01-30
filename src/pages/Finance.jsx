@@ -53,6 +53,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPixModal, setShowPixModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState('pending'); // 'pending' or 'paid'
+  const [showShiftsList, setShowShiftsList] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [password, setPassword] = useState('');
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
@@ -132,6 +136,25 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       return true;
     });
   }, [shifts, currentMonth, currentYear, filters]);
+
+  const addDoctorPrefix = (name) => {
+    if (!name || name === 'TODOS') return name;
+    // Se já tem Dr. ou Dra., não adiciona novamente
+    if (name.toUpperCase().startsWith('DR.') || name.toUpperCase().startsWith('DRA.')) return name;
+    // Por padrão, usar "Dr."
+    return `Dr. ${name}`;
+  };
+
+  const handleApprove = () => {
+    if (password === '58120') {
+      setIsApproved(true);
+      setShowPasswordModal(false);
+      setPassword('');
+    } else {
+      alert('Senha incorreta!');
+      setPassword('');
+    }
+  };
 
   const { data: discounts = [] } = useQuery({
     queryKey: ['discounts', user?.email],
@@ -224,16 +247,49 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (!income.date.startsWith(datePattern)) return false;
       }
       
-      // Filtrar por médico case-insensitive
+      // FILTRO RIGOROSO: Filtrar SEMPRE por médico quando não for TODOS
       if (filters.doctor && filters.doctor !== 'TODOS') {
-        const matchDoctor = (income.doctorName || '').trim().toUpperCase() === filters.doctor.trim().toUpperCase();
-        return matchDoctor;
+        const normalizedFilterDoctor = filters.doctor.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+        const normalizedIncomeName = (income.doctorName || '').trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+        if (normalizedIncomeName !== normalizedFilterDoctor) return false;
       }
       
       return true;
     });
     
     return filtered.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
+  }, [extraIncomes, currentMonth, currentYear, filters]);
+
+  const filteredExtraIncomes = useMemo(() => {
+    return extraIncomes.filter(income => {
+      if (!income.date || typeof income.date !== 'string') return false;
+      
+      // FILTRO CIRÚRGICO POR STRING
+      if (filters.startDate || filters.endDate) {
+        if (filters.startDate) {
+          const targetMonth = filters.startDate.substring(0, 7);
+          if (!income.date.startsWith(targetMonth)) return false;
+        }
+        if (filters.endDate) {
+          const targetMonth = filters.endDate.substring(0, 7);
+          if (!income.date.startsWith(targetMonth)) return false;
+        }
+      } else {
+        const yearStr = String(currentYear);
+        const monthStr = String(currentMonth + 1).padStart(2, '0');
+        const datePattern = `${yearStr}-${monthStr}-`;
+        if (!income.date.startsWith(datePattern)) return false;
+      }
+      
+      // FILTRO RIGOROSO por médico
+      if (filters.doctor && filters.doctor !== 'TODOS') {
+        const normalizedFilterDoctor = filters.doctor.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+        const normalizedIncomeName = (income.doctorName || '').trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+        if (normalizedIncomeName !== normalizedFilterDoctor) return false;
+      }
+      
+      return true;
+    });
   }, [extraIncomes, currentMonth, currentYear, filters]);
 
   const totalDepositsAmount = useMemo(() => {
@@ -760,6 +816,42 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-full">
+      {/* DASHBOARD DE AUDITORIA - Exclusivo para Dr. Claudio */}
+      {user?.email === 'claudioleallr@gmail.com' && !isApproved && (
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 border-2 border-amber-400 dark:border-amber-700 rounded-[2rem] p-6 shadow-lg">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                <FileText size={32} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-amber-900 dark:text-amber-200">⚠️ PENDENTE DE AUDITORIA</h3>
+                <p className="text-sm text-amber-700 dark:text-amber-400 font-bold">Fechamento aguardando assinatura do Dr. Claudio (ADM Master)</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPasswordModal(true)}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-xl font-black text-sm uppercase shadow-lg transition-colors"
+            >
+              <CheckCircle size={20} /> ✅ ASSINAR E APROVAR PAGAMENTO
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmação de Aprovação */}
+      {isApproved && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-400 dark:border-green-700 rounded-[2rem] p-6 shadow-lg">
+          <div className="flex items-center gap-4">
+            <CheckCircle size={48} className="text-green-600" />
+            <div>
+              <h3 className="text-xl font-black text-green-900 dark:text-green-200">✅ FECHAMENTO AUDITADO E ASSINADO</h3>
+              <p className="text-sm text-green-700 dark:text-green-400 font-bold">Dr. Claudio (ADM Master) | ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-4">
          <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
            <Wallet className="text-blue-600 dark:text-blue-400" size={28} /> Resumo Financeiro
@@ -789,13 +881,18 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
          </div>
        </div>
 
-      <FinanceFilters filters={filters} setFilters={setFilters} doctors={doctors} hospitals={hospitals} />
+      <FinanceFilters 
+        filters={filters} 
+        setFilters={setFilters} 
+        doctors={doctors.map(d => ({ ...d, name: addDoctorPrefix(d.name) }))} 
+        hospitals={hospitals} 
+      />
 
       {/* Holerite Detalhado por Médico */}
       <DoctorPayslip 
-        doctorName={filters.doctor} 
+        doctorName={addDoctorPrefix(filters.doctor)} 
         shifts={filteredShifts}
-        extraIncomes={extraIncomes}
+        extraIncomes={filteredExtraIncomes}
         discounts={totalDiscounts}
         currentMonth={currentMonth}
         currentYear={currentYear}
@@ -909,30 +1006,45 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
       </div>
 
-      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-        <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-          <Calculator className="text-purple-600" /> Análise por Duração de Plantão
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {Object.entries(stats.byDuration).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).map(([duration, data]) => (
-            <div key={duration} className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-2xl border border-purple-100">
-              <p className="text-xs font-black text-purple-600 uppercase tracking-wider mb-3">Plantões de {duration}</p>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-[10px] text-slate-500 font-bold">Quantidade</p>
-                  <p className="text-2xl font-black text-slate-900">{data.count} plantões</p>
-                </div>
-                <div className="pt-3 border-t border-purple-200">
-                  <p className="text-[10px] text-slate-500 font-bold">Total Faturado</p>
-                  <p className="text-3xl font-black text-purple-600">
-                    R$ {data.value.toLocaleString('pt-BR')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Lista de Plantões - Retrátil */}
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-black dark:text-white flex items-center gap-2">
+            <CalendarIcon className="text-blue-600 dark:text-blue-400" /> Lista Detalhada de Plantões ({filteredShifts.length})
+          </h3>
+          <button
+            onClick={() => setShowShiftsList(!showShiftsList)}
+            className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 px-4 py-2.5 rounded-xl font-bold text-xs uppercase transition-colors"
+          >
+            {showShiftsList ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
+            {showShiftsList ? 'Ocultar' : 'Exibir'}
+          </button>
         </div>
 
+        {showShiftsList && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-5 gap-4 p-4 bg-slate-100 dark:bg-slate-700 rounded-xl font-black text-xs text-slate-600 dark:text-slate-300 uppercase">
+              <div>Data</div>
+              <div>Hospital</div>
+              <div>Médico</div>
+              <div>Tipo</div>
+              <div className="text-right">Valor</div>
+            </div>
+            {filteredShifts.map(shift => (
+              <div key={shift.id} className="grid grid-cols-5 gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors text-sm">
+                <div className="font-bold text-slate-900 dark:text-white">
+                  {new Date(shift.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                </div>
+                <div className="text-slate-600 dark:text-slate-400">{shift.unit}</div>
+                <div className="text-blue-600 dark:text-blue-400 font-bold">{addDoctorPrefix(shift.doctorName)}</div>
+                <div className="text-slate-600 dark:text-slate-400">{shift.type}</div>
+                <div className="text-right font-black text-green-600 dark:text-green-400">
+                  R$ {(Number(shift.netValue) || Number(shift.value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <ExtraIncomeModule 
@@ -964,12 +1076,47 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         stats={safeStats}
         globalDiscounts={globalDiscounts}
         filteredShifts={filteredShifts}
-        extraIncomes={extraIncomes}
+        extraIncomes={filteredExtraIncomes}
         currentMonth={currentMonth}
         currentYear={currentYear}
         user={user}
         filters={filters}
+        isApproved={isApproved}
+        addDoctorPrefix={addDoctorPrefix}
       />
+
+      {/* Modal de Senha */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-md p-8">
+            <h3 className="text-2xl font-black mb-6 dark:text-white">🔐 Senha de Aprovação</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">Digite a senha de auditoria para assinar e aprovar o fechamento financeiro:</p>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleApprove()}
+              className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 rounded-xl font-bold text-center text-2xl tracking-widest mb-6 focus:ring-2 focus:ring-green-500"
+              placeholder="• • • • •"
+              maxLength={5}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowPasswordModal(false); setPassword(''); }}
+                className="flex-1 py-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleApprove}
+                className="flex-1 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
