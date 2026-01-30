@@ -265,33 +265,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     return discounts.filter(d => !d.type || d.type === '');
   }, [discounts]);
 
-  const totalDiscounts = useMemo(() => {
-    // Se há descontos dinâmicos, calcular baseado neles
-    if (dynamicDiscounts.length > 0) {
-      const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
-      const extraTotal = totalExtraIncome;
-      const totalBruto = monthlyShiftsTotal + extraTotal;
-      
-      return dynamicDiscounts.reduce((acc, d) => {
-        if (d.id === 'imposto') return acc + (totalBruto * 0.15);
-        if (d.isPercentage) return acc + (totalBruto * (Number(d.value) || 0) / 100);
-        return acc + (Number(d.value) || 0);
-      }, 0);
-    }
-    
-    // Caso contrário, usar descontos globais
-    const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
-    
-    // Aplicar descontos globais (fixos e percentuais)
-    return globalDiscounts.reduce((acc, d) => {
-      const isPercentage = d.isPercentage === true;
-      if (isPercentage) {
-        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
-      }
-      return acc + (Number(d.value) || 0);
-    }, 0);
-  }, [globalDiscounts, filteredShifts, dynamicDiscounts, totalExtraIncome]);
-
   const totalExtraIncome = useMemo(() => {
     const filtered = extraIncomes.filter(income => {
       if (!income.date || typeof income.date !== 'string') return false;
@@ -325,6 +298,33 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     
     return filtered.reduce((acc, income) => acc + (Number(income.value) || 0), 0);
   }, [extraIncomes, currentMonth, currentYear, filters]);
+
+  const totalDiscounts = useMemo(() => {
+    // Se há descontos dinâmicos, calcular baseado neles
+    if (dynamicDiscounts.length > 0) {
+      const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
+      const extraTotal = totalExtraIncome;
+      const totalBruto = monthlyShiftsTotal + extraTotal;
+      
+      return dynamicDiscounts.reduce((acc, d) => {
+        if (d.id === 'imposto') return acc + (totalBruto * 0.15);
+        if (d.isPercentage) return acc + (totalBruto * (Number(d.value) || 0) / 100);
+        return acc + (Number(d.value) || 0);
+      }, 0);
+    }
+    
+    // Caso contrário, usar descontos globais
+    const monthlyShiftsTotal = filteredShifts.reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
+    
+    // Aplicar descontos globais (fixos e percentuais)
+    return globalDiscounts.reduce((acc, d) => {
+      const isPercentage = d.isPercentage === true;
+      if (isPercentage) {
+        return acc + (monthlyShiftsTotal * (Number(d.value) || 0) / 100);
+      }
+      return acc + (Number(d.value) || 0);
+    }, 0);
+  }, [globalDiscounts, filteredShifts, dynamicDiscounts, totalExtraIncome]);
 
   const filteredExtraIncomes = useMemo(() => {
     return extraIncomes.filter(income => {
