@@ -122,10 +122,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         if (!s.date.startsWith(datePattern)) return false;
       }
       
-      // Other filters - case insensitive
+      // Other filters - case insensitive - NORMALIZAR NOMES
       if (filters.doctor !== 'TODOS') {
-        const normalizedFilterDoctor = filters.doctor.trim().toUpperCase();
-        const normalizedDoctorName = (s.doctorName || '').trim().toUpperCase();
+        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
+        const normalizedDoctorName = normalizeDoctorName(s.doctorName);
         if (normalizedDoctorName !== normalizedFilterDoctor) return false;
       }
       if (filters.hospital !== 'TODOS' && (s.unit || '').toUpperCase() !== filters.hospital.toUpperCase()) return false;
@@ -143,6 +143,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     if (name.toUpperCase().startsWith('DR.') || name.toUpperCase().startsWith('DRA.')) return name;
     // Por padrão, usar "Dr."
     return `Dr. ${name}`;
+  };
+
+  const normalizeDoctorName = (name) => {
+    if (!name) return '';
+    return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
   };
 
   const handleApprove = () => {
@@ -249,8 +254,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       
       // FILTRO RIGOROSO: Filtrar SEMPRE por médico quando não for TODOS
       if (filters.doctor && filters.doctor !== 'TODOS') {
-        const normalizedFilterDoctor = filters.doctor.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
-        const normalizedIncomeName = (income.doctorName || '').trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
+        const normalizedIncomeName = normalizeDoctorName(income.doctorName);
         if (normalizedIncomeName !== normalizedFilterDoctor) return false;
       }
       
@@ -283,8 +288,8 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       
       // FILTRO RIGOROSO por médico
       if (filters.doctor && filters.doctor !== 'TODOS') {
-        const normalizedFilterDoctor = filters.doctor.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
-        const normalizedIncomeName = (income.doctorName || '').trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+        const normalizedFilterDoctor = normalizeDoctorName(filters.doctor);
+        const normalizedIncomeName = normalizeDoctorName(income.doctorName);
         if (normalizedIncomeName !== normalizedFilterDoctor) return false;
       }
       
