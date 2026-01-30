@@ -111,8 +111,20 @@ TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimu
   };
 
   const shareViaWhatsApp = () => {
-    const text = generateReceiptText();
-    const encodedText = encodeURIComponent(text);
+    const doctorName = filters.doctor !== 'TODOS' ? filters.doctor : (user?.full_name || 'Médico');
+    const monthName = monthNames[currentMonth];
+    const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+    
+    const message = `*Segue fechamento para conferência - ${doctorName}*
+
+*Período:* 01/${String(currentMonth + 1).padStart(2, '0')}/${currentYear} a ${lastDay}/${String(currentMonth + 1).padStart(2, '0')}/${currentYear}
+
+*Total Bruto:* R$ ${stats.grossTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+*Total Líquido:* R$ ${stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+
+_Detalhamento completo disponível no sistema._`;
+    
+    const encodedText = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedText}`, '_blank');
   };
 
