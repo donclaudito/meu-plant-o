@@ -59,6 +59,11 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const [password, setPassword] = useState('');
   const queryClient = useQueryClient();
 
+  const normalizeDoctorName = (name) => {
+    if (!name) return '';
+    return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
+  };
+
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me(),
@@ -143,11 +148,6 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
     if (name.toUpperCase().startsWith('DR.') || name.toUpperCase().startsWith('DRA.')) return name;
     // Por padrão, usar "Dr."
     return `Dr. ${name}`;
-  };
-
-  const normalizeDoctorName = (name) => {
-    if (!name) return '';
-    return name.trim().toUpperCase().replace(/^DR\.\s*/i, '').replace(/^DRA\.\s*/i, '');
   };
 
   const handleApprove = () => {
