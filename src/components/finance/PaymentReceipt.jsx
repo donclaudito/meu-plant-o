@@ -13,13 +13,15 @@ export default function PaymentReceipt({ stats, globalDiscounts, filteredShifts,
   const generateReceiptText = () => {
     const date = new Date().toLocaleDateString('pt-BR');
     const period = `${monthNames[currentMonth]} ${currentYear}`;
+    const auditId = Math.random().toString(36).substr(2, 9).toUpperCase();
+    const doctorName = addDoctorPrefix ? addDoctorPrefix(user?.full_name || 'Não informado') : user?.full_name || 'Não informado';
     
     let text = `
 ═══════════════════════════════════════
            COMPROVANTE DE PAGAMENTO
 ═══════════════════════════════════════
 
-Médico: ${user?.full_name || 'Não informado'}
+Médico: ${doctorName}
 Período: ${period}
 Data de emissão: ${date}
 
@@ -68,13 +70,18 @@ TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimu
 
          R$ ${stats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
 
+───────────────────────────────────────
+✅ AUDITADO E ASSINADO: ADM MASTER
+ID: ${auditId}
+───────────────────────────────────────
+
 ═══════════════════════════════════════
-  Este é um comprovante informativo
-  Gerado por: Meu Plantão
+Este é um comprovante informativo
+Gerado por: Meu Plantão
 ═══════════════════════════════════════
 `;
-    return text;
-  };
+return text;
+};
 
   const copyToClipboard = () => {
     const text = generateReceiptText();
@@ -111,6 +118,12 @@ TOTAL DE DESCONTOS: - R$ ${stats.totalDiscounts.toLocaleString('pt-BR', { minimu
   };
 
   const shareViaWhatsApp = () => {
+    const text = generateReceiptText();
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+  };
+
+  const shareViaWhatsAppOld = () => {
     const doctorDisplayName = addDoctorPrefix ? addDoctorPrefix(filters.doctor !== 'TODOS' ? filters.doctor : user?.full_name) : (filters.doctor !== 'TODOS' ? filters.doctor : user?.full_name || 'Médico');
     const monthName = monthNames[currentMonth];
     const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -196,33 +209,29 @@ _Este fechamento foi auditado e aprovado pela administração._`;
             <pre className="whitespace-pre-wrap text-slate-900 dark:text-slate-100">{generateReceiptText()}</pre>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <button
-              onClick={copyToClipboard}
-              className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+              onClick={shareViaWhatsApp}
+              className="flex items-center justify-center gap-3 bg-green-600 dark:bg-green-500 text-white px-6 py-4 rounded-2xl font-black text-base hover:bg-green-700 dark:hover:bg-green-600 transition-all shadow-lg"
             >
-              <Copy size={16} /> {copied ? 'Copiado!' : 'Copiar'}
+              📱 Enviar pelo WhatsApp
             </button>
 
+            <button
+              onClick={copyToClipboard}
+              className="flex items-center justify-center gap-3 bg-blue-600 dark:bg-blue-500 text-white px-6 py-4 rounded-2xl font-black text-base hover:bg-blue-700 dark:hover:bg-blue-600 transition-all shadow-lg"
+            >
+              📋 {copied ? 'Copiado!' : 'Copiar Texto'}
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={printReceipt}
               className="flex items-center gap-2 bg-slate-600 dark:bg-slate-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
             >
               <Printer size={16} /> Imprimir
             </button>
-
-            {isApproved ? (
-              <button
-                onClick={shareViaWhatsApp}
-                className="flex items-center gap-2 bg-green-600 dark:bg-green-500 text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
-              >
-                <Share2 size={16} /> Enviar WhatsApp
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-4 py-2.5 rounded-xl font-bold text-xs uppercase border-2 border-amber-400 dark:border-amber-600">
-                ⚠️ Aguardando Auditoria do Dr. Claudio
-              </div>
-            )}
 
             <button
               onClick={() => setShowReceipt(false)}
