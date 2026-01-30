@@ -8,20 +8,10 @@ export default function DynamicDiscountsPanel({
   onDiscountsChange 
 }) {
   const [discounts, setDiscounts] = useState([
-    { id: 'imposto', name: 'Impostos (15%)', value: 0, isPercentage: true, fixed: true },
-    { id: 'contador', name: 'Contador', value: 0, isPercentage: false, fixed: true },
+    { id: 'imposto', name: 'Impostos (15%)', value: 15, isPercentage: true, fixed: true, editable: true },
+    { id: 'contador', name: 'Contador', value: 0, isPercentage: false, fixed: true, editable: true },
     ...baseDiscounts
   ]);
-
-  useEffect(() => {
-    const calculated = discounts.map(d => {
-      if (d.id === 'imposto') {
-        return { ...d, value: totalBruto * 0.15 };
-      }
-      return d;
-    });
-    setDiscounts(calculated);
-  }, [totalBruto]);
 
   useEffect(() => {
     onDiscountsChange(discounts);
@@ -48,8 +38,8 @@ export default function DynamicDiscountsPanel({
   };
 
   const totalDiscounts = discounts.reduce((acc, d) => {
-    if (d.id === 'imposto') return acc + (totalBruto * 0.15);
-    return acc + (d.isPercentage ? totalBruto * (d.value / 100) : d.value);
+    if (d.isPercentage) return acc + (totalBruto * (Number(d.value) / 100));
+    return acc + Number(d.value || 0);
   }, 0);
 
   const netTotal = Math.max(0, totalBruto - totalDiscounts);
@@ -80,7 +70,7 @@ export default function DynamicDiscountsPanel({
                     type="text"
                     value={discount.name}
                     onChange={(e) => updateDiscount(discount.id, 'name', e.target.value)}
-                    placeholder="Nome do desconto"
+                    placeholder="Nome do desconto (ex: Glosa de Material)"
                     className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-sm font-bold border-2 border-orange-300 dark:border-orange-700 focus:ring-2 focus:ring-orange-600 dark:focus:ring-orange-500"
                   />
                 ) : (
@@ -88,31 +78,32 @@ export default function DynamicDiscountsPanel({
                 )}
               </div>
               <div className="col-span-3">
-                {isApproved && discount.id !== 'imposto' ? (
-                  <input
-                    type="number"
-                    value={discount.value}
-                    onChange={(e) => updateDiscount(discount.id, 'value', e.target.value)}
-                    placeholder="Valor"
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-sm font-bold border-2 border-orange-300 dark:border-orange-700 focus:ring-2 focus:ring-orange-600 dark:focus:ring-orange-500"
-                    step="0.01"
-                  />
+                {isApproved && discount.editable ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={discount.value}
+                      onChange={(e) => updateDiscount(discount.id, 'value', e.target.value)}
+                      placeholder="Valor"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-800 rounded-xl text-sm font-bold border-2 border-orange-300 dark:border-orange-700 focus:ring-2 focus:ring-orange-600 dark:focus:ring-orange-500"
+                      step={discount.isPercentage ? "1" : "0.01"}
+                    />
+                    {discount.isPercentage && <span className="text-sm font-bold text-slate-700 dark:text-slate-300">%</span>}
+                  </div>
                 ) : (
                   <span className="text-sm font-black text-orange-600 dark:text-orange-400">
-                    {discount.id === 'imposto' 
-                      ? '15%' 
-                      : `R$ ${(discount.value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    {discount.isPercentage 
+                      ? `${discount.value}%`
+                      : `R$ ${(Number(discount.value) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                     }
                   </span>
                 )}
               </div>
               <div className="col-span-3 text-right">
                 <span className="text-lg font-black text-red-600 dark:text-red-400">
-                  - R$ {(discount.id === 'imposto' 
-                    ? totalBruto * 0.15 
-                    : discount.isPercentage 
-                      ? totalBruto * (discount.value / 100)
-                      : discount.value
+                  - R$ {(discount.isPercentage 
+                    ? totalBruto * (Number(discount.value) / 100)
+                    : Number(discount.value || 0)
                   ).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -121,6 +112,7 @@ export default function DynamicDiscountsPanel({
                   <button
                     onClick={() => removeDiscount(discount.id)}
                     className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors"
+                    title="Remover desconto"
                   >
                     <Trash2 size={16} />
                   </button>

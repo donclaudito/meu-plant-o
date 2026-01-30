@@ -38,20 +38,18 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
     let impostoCalculado, outrosDescontos, discountsBreakdown = [];
     
     if (dynamicDiscounts && dynamicDiscounts.length > 0) {
-      // Usar descontos dinâmicos
+      // Usar descontos dinâmicos com cálculo em tempo real
       discountsBreakdown = dynamicDiscounts.map(d => {
-        const value = d.id === 'imposto' 
-          ? totalBruto * 0.15
-          : d.isPercentage 
-            ? totalBruto * (d.value / 100)
-            : d.value;
+        const value = d.isPercentage 
+          ? totalBruto * (Number(d.value) / 100)
+          : Number(d.value || 0);
         return { ...d, calculatedValue: value };
       });
       
+      // Calcular o total de todos os descontos
+      const totalDiscountsValue = discountsBreakdown.reduce((acc, d) => acc + d.calculatedValue, 0);
       impostoCalculado = discountsBreakdown.find(d => d.id === 'imposto')?.calculatedValue || 0;
-      outrosDescontos = discountsBreakdown
-        .filter(d => d.id !== 'imposto')
-        .reduce((acc, d) => acc + d.calculatedValue, 0);
+      outrosDescontos = totalDiscountsValue - impostoCalculado;
     } else {
       // Cálculo padrão
       impostoCalculado = totalBruto * 0.15;
