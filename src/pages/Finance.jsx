@@ -973,9 +973,24 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         currentMonth={currentMonth}
         currentYear={currentYear}
         filters={filters}
+        isApproved={isApproved}
       />
+      ) : (
+        <DoctorPayslip 
+          doctorName={addDoctorPrefix(filters.doctor)} 
+          shifts={filteredShifts}
+          extraIncomes={filteredExtraIncomes}
+          discounts={totalDiscounts}
+          doctorDiscount={currentDoctorDiscount ? Number(currentDoctorDiscount.value) : 0}
+          doctorDiscountReason={currentDoctorDiscount?.description || ''}
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          filters={filters}
+          isApproved={isApproved}
+        />
+      )}
 
-      <DoctorDiscountModule
+      {isAdminMaster && <DoctorDiscountModule
         doctorName={filters.doctor}
         currentDiscount={currentDoctorDiscount}
         onSave={(data) => {
@@ -989,9 +1004,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         currentMonth={currentMonth}
         currentYear={currentYear}
         normalizeDoctorName={normalizeDoctorName}
-      />
+      />}
 
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6 will-change-auto">
+      {isAdminMaster && <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 p-8 rounded-[2.5rem] border-2 border-blue-200 dark:border-blue-800 shadow-sm mb-6 will-change-auto no-print">
         <h3 className="text-xl font-black text-blue-900 dark:text-blue-200 mb-6 flex items-center gap-2">
           <Calculator className="text-blue-600 dark:text-blue-400" /> Conciliação Financeira
         </h3>
@@ -1010,10 +1025,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             <p className="text-3xl font-black text-green-700 dark:text-green-300">R$ {safeStats.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-2">Valores líquidos</p>
           </div>
-          </div>
-          </div>}
+        </div>
+      </div>}
 
-          {isAdminMaster && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 no-print">
+      {isAdminMaster && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 no-print">
         <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between min-h-[180px] hover:shadow-md transition-shadow relative">
           <div className="absolute top-4 right-4">
             <button
@@ -1096,10 +1111,10 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
 
 
 
-      </div>
+      </div>}
 
-      {/* Lista de Plantões - Retrátil */}
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+      {/* Lista de Plantões - Apenas para ADM */}
+      {isAdminMaster && <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm no-print">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-black dark:text-white flex items-center gap-2">
             <CalendarIcon className="text-blue-600 dark:text-blue-400" /> Lista Detalhada de Plantões ({filteredShifts.length})
@@ -1137,25 +1152,23 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
-      <ExtraIncomeModule 
+      {isAdminMaster && <ExtraIncomeModule 
         currentMonth={currentMonth}
         currentYear={currentYear}
         showToast={(msg) => {}}
         doctors={doctors}
         filters={filters}
-      />
+      />}
 
-
-
-      <ManualPaymentModal 
+      {isAdminMaster && <ManualPaymentModal 
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
         onSave={(data) => createManualPaymentMutation.mutate(data)}
-      />
+      />}
 
-      <PixImportModal
+      {isAdminMaster && <PixImportModal
         isOpen={showPixModal}
         onClose={() => setShowPixModal(false)}
         doctors={doctors}
@@ -1163,9 +1176,9 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
           queryClient.invalidateQueries({ queryKey: ['manualPayments'] });
           queryClient.invalidateQueries({ queryKey: ['discounts'] });
         }}
-      />
+      />}
 
-      <PaymentReceipt
+      {isAdminMaster && <PaymentReceipt
         stats={safeStats}
         globalDiscounts={globalDiscounts}
         filteredShifts={filteredShifts}
@@ -1176,7 +1189,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         filters={filters}
         isApproved={isApproved}
         addDoctorPrefix={addDoctorPrefix}
-        />}
-        </div>
+      />}
+    </div>
   );
 }
