@@ -11,6 +11,12 @@ const monthNames = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
+// NORMALIZAÇÃO: Função auxiliar para comparar médicos (Case Insensitive e sem acentos/prefixos)
+const normalizeDoctorNameForComparison = (name) => {
+  if (!name) return '';
+  return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').replace(/^dr\.\s*/i, '').replace(/^dra\.\s*/i, '');
+};
+
 export default function DiscountsModule({ currentMonth, currentYear }) {
   const [message, setMessage] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
