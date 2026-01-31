@@ -63,9 +63,29 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     queryFn: () => base44.entities.Shift.list('-date'),
   });
 
+  const { data: user } = useQuery({
+    queryKey: ['user'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const { data: doctors = [] } = useQuery({
-    queryKey: ['doctors'],
-    queryFn: () => base44.entities.Doctor.list('name'),
+    queryKey: ['doctors', user?.email],
+    queryFn: async () => {
+      const all = await base44.entities.Doctor.list('name');
+      const filtered = all.filter(d => d.created_by === user?.email);
+      
+      // Deduplicar médicos por nome normalizado
+      const uniqueDoctors = filtered.reduce((acc, doctor) => {
+        const normalizedName = doctor.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (!acc.some(d => d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === normalizedName)) {
+          acc.push(doctor);
+        }
+        return acc;
+      }, []);
+      
+      return uniqueDoctors;
+    },
+    enabled: !!user,
   });
 
   // Descontos globais (sem data específica ou com type vazio) - Deduplicados
@@ -175,8 +195,13 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
               className="w-full px-4 py-3 bg-white text-slate-900 dark:bg-slate-700 dark:text-white rounded-2xl font-bold border-none focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-500"
             >
               <option value="TODOS">Todos os Médicos</option>
-              {Array.from(new Set(doctors.map(d => d.name.trim().toLowerCase()))).sort().map(normalizedName => {
-                const doctor = doctors.find(d => d.name.trim().toLowerCase() === normalizedName);
+              {Array.from(new Set(doctors.map(d => {
+                // NORMALIZAÇÃO: Unificar nomes variantes
+                let name = d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (name === 'lavosier') name = 'lavoisier';
+                if (name === 'mario') name = 'mário';
+                return name;
+              }))).sort().map(normalizedName => {
                 const titleCaseName = normalizedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                 return <option key={normalizedName} value={titleCaseName}>{titleCaseName}</option>;
               })}
