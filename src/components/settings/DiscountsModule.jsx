@@ -131,14 +131,34 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
 
   const netTotal = monthlyShiftsTotal - totalDiscounts;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const discountData = {
-      ...newDiscount,
-      date: new Date().toISOString().split('T')[0],
-      type: '' // Desconto global sem tipo específico
-    };
-    createDiscountMutation.mutate(discountData);
+    
+    try {
+      // Usar função de validação backend
+      const response = await base44.functions.invoke('validateDiscountCreation', {
+        description: newDiscount.description,
+        value: newDiscount.value,
+        isPercentage: newDiscount.isPercentage,
+        type: ''
+      });
+
+      if (response.data?.success) {
+        queryClient.invalidateQueries({ queryKey: ['discounts'] });
+        setIsFormOpen(false);
+        setNewDiscount({
+          description: '',
+          value: 0,
+          isPercentage: false
+        });
+        setMessage({ text: 'Desconto global registado com sucesso!', type: 'success' });
+      }
+    } catch (error) {
+      setMessage({ 
+        text: error.response?.data?.error || 'Erro ao criar desconto', 
+        type: 'error' 
+      });
+    }
   };
 
   return (

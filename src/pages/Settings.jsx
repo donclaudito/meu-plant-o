@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Settings as SettingsIcon } from 'lucide-react';
 import PricingSettings from '@/components/settings/PricingSettings';
 import DiscountsModule from '@/components/settings/DiscountsModule';
+import CleanupPanel from '@/components/settings/CleanupPanel';
 import Toast from '@/components/common/Toast';
 
 export default function Settings({ currentMonth = new Date().getMonth(), currentYear = new Date().getFullYear() }) {
   const [message, setMessage] = useState(null);
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -42,14 +44,25 @@ export default function Settings({ currentMonth = new Date().getMonth(), current
     setTimeout(() => setMessage(null), 3000);
   };
 
+  const handleCleanupComplete = () => {
+    queryClient.invalidateQueries({ queryKey: ['doctors'] });
+    queryClient.invalidateQueries({ queryKey: ['discounts'] });
+    queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    showToast('Limpeza concluída! Recarregue a página para ver as alterações.', 'success');
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       <Toast message={message?.text} type={message?.type} />
 
       <div className="flex items-center gap-3">
-        <SettingsIcon className="text-blue-600" size={32} />
-        <h2 className="text-3xl font-black text-slate-900">Configurações</h2>
+        <SettingsIcon className="text-blue-600 dark:text-blue-400" size={32} />
+        <h2 className="text-3xl font-black text-slate-900 dark:text-white">Configurações</h2>
       </div>
+
+      {user?.role === 'admin' && (
+        <CleanupPanel onComplete={handleCleanupComplete} />
+      )}
 
       <PricingSettings user={user} showToast={showToast} />
       
