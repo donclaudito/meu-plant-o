@@ -233,16 +233,14 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
             >
               <option value="TODOS">Todos os Médicos</option>
               {Array.from(new Set(doctors.map(d => {
-                // NORMALIZAÇÃO: Unificar nomes variantes e remover prefixos
-                let name = d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                // Remover prefixos Dr. e Dra.
-                name = name.replace(/^dr\.?\s+/i, '').replace(/^dra\.?\s+/i, '');
-                if (name === 'lavosier') name = 'lavoisier';
-                if (name === 'mario') name = 'mário';
-                return name;
+                const normalizedName = normalizeDoctorNameForComparison(d.name);
+                // Manter normalizações específicas se necessário
+                if (normalizedName === 'lavosier') return 'lavoisier';
+                if (normalizedName === 'mario') return 'mário';
+                return normalizedName;
               }))).sort().map(normalizedName => {
                 const titleCaseName = normalizedName.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                return <option key={normalizedName} value={titleCaseName}>{titleCaseName}</option>;
+                return <option key={normalizedName} value={normalizedName}>{titleCaseName}</option>;
               })}
             </select>
           </div>
