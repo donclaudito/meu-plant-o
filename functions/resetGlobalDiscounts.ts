@@ -24,21 +24,21 @@ Deno.serve(async (req) => {
         description: 'Imposto',
         value: 15,
         isPercentage: true,
-        type: '',
+        type: 'global',
         date: new Date().toISOString().split('T')[0]
       },
       {
         description: 'Contador',
         value: 500,
         isPercentage: false,
-        type: '',
+        type: 'global',
         date: new Date().toISOString().split('T')[0]
       },
       {
         description: 'Taxa Sistema',
         value: 300,
         isPercentage: false,
-        type: '',
+        type: 'global',
         date: new Date().toISOString().split('T')[0]
       }
     ];

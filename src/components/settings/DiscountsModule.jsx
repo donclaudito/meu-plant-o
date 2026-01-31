@@ -88,9 +88,9 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     enabled: !!user,
   });
 
-  // Descontos globais (sem data específica ou com type vazio) - Deduplicados
+  // Descontos globais (com type 'global') - Deduplicados
   const globalDiscounts = discounts
-    .filter(d => !d.type || d.type === '')
+    .filter(d => d.type === 'global')
     .reduce((acc, discount) => {
       const normalizedName = (discount.description || '').trim().toLowerCase();
       // Manter apenas a primeira ocorrência de cada desconto
@@ -135,13 +135,13 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
     e.preventDefault();
     
     try {
-      // Usar função de validação backend
-      const response = await base44.functions.invoke('validateDiscountCreation', {
-        description: newDiscount.description,
-        value: newDiscount.value,
-        isPercentage: newDiscount.isPercentage,
-        type: ''
-      });
+        // Usar função de validação backend
+        const response = await base44.functions.invoke('validateDiscountCreation', {
+          description: newDiscount.description,
+          value: newDiscount.value,
+          isPercentage: newDiscount.isPercentage,
+          type: 'global'
+        });
 
       if (response.data?.success) {
         queryClient.invalidateQueries({ queryKey: ['discounts'] });
