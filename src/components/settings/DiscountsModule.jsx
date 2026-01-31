@@ -109,11 +109,22 @@ export default function DiscountsModule({ currentMonth, currentYear }) {
   // Calcular total de plantões do mês (com filtro de médico)
   const monthlyShiftsTotal = shifts
     .filter(s => {
-      const shiftDate = new Date(s.date + 'T00:00:00');
-      const isInMonth = shiftDate.getMonth() === selectedMonth && shiftDate.getFullYear() === selectedYear;
-      const matchesDoctor = selectedDoctor === 'TODOS' || 
-        (s.doctorName && s.doctorName.trim().toUpperCase() === selectedDoctor.trim().toUpperCase());
-      return isInMonth && matchesDoctor;
+      if (!s.date || typeof s.date !== 'string') return false;
+      
+      // FILTRO CIRÚRGICO POR STRING - Verificação rigorosa: a data DEVE começar com AAAA-MM-
+      const yearStr = String(selectedYear);
+      const monthStr = String(selectedMonth + 1).padStart(2, '0');
+      const datePattern = `${yearStr}-${monthStr}-`;
+      if (!s.date.startsWith(datePattern)) return false;
+      
+      // NORMALIZAÇÃO DE MÉDICOS - Case Insensitive e sem acentos/prefixos
+      if (selectedDoctor !== 'TODOS') {
+        const normalizedSelectedDoctor = normalizeDoctorNameForComparison(selectedDoctor);
+        const normalizedShiftDoctorName = normalizeDoctorNameForComparison(s.doctorName);
+        if (normalizedShiftDoctorName !== normalizedSelectedDoctor) return false;
+      }
+      
+      return true;
     })
     .reduce((acc, s) => acc + (Number(s.grossValue || s.value) || 0), 0);
 
