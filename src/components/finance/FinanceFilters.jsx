@@ -43,8 +43,10 @@ export default function FinanceFilters({ filters, setFilters, doctors, hospitals
         >
           <option value="TODOS">Todos Médicos</option>
           {Array.from(new Set(doctors.map(d => {
-            // NORMALIZAÇÃO: Unificar nomes variantes
+            // NORMALIZAÇÃO: Unificar nomes variantes e remover prefixos
             let name = d.name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            // Remover prefixos Dr. e Dra.
+            name = name.replace(/^dr\.?\s+/i, '').replace(/^dra\.?\s+/i, '');
             if (name === 'lavosier') name = 'lavoisier';
             if (name === 'mario') name = 'mário';
             return name;
