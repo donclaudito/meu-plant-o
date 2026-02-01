@@ -410,20 +410,69 @@ export default function DoctorPayslip({ doctorName, shifts, extraIncomes, discou
         >
           🖨️ Gerar PDF Completo
         </button>
-        
-        {/* Botão WhatsApp - Apenas para ADM e com Senha Validada */}
+
+        {/* Botões WhatsApp - Apenas para ADM e com Senha Validada */}
         {isAdminMaster && isApproved && (
-          <button
-            onClick={() => {
-              const monthName = monthNames[currentMonth];
-              const message = `Olá ${doctorName}, seu extrato de ${monthName} ${currentYear} já foi auditado e está disponível. Valor Líquido: R$ ${summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-              const encodedText = encodeURIComponent(message);
-              window.open(`https://wa.me/?text=${encodedText}`, '_blank');
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-black text-lg uppercase shadow-lg transition-all flex items-center justify-center gap-2"
-          >
-            📱 Enviar via WhatsApp
-          </button>
+          <>
+            <button
+              onClick={() => {
+                const monthName = monthNames[currentMonth];
+                const message = `📋 *CONTRACHEQUE ${monthName.toUpperCase()} ${currentYear}*\n\n` +
+                  `👨‍⚕️ *Médico:* ${doctorName}\n` +
+                  `📅 *Período:* 01/${String(currentMonth + 1).padStart(2, '0')} a ${new Date(currentYear, currentMonth + 1, 0).getDate()}/${String(currentMonth + 1).padStart(2, '0')}/${currentYear}\n\n` +
+                  `━━━━━━━━━━━━━━━━━\n` +
+                  `💵 *RECEITAS*\n` +
+                  `• Plantões: R$ ${summary.totalShiftsBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n` +
+                  (summary.totalExtras > 0 ? `• Receitas Extras: R$ ${summary.totalExtras.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n` : '') +
+                  `• *Total Bruto:* R$ ${summary.totalBruto.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n\n` +
+                  `📉 *DESCONTOS*\n` +
+                  `• Impostos: -R$ ${summary.impostoCalculado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n` +
+                  (summary.outrosDescontos > 0 ? `• Outros: -R$ ${summary.outrosDescontos.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n` : '') +
+                  (summary.personalDiscount > 0 ? `• Ajustes ADM: -R$ ${summary.personalDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n` : '') +
+                  `━━━━━━━━━━━━━━━━━\n\n` +
+                  `💰 *VALOR LÍQUIDO A RECEBER*\n` +
+                  `*R$ ${summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}*\n\n` +
+                  `✅ _Documento auditado e assinado por Dr. Lavoisier (ADM Master)_`;
+
+                const encodedText = encodeURIComponent(message);
+                window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-black text-lg uppercase shadow-lg transition-all flex items-center justify-center gap-2"
+            >
+              📱 Enviar Resumo (Texto)
+            </button>
+
+            <button
+              onClick={() => {
+                // Primeiro gera o PDF
+                setIsPrinting(true);
+                setShowShiftsDetails(true);
+                setShowExtrasDetails(true);
+                setShowDiscountsDetails(true);
+
+                setTimeout(() => {
+                  window.print();
+                  setIsPrinting(false);
+
+                  // Depois abre WhatsApp com mensagem solicitando envio
+                  setTimeout(() => {
+                    const monthName = monthNames[currentMonth];
+                    const message = `📄 *CONTRACHEQUE ${monthName.toUpperCase()} ${currentYear}* - ${doctorName}\n\n` +
+                      `✅ Documento PDF gerado com sucesso!\n\n` +
+                      `💰 *Valor Líquido:* R$ ${summary.netTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}\n\n` +
+                      `📎 _Por favor, anexe o arquivo PDF que acabou de ser gerado nesta conversa._\n\n` +
+                      `_Auditado por Dr. Lavoisier (ADM Master)_`;
+
+                    const encodedText = encodeURIComponent(message);
+                    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+                  }, 1000);
+                }, 100);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black text-lg uppercase shadow-lg transition-all flex items-center justify-center gap-2"
+            >
+              📄 Gerar PDF + WhatsApp
+            </button>
+          </>
         )}
       </div>
     </div>
