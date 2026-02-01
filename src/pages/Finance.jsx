@@ -1041,7 +1041,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
                />
 
                {/* Contracheque Hospitalar Completo - SEMPRE RENDERIZAR QUANDO MÉDICO SELECIONADO */}
-               {filters.doctor && filters.doctor !== 'TODOS' && (
+               {filters.doctor && filters.doctor.toUpperCase() !== 'TODOS' && filters.doctor !== '' && (
                  <DoctorPayslip 
                    doctorName={addDoctorPrefix(filters.doctor)} 
                    shifts={filteredShifts}
