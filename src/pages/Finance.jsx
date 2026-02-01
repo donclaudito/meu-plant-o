@@ -139,7 +139,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
   const filteredShifts = useMemo(() => {
     return shifts.filter(s => {
       if (!s.date || typeof s.date !== 'string') return false;
-      
+
       // FILTRO CIRÚRGICO POR STRING - Prioridade máxima
       if (filters.startDate || filters.endDate) {
         // Se houver filtro de data personalizado, extrair ano-mês
@@ -156,13 +156,13 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
         const yearStr = String(currentYear);
         const monthStr = String(currentMonth + 1).padStart(2, '0');
         const datePattern = `${yearStr}-${monthStr}-`;
-        
+
         // Verificação rigorosa: a data DEVE começar com AAAA-MM-
         if (!s.date.startsWith(datePattern)) return false;
       }
-      
-      // NORMALIZAÇÃO DE MÉDICOS - Case Insensitive
-      if (filters.doctor !== 'TODOS') {
+
+      // NORMALIZAÇÃO DE MÉDICOS - Case Insensitive - CORRIGIDO para aceitar TODOS
+      if (filters.doctor && filters.doctor !== 'TODOS') {
         const normalizedFilterDoctor = normalizeDoctorNameForComparison(filters.doctor);
         const normalizedDoctorName = normalizeDoctorNameForComparison(s.doctorName);
         if (normalizedDoctorName !== normalizedFilterDoctor) return false;
@@ -171,7 +171,7 @@ export default function Finance({ currentMonth = new Date().getMonth(), currentY
       if (filters.specialty !== 'TODAS' && (s.specialty || '').toUpperCase() !== filters.specialty.toUpperCase()) return false;
       if (filters.paid === 'PAGO' && !s.paid) return false;
       if (filters.paid === 'PENDENTE' && s.paid) return false;
-      
+
       return true;
     });
   }, [shifts, currentMonth, currentYear, filters]);
