@@ -1,0 +1,77 @@
+{
+  "name": "Doctor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome completo do m\u00e9dico"
+    },
+    "specialty": {
+      "type": "string",
+      "enum": [
+        "CIRURGIA GERAL",
+        "CL\u00cdNICA M\u00c9DICA",
+        "PEDIATRIA",
+        "GINECOLOGIA",
+        "ORTOPEDIA",
+        "ANESTESIA",
+        "OUTRA"
+      ],
+      "description": "Especialidade do m\u00e9dico"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone de contacto"
+    },
+    "pixAccountHolder": {
+      "type": "string",
+      "description": "Nome do titular da conta PIX (como aparece nos comprovativos)"
+    },
+    "pixKey": {
+      "type": "string",
+      "description": "Chave PIX (CPF, CNPJ, email, telefone ou aleat\u00f3ria)"
+    },
+    "pixKeyType": {
+      "type": "string",
+      "enum": [
+        "CPF",
+        "CNPJ",
+        "Email",
+        "Telefone",
+        "Aleat\u00f3ria"
+      ],
+      "description": "Tipo de chave PIX"
+    }
+  },
+  "required": [
+    "name",
+    "specialty"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

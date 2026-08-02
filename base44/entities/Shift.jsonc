@@ -1,0 +1,85 @@
+{
+  "name": "Shift",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do plant\u00e3o"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Hospital/Unidade"
+    },
+    "doctorName": {
+      "type": "string",
+      "description": "Nome do m\u00e9dico"
+    },
+    "specialty": {
+      "type": "string",
+      "enum": [
+        "CIRURGIA GERAL",
+        "CL\u00cdNICA M\u00c9DICA",
+        "PEDIATRIA",
+        "GINECOLOGIA",
+        "ORTOPEDIA",
+        "ANESTESIA",
+        "GASTROENTEROLOGIA",
+        "CIRURGIA DIGESTIVA",
+        "OUTRA"
+      ],
+      "description": "Especialidade"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "12h Dia",
+        "12h Noite",
+        "24h",
+        "6h Dia",
+        "6h Noite"
+      ],
+      "description": "Tipo de plant\u00e3o"
+    },
+    "value": {
+      "type": "number",
+      "description": "Valor do plant\u00e3o em Reais (BRL)"
+    },
+    "grossValue": {
+      "type": "number",
+      "description": "Valor bruto do plant\u00e3o em Reais (BRL)"
+    },
+    "taxRate": {
+      "type": "number",
+      "default": 15,
+      "description": "Percentual de desconto (%)"
+    },
+    "netValue": {
+      "type": "number",
+      "description": "Valor l\u00edquido do plant\u00e3o em Reais (BRL)"
+    },
+    "paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o plant\u00e3o foi pago"
+    },
+    "hours": {
+      "type": "number",
+      "description": "Horas trabalhadas"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es ou intercorr\u00eancias do plant\u00e3o"
+    }
+  },
+  "required": [
+    "date",
+    "unit",
+    "doctorName",
+    "specialty",
+    "type",
+    "value",
+    "hours"
+  ],
+  "rls": {}
+}

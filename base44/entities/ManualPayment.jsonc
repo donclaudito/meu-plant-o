@@ -1,0 +1,45 @@
+{
+  "name": "ManualPayment",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do pagamento recebido"
+    },
+    "value": {
+      "type": "number",
+      "description": "Valor recebido em euros"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do pagamento"
+    }
+  },
+  "required": [
+    "date",
+    "value"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "Secretaria"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

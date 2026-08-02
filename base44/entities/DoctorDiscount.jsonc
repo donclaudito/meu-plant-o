@@ -1,0 +1,59 @@
+{
+  "name": "DoctorDiscount",
+  "type": "object",
+  "properties": {
+    "doctorName": {
+      "type": "string",
+      "description": "Nome do m\u00e9dico (normalizado sem prefixo)"
+    },
+    "value": {
+      "type": "number",
+      "description": "Valor do desconto adicional em reais"
+    },
+    "description": {
+      "type": "string",
+      "description": "Motivo do desconto (ex: Glosa Hospital, Uso de Material)"
+    },
+    "month": {
+      "type": "number",
+      "description": "M\u00eas de refer\u00eancia (0-11)"
+    },
+    "year": {
+      "type": "number",
+      "description": "Ano de refer\u00eancia"
+    }
+  },
+  "required": [
+    "doctorName",
+    "value",
+    "month",
+    "year"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

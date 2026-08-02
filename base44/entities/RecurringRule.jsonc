@@ -1,0 +1,125 @@
+{
+  "name": "RecurringRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome da regra de recorr\u00eancia"
+    },
+    "doctorName": {
+      "type": "string",
+      "description": "Nome do m\u00e9dico"
+    },
+    "unit": {
+      "type": "string",
+      "description": "Hospital/Unidade"
+    },
+    "specialty": {
+      "type": "string",
+      "enum": [
+        "CIRURGIA GERAL",
+        "CL\u00cdNICA M\u00c9DICA",
+        "PEDIATRIA",
+        "GINECOLOGIA",
+        "ORTOPEDIA",
+        "ANESTESIA",
+        "OUTRA"
+      ],
+      "description": "Especialidade"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "12h Dia",
+        "12h Noite",
+        "24h",
+        "6h Dia",
+        "6h Noite"
+      ],
+      "description": "Tipo de plant\u00e3o"
+    },
+    "value": {
+      "type": "number",
+      "description": "Valor do plant\u00e3o em R$"
+    },
+    "hours": {
+      "type": "number",
+      "description": "Horas trabalhadas"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "monthly",
+        "custom"
+      ],
+      "description": "Frequ\u00eancia da recorr\u00eancia"
+    },
+    "dayOfWeek": {
+      "type": "number",
+      "description": "Dia da semana (0=Domingo, 6=S\u00e1bado)"
+    },
+    "weekOfMonth": {
+      "type": "number",
+      "description": "Semana do m\u00eas (1=primeira, 2=segunda, etc)"
+    },
+    "dayOfMonth": {
+      "type": "number",
+      "description": "Dia do m\u00eas (1-31)"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Se a regra est\u00e1 ativa"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de in\u00edcio da recorr\u00eancia"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de t\u00e9rmino da recorr\u00eancia (opcional)"
+    }
+  },
+  "required": [
+    "name",
+    "doctorName",
+    "unit",
+    "specialty",
+    "type",
+    "value",
+    "hours",
+    "frequency",
+    "active"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "write": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

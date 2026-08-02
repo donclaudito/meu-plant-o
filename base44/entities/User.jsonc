@@ -1,0 +1,38 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "cargo": {
+      "type": "string",
+      "enum": [
+        "M\u00e9dico",
+        "Gerente",
+        "Secretaria"
+      ],
+      "description": "Cargo/fun\u00e7\u00e3o do utilizador na aplica\u00e7\u00e3o"
+    },
+    "shift6hValue": {
+      "type": "number",
+      "description": "Valor padr\u00e3o para plant\u00f5es de 6h"
+    },
+    "shift12hValue": {
+      "type": "number",
+      "description": "Valor padr\u00e3o para plant\u00f5es de 12h"
+    },
+    "shift24hValue": {
+      "type": "number",
+      "description": "Valor padr\u00e3o para plant\u00f5es de 24h"
+    },
+    "hourlyRate": {
+      "type": "number",
+      "description": "Taxa hor\u00e1ria padr\u00e3o"
+    }
+  },
+  "required": [
+    "cargo",
+    "shift6hValue",
+    "shift12hValue",
+    "shift24hValue",
+    "hourlyRate"
+  ]
+}
